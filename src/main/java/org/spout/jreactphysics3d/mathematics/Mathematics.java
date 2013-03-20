@@ -27,5 +27,10 @@
 package org.spout.jreactphysics3d.mathematics;
 
 public class Mathematics {
+	private static final float EPSILON = (float) 1.0e-10;
 
+	public static boolean approxEquals(float a, float b) {
+		float difference = a - b;
+		return difference < EPSILON && difference > -EPSILON;
+	}
 }
