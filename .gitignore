@@ -1,0 +1,70 @@
+# Build files #
+###############
+MANIFEST.MF
+dependency-reduced-pom.xml
+
+# Compiled source #
+###################
+/bin
+/build
+/dist
+/lib
+/out
+/target
+*.com
+*.class
+*.dll
+*.exe
+*.o
+*.so
+
+# Databases #
+#############
+*.db
+*.sql
+*.sqlite
+
+# Packages #
+############
+*.7z
+*.dmg
+*.gz
+*.iso
+*.jar
+*.rar
+*.tar
+*.zip
+
+# Repository files #
+####################
+.git
+
+# Log files #
+#############
+*.log
+
+# Miscellaneous #
+#################
+*.bak
+
+# OS generated #
+################
+.DS_Store
+ehthumbs.db
+Icon?
+Thumbs.db
+
+# Project files #
+#################
+.classpath
+.externalToolBuilders
+.idea
+.project
+.settings
+nbproject
+atlassian-ide-plugin.xml
+build.xml
+nb-configuration.xml
+*.iml
+*.ipr
+*.iws
