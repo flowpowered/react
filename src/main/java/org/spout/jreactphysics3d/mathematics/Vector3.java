@@ -117,6 +117,17 @@ public class Vector3 {
 	}
 
 	/**
+	 * Sets the values of this vector3 to those of the provided vector3.
+	 *
+	 * @param quaternion The vector3 to copy the values from
+	 */
+	public void set(Vector3 vector) {
+		x = vector.getX();
+		y = vector.getY();
+		z = vector.getZ();
+	}
+
+	/**
 	 * Gets the x value of the vector
 	 *
 	 * @return {@link float} x value

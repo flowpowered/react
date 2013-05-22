@@ -35,10 +35,21 @@ public class Quaternion {
 	private float z;
 	private float w;
 
+	/**
+	 * Default constructor. All values are zero.
+	 */
 	public Quaternion() {
 		this(0, 0, 0, 0);
 	}
 
+	/**
+	 * Constructs a new quaternion with the desired values for each component.
+	 *
+	 * @param x The value of the x component
+	 * @param y The value of the y component
+	 * @param z The value of the z component
+	 * @param w The value of the w component
+	 */
 	public Quaternion(float x, float y, float z, float w) {
 		this.x = x;
 		this.y = y;
@@ -46,14 +57,31 @@ public class Quaternion {
 		this.w = w;
 	}
 
+	/**
+	 * Constructs a new quaternion from the w component as a float and the x, y and z component as a
+	 * vector.
+	 *
+	 * @param w The w component
+	 * @param v The vector for the x, y and z component
+	 */
 	public Quaternion(float w, Vector3 v) {
 		this(v.getX(), v.getY(), v.getZ(), w);
 	}
 
+	/**
+	 * Copy constructor.
+	 *
+	 * @param quaternion The quaternion to copy
+	 */
 	public Quaternion(Quaternion quaternion) {
 		this(quaternion.getX(), quaternion.getY(), quaternion.getZ(), quaternion.getW());
 	}
 
+	/**
+	 * Constructs a quaternion from the rotation element of the matrix.
+	 *
+	 * @param matrix The matrix to get the rotation element from
+	 */
 	public Quaternion(Matrix3x3 matrix) {
 		final float trace = matrix.getTrace();
 		if (trace < 0) {
@@ -98,38 +126,83 @@ public class Quaternion {
 		}
 	}
 
+	/**
+	 * Gets the x component of the quaternion.
+	 *
+	 * @return The x component of the quaternion
+	 */
 	public float getX() {
 		return x;
 	}
 
+	/**
+	 * Gets the y component of the quaternion.
+	 *
+	 * @return The y component of the quaternion
+	 */
 	public float getY() {
 		return y;
 	}
 
+	/**
+	 * Gets the z component of the quaternion.
+	 *
+	 * @return The z component of the quaternion
+	 */
 	public float getZ() {
 		return z;
 	}
 
+	/**
+	 * Gets the w component of the quaternion.
+	 *
+	 * @return The w component of the quaternion
+	 */
 	public float getW() {
 		return w;
 	}
 
+	/**
+	 * Sets the x component of the quaternion to the desired value.
+	 *
+	 * @param x The desired value for the x component
+	 */
 	public void setX(float x) {
 		this.x = x;
 	}
 
+	/**
+	 * Sets the y component of the quaternion to the desired value.
+	 *
+	 * @param y The desired value for the y component
+	 */
 	public void setY(float y) {
 		this.y = y;
 	}
 
+	/**
+	 * Sets the z component of the quaternion to the desired value.
+	 *
+	 * @param z The desired value for the z component
+	 */
 	public void setZ(float z) {
 		this.z = z;
 	}
 
+	/**
+	 * Sets the w component of the quaternion to the desired value.
+	 *
+	 * @param w The desired value for the w component
+	 */
 	public void setW(float w) {
 		this.w = w;
 	}
 
+	/**
+	 * Sets the values of this quaternion to those of the provided quaternion.
+	 *
+	 * @param quaternion The quaternion to copy the values from
+	 */
 	public void set(Quaternion quaternion) {
 		x = quaternion.getX();
 		y = quaternion.getY();
@@ -137,6 +210,14 @@ public class Quaternion {
 		w = quaternion.getW();
 	}
 
+	/**
+	 * Sets the x, y, z and w values of this quaternion to the desired ones.
+	 *
+	 * @param x The desired x value
+	 * @param y The desired y value
+	 * @param z The desired z value
+	 * @param w The desired w value
+	 */
 	public void setAllValues(float x, float y, float z, float w) {
 		this.x = x;
 		this.y = y;
@@ -144,6 +225,9 @@ public class Quaternion {
 		this.w = w;
 	}
 
+	/**
+	 * Sets the x, y, z and w values of this quaternion to zero.
+	 */
 	public void setToZero() {
 		x = 0;
 		y = 0;
@@ -151,14 +235,27 @@ public class Quaternion {
 		w = 0;
 	}
 
+	/**
+	 * Returns the x, y and z values of this quaternion as a vector3.
+	 *
+	 * @return The x, y and z values of this quaternion as a vector3.
+	 */
 	public Vector3 getVectorV() {
 		return new Vector3(x, y, z);
 	}
 
+	/**
+	 * Returns the length of this quaternion.
+	 *
+	 * @return The length
+	 */
 	public float length() {
 		return (float) Math.sqrt(x * x + y * y + z * z + w * w);
 	}
 
+	/**
+	 * Normalizes this quaternion. Doesn't create a new quaternion.
+	 */
 	public void normalize() {
 		final float length = length();
 		if (Mathematics.approxEquals(length, 0)) {
@@ -170,6 +267,12 @@ public class Quaternion {
 		w /= length;
 	}
 
+	/**
+	 * Gets the unit length quaternion for this quaternion. Both have the same orientation. Creates
+	 * a new quaternion.
+	 *
+	 * @return The unit length quaternion for this one
+	 */
 	public Quaternion getUnit() {
 		final float length = length();
 		if (Mathematics.approxEquals(length, 0)) {
@@ -182,10 +285,20 @@ public class Quaternion {
 				w / length);
 	}
 
+	/**
+	 * Returns the conjugate of this quaternion. Creates a new quaternion.
+	 *
+	 * @return The conjugate of this quaternion
+	 */
 	public Quaternion getConjugate() {
 		return new Quaternion(-x, -y, -z, w);
 	}
 
+	/**
+	 * Returns the inverse of this quaternion. Creates a new quaternion.
+	 *
+	 * @return The inverse of this quaternion
+	 */
 	public Quaternion getInverse() {
 		float lengthQuaternion = length();
 		lengthQuaternion *= lengthQuaternion;
@@ -199,23 +312,41 @@ public class Quaternion {
 				w / lengthQuaternion);
 	}
 
+	/**
+	 * Returns the dot product of this quaternion and the provided one.
+	 *
+	 * @param quaternion The quaternion to calculate the dot product with
+	 * @return The dot product of this and the other quaternion
+	 */
 	public float dot(Quaternion quaternion) {
 		return x * quaternion.getX() + y * quaternion.getY() + z * quaternion.getZ() + w * quaternion.getW();
 	}
 
-	public float getRotationAngleAxis(float angle, Vector3 axis) {
+	/**
+	 * Gets the rotation represented as an angle around an axis. The angle part is returned by the
+	 * method, while the axis, represented as a vector, will be stored in the passed vector
+	 * parameter.
+	 *
+	 * @param axis The vector in which to store the axis component values
+	 * @return The angle as a float
+	 */
+	public float getRotationAngleAxis(Vector3 axis) {
 		final Quaternion quaternion;
 		if (length() == 1) {
 			quaternion = this;
 		} else {
 			quaternion = getUnit();
 		}
-		angle = (float) Math.acos(quaternion.getW()) * 2;
-		Vector3 rotationAxis = new Vector3(quaternion.getX(), quaternion.getY(), quaternion.getZ()).getUnit();
+		final Vector3 rotationAxis = new Vector3(quaternion.getX(), quaternion.getY(), quaternion.getZ()).getUnit();
 		axis.setAllValues(rotationAxis.getX(), rotationAxis.getY(), rotationAxis.getZ());
-		return angle;
+		return (float) Math.acos(quaternion.getW()) * 2;
 	}
 
+	/**
+	 * Gets the 3x3 rotation matrix for this quaternion.
+	 *
+	 * @return The rotation matrix3x3
+	 */
 	public Matrix3x3 getMatrix() {
 		final float nQ = x * x + y * y + z * z + w * w;
 		final float s;
@@ -236,32 +367,10 @@ public class Quaternion {
 		final float yys = y * ys;
 		final float yzs = y * zs;
 		final float zzs = z * zs;
-		return new Matrix3x3(1 - yys - zzs, xys - wzs, xzs + wys,
+		return new Matrix3x3(
+				1 - yys - zzs, xys - wzs, xzs + wys,
 				xys + wzs, 1 - xxs - zzs, yzs - wxs,
 				xzs - wys, yzs + wxs, 1 - xxs - yys);
-	}
-
-	public Quaternion slerp(Quaternion quaternion1, Quaternion quaternion2, float percent) {
-		if (percent < 0.0 && percent > 1.0) {
-			throw new IllegalArgumentException("\"percent\" must be greater than zero and smaller than one");
-		}
-		final float invert;
-		float cosineTheta = quaternion1.dot(quaternion2);
-		if (cosineTheta < 0.0) {
-			cosineTheta = -cosineTheta;
-			invert = -1;
-		} else {
-			invert = 1;
-		}
-		final float epsilon = 0.00001f;
-		if (1 - cosineTheta < epsilon) {
-			return add(multiply(quaternion1, (1 - percent)), multiply(quaternion2, (percent * invert)));
-		}
-		final float theta = (float) Math.acos(cosineTheta);
-		final float sineTheta = (float) Math.sin(theta);
-		final float coeff1 = (float) Math.sin((1 - percent) * theta) / sineTheta;
-		final float coeff2 = (float) Math.sin(percent * theta) / sineTheta * invert;
-		return add(multiply(quaternion1, coeff1), multiply(quaternion2, coeff2));
 	}
 
 	@Override
@@ -295,10 +404,22 @@ public class Quaternion {
 		return true;
 	}
 
+	/**
+	 * Returns a new identity quaternion.
+	 *
+	 * @return A new identity quaternion
+	 */
 	public static Quaternion indentity() {
 		return new Quaternion(0, 0, 0, 1);
 	}
 
+	/**
+	 * Adds the first and second quaternion. Creates a new quaternion.
+	 *
+	 * @param quaternion1 The first quaternion
+	 * @param quaternion2 The second quaternion
+	 * @return The result of the addition of the first and second quaternion
+	 */
 	public static Quaternion add(Quaternion quaternion1, Quaternion quaternion2) {
 		return new Quaternion(
 				quaternion1.getX() + quaternion2.getX(),
@@ -307,6 +428,13 @@ public class Quaternion {
 				quaternion1.getW() + quaternion2.getW());
 	}
 
+	/**
+	 * Subtracts the first and second quaternion. Creates a new quaternion.
+	 *
+	 * @param quaternion1 The first quaternion
+	 * @param quaternion2 The second quaternion
+	 * @return The result of the subtraction of the first and second quaternion
+	 */
 	public static Quaternion subtract(Quaternion quaternion1, Quaternion quaternion2) {
 		return new Quaternion(
 				quaternion1.getX() - quaternion2.getX(),
@@ -315,6 +443,13 @@ public class Quaternion {
 				quaternion1.getW() - quaternion2.getW());
 	}
 
+	/**
+	 * Multiplies the quaternion by the float value. Creates a new quaternion.
+	 *
+	 * @param quaternion The quaternion to multiply
+	 * @param value The value to multiply the quaternion by
+	 * @return The result of the multiplication of the quaternion by the float
+	 */
 	public static Quaternion multiply(Quaternion quaternion, float value) {
 		return new Quaternion(
 				quaternion.getX() * value,
@@ -323,6 +458,13 @@ public class Quaternion {
 				quaternion.getW() * value);
 	}
 
+	/**
+	 * Multiplies the first and second quaternion. Creates a new quaternion.
+	 *
+	 * @param quaternion1 The first quaternion
+	 * @param quaternion2 The second quaternion
+	 * @return The result of the multiplication of the first and second quaternion
+	 */
 	public static Quaternion multiply(Quaternion quaternion1, Quaternion quaternion2) {
 		return new Quaternion(
 				quaternion1.getW() * quaternion2.getW() - quaternion1.getVectorV().dot(quaternion2.getVectorV()),
@@ -330,8 +472,46 @@ public class Quaternion {
 				add(quaternion1.getVectorV().cross(quaternion2.getVectorV())));
 	}
 
+	/**
+	 * Multiplies the quaternion by the vector3. Creates a new quaternion.
+	 *
+	 * @param quaternion The quaternion to multiply
+	 * @param vector The vector to multiply the quaternion by
+	 * @return The result of the multiplication of the quaternion by the vector
+	 */
 	public static Vector3 multiply(Quaternion quaternion, Vector3 vector) {
 		final Quaternion p = new Quaternion(vector.getX(), vector.getY(), vector.getZ(), 0);
 		return multiply(multiply(p, quaternion), quaternion.getConjugate()).getVectorV();
+	}
+
+	/**
+	 * Interpolates a quaternion between two others using spherical linear interpolation.
+	 *
+	 * @param quaternion1 The first quaternion
+	 * @param quaternion2 The second quaternion
+	 * @param percent The percent for the interpolation, between 0 and 1 inclusively
+	 * @return The interpolated quaternion
+	 */
+	public static Quaternion slerp(Quaternion quaternion1, Quaternion quaternion2, float percent) {
+		if (percent < 0.0 && percent > 1.0) {
+			throw new IllegalArgumentException("\"percent\" must be greater than zero and smaller than one");
+		}
+		final float invert;
+		float cosineTheta = quaternion1.dot(quaternion2);
+		if (cosineTheta < 0.0) {
+			cosineTheta = -cosineTheta;
+			invert = -1;
+		} else {
+			invert = 1;
+		}
+		final float epsilon = 0.00001f;
+		if (1 - cosineTheta < epsilon) {
+			return add(multiply(quaternion1, (1 - percent)), multiply(quaternion2, (percent * invert)));
+		}
+		final float theta = (float) Math.acos(cosineTheta);
+		final float sineTheta = (float) Math.sin(theta);
+		final float coeff1 = (float) Math.sin((1 - percent) * theta) / sineTheta;
+		final float coeff2 = (float) Math.sin(percent * theta) / sineTheta * invert;
+		return add(multiply(quaternion1, coeff1), multiply(quaternion2, coeff2));
 	}
 }

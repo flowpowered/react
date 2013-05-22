@@ -133,9 +133,9 @@ public class Matrix3x3 {
 	}
 
 	/**
-	 * Sets the matrix values to the values of the provided matrix.
+	 * Sets the values of this matrix to those of the provided matrix.
 	 *
-	 * @param matrix The matrix to set the values from
+	 * @param matrix The matrix to copy the values from
 	 * @return This matrix for chained calls
 	 */
 	public Matrix3x3 set(Matrix3x3 matrix) {
