@@ -27,7 +27,7 @@
 package org.spout.jreactphysics3d.mathematics;
 
 /**
- * This class represents a 3D vector in space.
+ * Represents a 3D vector in space.
  *
  */
 public class Vector3 {
@@ -51,9 +51,7 @@ public class Vector3 {
 	 * Default constructor. All values are 0.0F
 	 */
 	public Vector3() {
-		x = 0;
-		y = 0;
-		z = 0;
+		this(0, 0, 0);
 	}
 
 	/**
@@ -75,9 +73,7 @@ public class Vector3 {
 	 * @param vector to copy
 	 */
 	public Vector3(Vector3 vector) {
-		this.x = vector.getX();
-		this.y = vector.getY();
-		this.z = vector.getZ();
+		this(vector.getX(), vector.getY(), vector.getZ());
 	}
 
 	/**
@@ -226,10 +222,10 @@ public class Vector3 {
 	 * @return new unit {@link Vector3} corresponding to this vector
 	 */
 	public Vector3 getUnit() {
-		if (isZero()) {
-			throw new UnsupportedOperationException("Unable to get the unit vector for the zero vector");
-		}
 		final float lengthVector = length();
+		if (Mathematics.approxEquals(lengthVector, 0)) {
+			throw new IllegalArgumentException("Cannot normalize the zero vector");
+		}
 		final float lengthInv = 1 / lengthVector;
 		return new Vector3(x * lengthInv, y * lengthInv, z * lengthInv);
 	}
@@ -239,31 +235,19 @@ public class Vector3 {
 	 *
 	 * @return an orthogonal {@link Vector3} of the current vector
 	 */
-	public Vector3 getOneOrthogonalVector() {
-		if (isZero()) {
-			throw new UnsupportedOperationException("Unable to get an orthogonal vector for the zero vector");
+	public Vector3 getOneUnitOrthogonalVector() {
+		if (Mathematics.approxEquals(length(), 0)) {
+			throw new IllegalArgumentException("Cannot normalize the zero vector");
 		}
-
-		Vector3 vector = new Vector3();
-		if (!Mathematics.approxEquals(x, 0)) { // if x != 0
-			vector.setY(x);
-			vector.setZ((-2 * x * y * z + 2 * x * z) / (2 * (z * z + x * x)));
-			vector.setX((-x * y - z * vector.getZ()) / x);
-			return vector;
+		final Vector3 vectorAbs = new Vector3(Math.abs(x), Math.abs(y), Math.abs(z));
+		final int minElement = vectorAbs.getMinAxis();
+		if (minElement == 0) {
+			return new Vector3(0, -z, y).divide((float) Math.sqrt(y * y + z * z));
+		} else if (minElement == 1) {
+			return new Vector3(-z, 0, x).divide((float) Math.sqrt(x * x + z * z));
+		} else {
+			return new Vector3(-y, x, 0).divide((float) Math.sqrt(x * x + y * y));
 		}
-		if (!Mathematics.approxEquals(y, 0)) { // if y != 0
-			vector.setZ(y);
-			vector.setX((-2 * x * y * z + 2 * x * y) / (2 * (y * y + x * x)));
-			vector.setY((-z * y - x * vector.getX()) / y);
-			return vector;
-		}
-		if (!Mathematics.approxEquals(z, 0)) { // if z != 0
-			vector.setX(z);
-			vector.setY((-2 * x * y * z + 2 * y * z) / (2 * (z * z + y * y)));
-			vector.setZ((-x * z - y * vector.getY()) / z);
-			return vector;
-		}
-		return vector;
 	}
 
 	/**
@@ -272,10 +256,10 @@ public class Vector3 {
 	 * @return This vector after normalization
 	 */
 	public Vector3 normalize() {
-		if (isZero()) {
-			throw new UnsupportedOperationException("Unable to normalize the zero vector");
-		}
 		final float length = length();
+		if (Mathematics.approxEquals(length, 0)) {
+			throw new IllegalArgumentException("Cannot normalize the zero vector");
+		}
 		x /= length;
 		y /= length;
 		z /= length;
@@ -375,6 +359,9 @@ public class Vector3 {
 	 * @return this vector, after division is finished
 	 */
 	public Vector3 divide(float value) {
+		if (Mathematics.approxEquals(value, 0)) {
+			throw new IllegalArgumentException("Cannot divide by zero");
+		}
 		x /= value;
 		y /= value;
 		z /= value;
@@ -521,6 +508,9 @@ public class Vector3 {
 	 * @return the quotient (vector3) of the vector and the value
 	 */
 	public static Vector3 divide(Vector3 vector, float value) {
+		if (Mathematics.approxEquals(value, 0)) {
+			throw new IllegalArgumentException("Cannot divide by zero");
+		}
 		return new Vector3(
 				vector.getX() / value,
 				vector.getY() / value,
