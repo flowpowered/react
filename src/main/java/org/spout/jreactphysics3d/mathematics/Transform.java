@@ -45,23 +45,23 @@ public class Transform {
 	 * Constructs a new transform from the position as a vector3 and the orientation as a 3x3
 	 * matrix.
 	 *
-	 * @param mPosition The position
-	 * @param mOrientation The orientation
+	 * @param position The position
+	 * @param orientation The orientation
 	 */
-	public Transform(Vector3 mPosition, Matrix3x3 mOrientation) {
-		this(mPosition, new Quaternion(mOrientation));
+	public Transform(Vector3 position, Matrix3x3 orientation) {
+		this(position, new Quaternion(orientation));
 	}
 
 	/**
 	 * Constructs a new transform from the position as a vector3 and the orientation as a
 	 * quaternion.
 	 *
-	 * @param mPosition The position
-	 * @param mOrientation The orientation
+	 * @param position The position
+	 * @param orientation The orientation
 	 */
-	public Transform(Vector3 mPosition, Quaternion mOrientation) {
-		this.mPosition.set(mPosition);
-		this.mOrientation.set(mOrientation);
+	public Transform(Vector3 position, Quaternion orientation) {
+		this.mPosition.set(position);
+		this.mOrientation.set(orientation);
 	}
 
 	/**
