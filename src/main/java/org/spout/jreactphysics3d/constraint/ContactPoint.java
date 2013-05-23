@@ -24,8 +24,8 @@
  * License and see <http://spout.in/licensev1> for the full license, including
  * the MIT license.
  */
-package org.spout.jreactphysics3d.colliders;
+package org.spout.jreactphysics3d.constraint;
 
-public class CylinderCollider {
+public class ContactPoint {
 
 }

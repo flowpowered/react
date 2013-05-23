@@ -26,6 +26,6 @@
  */
 package org.spout.jreactphysics3d.collision;
 
-public class OverlappingPair {
+public class BroadPhasePair {
 
 }

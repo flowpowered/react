@@ -26,6 +26,6 @@
  */
 package org.spout.jreactphysics3d.engine;
 
-public class ConstraintSolver {
+public class CollisionWorld {
 
 }

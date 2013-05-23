@@ -24,8 +24,7 @@
  * License and see <http://spout.in/licensev1> for the full license, including
  * the MIT license.
  */
-package org.spout.jreactphysics3d.engine;
+package org.spout.jreactphysics3d.collision.shape;
 
-public class PhysicsEngine {
-
+public class CylinderShape {
 }

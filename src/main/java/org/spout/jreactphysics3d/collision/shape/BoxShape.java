@@ -24,8 +24,7 @@
  * License and see <http://spout.in/licensev1> for the full license, including
  * the MIT license.
  */
-package org.spout.jreactphysics3d.constraint;
+package org.spout.jreactphysics3d.collision.shape;
 
-public class Contact {
-
+public class BoxShape {
 }
