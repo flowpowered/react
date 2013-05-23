@@ -203,11 +203,12 @@ public class Quaternion {
 	 *
 	 * @param quaternion The quaternion to copy the values from
 	 */
-	public void set(Quaternion quaternion) {
+	public Quaternion set(Quaternion quaternion) {
 		x = quaternion.getX();
 		y = quaternion.getY();
 		z = quaternion.getZ();
 		w = quaternion.getW();
+		return this;
 	}
 
 	/**
@@ -409,7 +410,7 @@ public class Quaternion {
 	 *
 	 * @return A new identity quaternion
 	 */
-	public static Quaternion indentity() {
+	public static Quaternion identity() {
 		return new Quaternion(0, 0, 0, 1);
 	}
 

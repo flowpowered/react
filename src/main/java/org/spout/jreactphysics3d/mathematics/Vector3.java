@@ -119,12 +119,13 @@ public class Vector3 {
 	/**
 	 * Sets the values of this vector3 to those of the provided vector3.
 	 *
-	 * @param quaternion The vector3 to copy the values from
+	 * @param vector The vector3 to copy the values from
 	 */
-	public void set(Vector3 vector) {
+	public Vector3 set(Vector3 vector) {
 		x = vector.getX();
 		y = vector.getY();
 		z = vector.getZ();
+		return this;
 	}
 
 	/**
@@ -437,9 +438,6 @@ public class Vector3 {
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
-		}
 		if (!(obj instanceof Vector3)) {
 			return false;
 		}
