@@ -31,67 +31,66 @@ import org.spout.jreactphysics3d.mathematics.Matrix3x3;
 import org.spout.jreactphysics3d.mathematics.Vector3;
 
 /**
- * This class represents a 3D box shape. Those axis are unit length.
- * The three extents are half-widths of the box along the three
- * axis x, y, z local axis. The "transform" of the corresponding
- * rigid body gives an orientation and a position to the box.
+ * Represents a 3D box shape. Those axis are unit length. The three extents are half-widths of the
+ * box along the three axis x, y, z local axis. The "transform" of the corresponding rigid body
+ * gives an orientation and a position to the box.
  */
 public class BoxShape extends CollisionShape {
-	private Vector3 mExtent;
+	private final Vector3 mExtent = new Vector3();
 
 	/**
-	 * Constructs a BoxShape using Vector extents
-	 * 
-	 * @param extent 
+	 * Constructs a box shape from its extents which is the vector between the two opposing corners
+	 * that are the furthest away.
+	 * @param extent The extent vector
 	 */
-	public BoxShape(Vector3 extent){
+	public BoxShape(Vector3 extent) {
 		super(CollisionShape.CollisionShapeType.BOX);
 		mExtent.set(extent);
 	}
 
 	/**
-	 * Gets BoxShape extents
-	 * 
-	 * @return The Vector3 that representing BoxShape extents
+	 * Gets the extent vector, which is the vector between the two opposing corners that are the
+	 * furthest away.
+	 * @return The extents vector
 	 */
-	public Vector3 getExtent(){
- 		return mExtent;
- 	}
-    
+	public Vector3 getExtent() {
+		return mExtent;
+	}
+
 	/**
-	 * Sets BoxShape extents to Vector3 extent
-	 * 
-	 * @param extent 
+	 * Sets the extent vector, which is the vector between the two opposing corners that are the
+	 * furthest away.
+	 * @param extent The extents vector
 	 */
-	public void set(Vector3 extent){
+	public void setExtent(Vector3 extent) {
 		mExtent.set(extent);
 	}
 
 	@Override
 	public Vector3 getLocalSupportPointWithMargin(Vector3 direction) {
-        	float margin = getMargin();
-
-        	if (margin < 0.0) {            
-			throw new IllegalArgumentException("margin must be greater than zero");
+		final float margin = getMargin();
+		if (margin < 0) {
+			throw new IllegalStateException("margin must be greater than zero");
 		}
-		
-		return new Vector3(direction.getX() < 0.0 ? - mExtent.getX() - margin : mExtent.getX() + margin,
-				direction.getY() < 0.0 ? - mExtent.getY() - margin : mExtent.getY() + margin,
-				direction.getZ() < 0.0 ? - mExtent.getZ() - margin : mExtent.getZ() + margin);
+		return new Vector3(
+				direction.getX() < 0 ? -mExtent.getX() - margin : mExtent.getX() + margin,
+				direction.getY() < 0 ? -mExtent.getY() - margin : mExtent.getY() + margin,
+				direction.getZ() < 0 ? -mExtent.getZ() - margin : mExtent.getZ() + margin);
 	}
 
 	@Override
 	public Vector3 getLocalSupportPointWithoutMargin(Vector3 direction) {
-		return new Vector3(direction.getX() < 0.0 ? - mExtent.getX() : mExtent.getX(),
-				direction.getY() < 0.0 ? - mExtent.getY() : mExtent.getY(),
-				direction.getZ() < 0.0 ? - mExtent.getZ() : mExtent.getZ());
+		return new Vector3(
+				direction.getX() < 0 ? -mExtent.getX() : mExtent.getX(),
+				direction.getY() < 0 ? -mExtent.getY() : mExtent.getY(),
+				direction.getZ() < 0 ? -mExtent.getZ() : mExtent.getZ());
 	}
 
 	@Override
 	public Vector3 getLocalExtents(float margin) {
 		return Vector3.add(mExtent, new Vector3(getMargin(), getMargin(), getMargin()));
 	}
-	
+
 	@Override
 	public float getMargin() {
 		return Configuration.OBJECT_MARGIN;
@@ -99,13 +98,13 @@ public class BoxShape extends CollisionShape {
 
 	@Override
 	public void computeLocalInertiaTensor(Matrix3x3 tensor, float mass) {
-		float factor = (1.0f/3.0f) * mass;
-		float xSquare = mExtent.getX() * mExtent.getX();
-		float ySquare = mExtent.getY() * mExtent.getY();
-		float zSquare = mExtent.getZ() * mExtent.getZ();
-		tensor.setAllValues(factor, (ySquare + zSquare), 0.0f, 
-				0.0f, factor * (xSquare + zSquare), 0.0f, 
-				0.0f, 0.0f, factor * (xSquare + ySquare));
-		
+		final float factor = (1f / 3) * mass;
+		final float xSquare = mExtent.getX() * mExtent.getX();
+		final float ySquare = mExtent.getY() * mExtent.getY();
+		final float zSquare = mExtent.getZ() * mExtent.getZ();
+		tensor.setAllValues(
+				factor * (ySquare + zSquare), 0, 0,
+				0, factor * (xSquare + zSquare), 0,
+				0, 0, factor * (xSquare + ySquare));
 	}
 }
