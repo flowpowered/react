@@ -26,82 +26,70 @@
  */
 package org.spout.jreactphysics3d;
 
+/**
+ * Physics engine constants
+ */
 public class Configuration {
-
-	// Physics engine constants
-
+	/**
+	 * The machine epsilon
+	 */
+	public static final float MACHINE_EPSILON = 1.1920929E-7f;
 	/**
 	 * Default internal constant timestep in seconds
 	 */
 	public static final float DEFAULT_TIMESTEP = 1.0F / 60.0F;
-
 	/**
 	 * True if the deactivation (sleeping) of inactive bodies is enabled
 	 */
 	public static final boolean DEACTIVATION_ENABLED = true;
-
 	// GJK Algorithm parameters
-
 	/**
 	 * Object margin for collision detection in cm
 	 */
 	public static final float OBJECT_MARGIN = 0.04F;
-
 	// Contact constants
-
 	/**
 	 * Friction coefficient
 	 */
 	public static final float FRICTION_COEFFICIENT = 0.4F;
-
 	/**
 	 * Distance threshold for two contact points for a valid persistent contact
 	 */
 	public static final float PERSISTENT_CONTACT_DIST_THRESHOLD = 0.02F;
-
 	// Constraint solver constants
-
 	/**
 	 * Maximum number of bodies
 	 */
 	public static final int NB_MAX_BODIES = 100000;
-
 	/**
 	 * Maximum number of contacts (for memory pool allocation)
 	 */
 	public static final int NB_MAX_CONTACTS = 100000;
-
 	/**
 	 * Maximum number of constraints
 	 */
 	public static final int NB_MAX_CONSTRAINTS = 100000;
-
 	/**
 	 * Maximum number of collision pairs of bodies (for memory pool allocation)
 	 */
 	public static final int NB_MAX_COLLISION_PAIRS = 10000;
-
 	// Constraint solver constants
-
 	/**
 	 * Number of iterations when solving a LCP problem
 	 */
 	public static final int DEFAULT_LCP_ITERATIONS = 15;
-
 	/**
 	 * Number of iterations when solving a LCP problem for error correction
 	 */
 	public static final int DEFAULT_LCP_ITERATIONS_ERROR_CORRECTION = 5;
-
 	/**
-	 * True if the error correction projection (first order world) is active in
-	 * the constraint solver
+	 * True if the error correction projection (first order world) is active in the constraint
+	 * solver
 	 */
 	public static final boolean ERROR_CORRECTION_PROJECTION_ENABLED = true;
-
 	/**
-	 * Contacts with penetration depth (in meters) larger that this use error
-	 * correction with projection
+	 * Contacts with penetration depth (in meters) larger that this use error correction with
+	 * projection
 	 */
 	public static final float PENETRATION_DEPTH_THRESHOLD_ERROR_CORRECTION = 0.20F;
 }

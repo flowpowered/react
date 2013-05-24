@@ -26,6 +26,8 @@
  */
 package org.spout.jreactphysics3d.mathematics;
 
+import org.spout.jreactphysics3d.Configuration;
+
 /**
  * Represents a quaternion. The notation q = (x*i, y*j, z*k, w) is used to represent the quaternion.
  */
@@ -258,14 +260,14 @@ public class Quaternion {
 	 * Normalizes this quaternion. Doesn't create a new quaternion.
 	 */
 	public void normalize() {
-		final float length = length();
-		if (Mathematics.approxEquals(length, 0)) {
+		final float l = length();
+		if (l <= Configuration.MACHINE_EPSILON) {
 			throw new IllegalArgumentException("Cannot normalize the zero quaternion");
 		}
-		x /= length;
-		y /= length;
-		z /= length;
-		w /= length;
+		x /= l;
+		y /= l;
+		z /= l;
+		w /= l;
 	}
 
 	/**
@@ -275,15 +277,15 @@ public class Quaternion {
 	 * @return The unit length quaternion for this one
 	 */
 	public Quaternion getUnit() {
-		final float length = length();
-		if (Mathematics.approxEquals(length, 0)) {
+		final float lengthQuaternion = length();
+		if (lengthQuaternion <= Configuration.MACHINE_EPSILON) {
 			throw new IllegalArgumentException("Cannot normalize the zero quaternion");
 		}
 		return new Quaternion(
-				x / length,
-				y / length,
-				z / length,
-				w / length);
+				x / lengthQuaternion,
+				y / lengthQuaternion,
+				z / lengthQuaternion,
+				w / lengthQuaternion);
 	}
 
 	/**
@@ -303,7 +305,7 @@ public class Quaternion {
 	public Quaternion getInverse() {
 		float lengthQuaternion = length();
 		lengthQuaternion *= lengthQuaternion;
-		if (Mathematics.approxEquals(lengthQuaternion, 0)) {
+		if (lengthQuaternion <= Configuration.MACHINE_EPSILON) {
 			throw new IllegalArgumentException("Cannot normalize the zero quaternion");
 		}
 		return new Quaternion(

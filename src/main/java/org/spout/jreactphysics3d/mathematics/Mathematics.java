@@ -26,11 +26,15 @@
  */
 package org.spout.jreactphysics3d.mathematics;
 
-public class Mathematics {
-	private static final float EPSILON = (float) 1.0e-10;
+import org.spout.jreactphysics3d.Configuration;
 
+public class Mathematics {
 	public static boolean approxEquals(float a, float b) {
+		return approxEquals(a, b, Configuration.MACHINE_EPSILON);
+	}
+
+	public static boolean approxEquals(float a, float b, float epsilon) {
 		float difference = a - b;
-		return difference < EPSILON && difference > -EPSILON;
+		return difference < epsilon && difference > -epsilon;
 	}
 }

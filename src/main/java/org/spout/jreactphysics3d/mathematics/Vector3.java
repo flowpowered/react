@@ -26,6 +26,8 @@
  */
 package org.spout.jreactphysics3d.mathematics;
 
+import org.spout.jreactphysics3d.Configuration;
+
 /**
  * Represents a 3D vector in space.
  *
@@ -183,16 +185,6 @@ public class Vector3 {
 	}
 
 	/**
-	 * Return true if two vectors are parallel
-	 *
-	 * @param vector to compare with
-	 * @return true if the two vectors are parallel
-	 */
-	public boolean isParallelWith(Vector3 vector) {
-		return Mathematics.approxEquals(dot(vector), length() * vector.length());
-	}
-
-	/**
 	 * Return the axis with the minimal value
 	 *
 	 * @return {@link int} axis with minimal value
@@ -235,7 +227,7 @@ public class Vector3 {
 	 */
 	public Vector3 getUnit() {
 		final float lengthVector = length();
-		if (Mathematics.approxEquals(lengthVector, 0)) {
+		if (lengthVector <= Configuration.MACHINE_EPSILON) {
 			throw new IllegalArgumentException("Cannot normalize the zero vector");
 		}
 		final float lengthInv = 1 / lengthVector;
@@ -248,7 +240,7 @@ public class Vector3 {
 	 * @return an orthogonal {@link Vector3} of the current vector
 	 */
 	public Vector3 getOneUnitOrthogonalVector() {
-		if (Mathematics.approxEquals(length(), 0)) {
+		if (length() <= Configuration.MACHINE_EPSILON) {
 			throw new IllegalArgumentException("Cannot normalize the zero vector");
 		}
 		final Vector3 vectorAbs = new Vector3(Math.abs(x), Math.abs(y), Math.abs(z));
@@ -268,13 +260,13 @@ public class Vector3 {
 	 * @return This vector after normalization
 	 */
 	public Vector3 normalize() {
-		final float length = length();
-		if (Mathematics.approxEquals(length, 0)) {
+		final float l = length();
+		if (l <= Configuration.MACHINE_EPSILON) {
 			throw new IllegalArgumentException("Cannot normalize the zero vector");
 		}
-		x /= length;
-		y /= length;
-		z /= length;
+		x /= l;
+		y /= l;
+		z /= l;
 		return this;
 	}
 
@@ -371,7 +363,7 @@ public class Vector3 {
 	 * @return this vector, after division is finished
 	 */
 	public Vector3 divide(float value) {
-		if (Mathematics.approxEquals(value, 0)) {
+		if (value <= Configuration.MACHINE_EPSILON) {
 			throw new IllegalArgumentException("Cannot divide by zero");
 		}
 		x /= value;
@@ -496,6 +488,17 @@ public class Vector3 {
 	}
 
 	/**
+	 * Multiplies the value by a specified vector. Creates a new vector.
+	 *
+	 * @param value the value
+	 * @param vector the vector
+	 * @return the product of the value and the vector
+	 */
+	public static Vector3 multiply(float value, Vector3 vector) {
+		return multiply(vector, value);
+	}
+
+	/**
 	 * Multiplies the vector by a specified value. Creates a new vector.
 	 *
 	 * @param vector the vector
@@ -517,7 +520,7 @@ public class Vector3 {
 	 * @return the quotient (vector3) of the vector and the value
 	 */
 	public static Vector3 divide(Vector3 vector, float value) {
-		if (Mathematics.approxEquals(value, 0)) {
+		if (value <= Configuration.MACHINE_EPSILON) {
 			throw new IllegalArgumentException("Cannot divide by zero");
 		}
 		return new Vector3(
