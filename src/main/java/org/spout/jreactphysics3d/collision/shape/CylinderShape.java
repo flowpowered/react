@@ -52,7 +52,7 @@ public class CylinderShape extends CollisionShape {
 	}
 
 	/**
-	 * Gets the radius of the cylinder.
+	 * Gets the radius of the base.
 	 *
 	 * @return The radius
 	 */
@@ -70,9 +70,9 @@ public class CylinderShape extends CollisionShape {
 	}
 
 	/**
-	 * Sets the radius of the cylinder.
+	 * Sets the radius of the base.
 	 *
-	 * @param radius The radius
+	 * @param radius The radius to set
 	 */
 	public void setRadius(float radius) {
 		this.mRadius = radius;
@@ -81,10 +81,10 @@ public class CylinderShape extends CollisionShape {
 	/**
 	 * Sets the height of the cylinder.
 	 *
-	 * @param height The height of the cylinder
+	 * @param height The height of the cylinder to set
 	 */
 	public void setHeight(float height) {
-		this.mHalfHeight = height * 2;
+		this.mHalfHeight = height * 0.5f;
 	}
 
 	@Override

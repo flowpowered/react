@@ -26,5 +26,127 @@
  */
 package org.spout.jreactphysics3d.collision.shape;
 
-public class ConeShape {
+import org.spout.jreactphysics3d.Configuration;
+import org.spout.jreactphysics3d.mathematics.Matrix3x3;
+import org.spout.jreactphysics3d.mathematics.Vector3;
+
+/**
+ * Represents a cone collision shape centered at the origin and aligned with the Y axis. The cone is
+ * defined by its height and by the radius of its base. The center of the cone is at the half of the
+ * height. The "transform" of the corresponding rigid body gives an orientation and a position to
+ * the cone.
+ */
+public class ConeShape extends CollisionShape {
+	private float mRadius;
+	private float mHalfHeight;
+	private float mSinTheta;
+
+	/**
+	 * Constructs a new cone shape from the radius of the base and the height.
+	 *
+	 * @param radius The radius of the base
+	 * @param height The height
+	 */
+	public ConeShape(float radius, float height) {
+		super(CollisionShapeType.CONE);
+		mRadius = radius;
+		mHalfHeight = height / 2;
+		if (radius <= 0) {
+			throw new IllegalArgumentException("Radius must be greater than zero");
+		}
+		if (mHalfHeight <= 0) {
+			throw new IllegalArgumentException("Height must be greater than zero");
+		}
+		mSinTheta = radius / (float) Math.sqrt(radius * radius + height * height);
+	}
+
+	/**
+	 * Gets the radius of the base.
+	 *
+	 * @return The radius
+	 */
+	public float getRadius() {
+		return mRadius;
+	}
+
+	/**
+	 * Sets the radius of the base.
+	 *
+	 * @param radius The radius to set
+	 */
+	public void setRadius(float radius) {
+		this.mRadius = radius;
+		mSinTheta = radius / (float) Math.sqrt(radius * radius + 4 * mHalfHeight * mHalfHeight);
+	}
+
+	/**
+	 * Gets the height of the cone.
+	 *
+	 * @return The height
+	 */
+	public float getHeight() {
+		return 2 * mHalfHeight;
+	}
+
+	/**
+	 * Sets the height of the cone.
+	 *
+	 * @param height The height to set
+	 */
+	public void setHeight(float height) {
+		this.mHalfHeight = height * 0.5f;
+		mSinTheta = mRadius / (float) Math.sqrt(mRadius * mRadius + height * height);
+	}
+
+	@Override
+	public Vector3 getLocalSupportPointWithMargin(Vector3 direction) {
+		final Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction);
+		final Vector3 unitVec;
+		if (direction.lengthSquare() > Configuration.MACHINE_EPSILON * Configuration.MACHINE_EPSILON) {
+			unitVec = direction.getUnit();
+		} else {
+			unitVec = new Vector3(0, -1, 0);
+		}
+		supportPoint.add(Vector3.multiply(unitVec, getMargin()));
+		return supportPoint;
+	}
+
+	@Override
+	public Vector3 getLocalSupportPointWithoutMargin(Vector3 direction) {
+		final Vector3 v = direction;
+		final float sinThetaTimesLengthV = mSinTheta * v.length();
+		final Vector3 supportPoint;
+		if (v.getY() >= sinThetaTimesLengthV) {
+			supportPoint = new Vector3(0, mHalfHeight, 0);
+		} else {
+			final float projectedLength = (float) Math.sqrt(v.getX() * v.getX() + v.getZ() * v.getZ());
+			if (projectedLength > Configuration.MACHINE_EPSILON) {
+				final float d = mRadius / projectedLength;
+				supportPoint = new Vector3(v.getX() * d, -mHalfHeight, v.getZ() * d);
+			} else {
+				supportPoint = new Vector3(mRadius, -mHalfHeight, 0);
+			}
+		}
+		return supportPoint;
+	}
+
+	@Override
+	public Vector3 getLocalExtents(float margin) {
+		return new Vector3(mRadius + margin, mHalfHeight + margin, mRadius + margin);
+	}
+
+	@Override
+	public float getMargin() {
+		return Configuration.OBJECT_MARGIN;
+	}
+
+	@Override
+	public void computeLocalInertiaTensor(Matrix3x3 tensor, float mass) {
+		final float rSquare = mRadius * mRadius;
+		final float diagXZ = 0.15f * mass * (rSquare + mHalfHeight);
+		tensor.setAllValues(
+				diagXZ, 0, 0,
+				0, 0.3f * mass * rSquare,
+				0, 0, 0, diagXZ);
+	}
 }
