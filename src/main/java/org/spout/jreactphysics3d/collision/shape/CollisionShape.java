@@ -106,9 +106,9 @@ public abstract class CollisionShape {
 		final Vector3 extents = getLocalExtents(Configuration.OBJECT_MARGIN);
 		final Matrix3x3 worldAxis = transform.getOrientation().getMatrix().getAbsoluteMatrix();
 		final Vector3 worldExtents = new Vector3(
-				worldAxis.getColumn(0).dot(extents),
-				worldAxis.getColumn(1).dot(extents),
-				worldAxis.getColumn(2).dot(extents));
+				worldAxis.getColumn(Matrix3x3.FIRST_COLUMN).dot(extents),
+				worldAxis.getColumn(Matrix3x3.SECOND_COLUMN).dot(extents),
+				worldAxis.getColumn(Matrix3x3.THIRD_COLUMN).dot(extents));
 		final Vector3 minCoordinates = Vector3.subtract(transform.getPosition(), worldExtents);
 		final Vector3 maxCoordinates = Vector3.add(transform.getPosition(), worldExtents);
 		aabb.setMin(minCoordinates);
