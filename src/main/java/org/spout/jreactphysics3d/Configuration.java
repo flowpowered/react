@@ -51,7 +51,7 @@ public class Configuration {
 	/**
 	 * Friction coefficient
 	 */
-	public static final float FRICTION_COEFFICIENT = 0.4F;
+	public static final float DEFAULT_FRICTION_COEFFICIENT = 0.4F;
 	/**
 	 * Distance threshold for two contact points for a valid persistent contact
 	 */
