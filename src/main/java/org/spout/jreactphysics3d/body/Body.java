@@ -26,6 +26,70 @@
  */
 package org.spout.jreactphysics3d.body;
 
+/**
+ * This is the base class for a body for the physics engine.
+ */
 public class Body {
+	/**
+	 * The body's unique ID.
+	 */
+	protected final long mID;
 
+	/**
+	 * Construct a new body from its ID.
+	 *
+	 * @param id The body's ID
+	 */
+	public Body(long id) {
+		mID = id;
+	}
+
+	/**
+	 * Gets the body's unique ID.
+	 *
+	 * @return The body's ID
+	 */
+	public long getID() {
+		return mID;
+	}
+
+	/**
+	 * Returns true this body's ID is smaller than the other body's ID, false if not.
+	 *
+	 * @param other The body to compare with
+	 * @return True if this body is smaller, false if not
+	 */
+	public boolean isSmallerThan(Body other) {
+		return mID < other.getID();
+	}
+
+	/**
+	 * Returns true this body's ID is greater than the other body's ID, false if not.
+	 *
+	 * @param other The body to compare with
+	 * @return True if this body is greater, false if not
+	 */
+	public boolean isGreaterThan(Body other) {
+		return mID > other.getID();
+	}
+
+	/**
+	 * Returns true this body's ID is equal than the other body's ID, false if not.
+	 *
+	 * @param other The body to compare with
+	 * @return True if this body is equal, false if not
+	 */
+	public boolean isEqualTo(Body other) {
+		return mID == other.getID();
+	}
+
+	/**
+	 * Returns true this body's ID is not equal than the other body's ID, false if not.
+	 *
+	 * @param other The body to compare with
+	 * @return True if this body is not equal, false if not
+	 */
+	public boolean isNotEqualTo(Body other) {
+		return mID != other.getID();
+	}
 }
