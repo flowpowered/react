@@ -28,6 +28,8 @@ package org.spout.jreactphysics3d.mathematics;
 
 import java.util.Arrays;
 
+import org.spout.jreactphysics3d.Configuration;
+
 /**
  * Represents a 3x3 matrix.
  */
@@ -88,8 +90,8 @@ public class Matrix3x3 {
 	 * @param c3 The value for 2,2
 	 */
 	public Matrix3x3(float a1, float a2, float a3,
-			float b1, float b2, float b3,
-			float c1, float c2, float c3) {
+					 float b1, float b2, float b3,
+					 float c1, float c2, float c3) {
 		setAllValues(a1, a2, a3, b1, b2, b3, c1, c2, c3);
 	}
 
@@ -119,8 +121,8 @@ public class Matrix3x3 {
 	 * @param c3 The value for 2,2
 	 */
 	public final void setAllValues(float a1, float a2, float a3,
-			float b1, float b2, float b3,
-			float c1, float c2, float c3) {
+								   float b1, float b2, float b3,
+								   float c1, float c2, float c3) {
 		mRows[0].setX(a1);
 		mRows[0].setY(a2);
 		mRows[0].setZ(a3);
@@ -160,8 +162,8 @@ public class Matrix3x3 {
 	 * Gets the desired value at the row and column.
 	 *
 	 * @param row The row number, either {@link #FIRST_ROW}, {@link #SECOND_ROW}, {@link #THIRD_ROW}
-	 * @param col The column number, either
-	 * {@link #FIRST_COLUMN}, {@link #SECOND_COLUMN}, {@link #THIRD_COLUMN}
+	 * @param col The column number, either {@link #FIRST_COLUMN}, {@link #SECOND_COLUMN}, {@link
+	 * #THIRD_COLUMN}
 	 * @return The value at the row and column
 	 */
 	public float get(int row, int col) {
@@ -171,8 +173,8 @@ public class Matrix3x3 {
 	/**
 	 * Gets the desired column as a vector3.
 	 *
-	 * @param col The column number, either
-	 * {@link #FIRST_COLUMN}, {@link #SECOND_COLUMN}, {@link #THIRD_COLUMN}
+	 * @param col The column number, either {@link #FIRST_COLUMN}, {@link #SECOND_COLUMN}, {@link
+	 * #THIRD_COLUMN}
 	 * @return The column as a vector3
 	 */
 	public Vector3 getColumn(int col) {
@@ -193,8 +195,8 @@ public class Matrix3x3 {
 	 * Sets the value at the row and column to the desired value.
 	 *
 	 * @param row The row number, either {@link #FIRST_ROW}, {@link #SECOND_ROW}, {@link #THIRD_ROW}
-	 * @param col The column number, either
-	 * {@link #FIRST_COLUMN}, {@link #SECOND_COLUMN}, {@link #THIRD_COLUMN}
+	 * @param col The column number, either {@link #FIRST_COLUMN}, {@link #SECOND_COLUMN}, {@link
+	 * #THIRD_COLUMN}
 	 * @param value The value to set at the row and column
 	 */
 	public void set(int row, int col, float value) {
@@ -249,6 +251,30 @@ public class Matrix3x3 {
 	}
 
 	/**
+	 * Calculates the matrix's inverse and returns it.
+	 *
+	 * @return The inverse of this matrix
+	 */
+	public Matrix3x3 getInverse() {
+		final float determinant = getDeterminant();
+		if (Math.abs(determinant) <= Configuration.MACHINE_EPSILON) {
+			throw new IllegalStateException("Determinant of matrix cannot be zero");
+		}
+		final float invDeterminant = 1 / determinant;
+		final Matrix3x3 tempMatrix = new Matrix3x3(
+				(mRows[1].get(1) * mRows[2].get(2) - mRows[2].get(1) * mRows[1].get(2)),
+				-(mRows[0].get(1) * mRows[2].get(2) - mRows[2].get(1) * mRows[0].get(2)),
+				(mRows[0].get(1) * mRows[1].get(2) - mRows[0].get(2) * mRows[1].get(1)),
+				-(mRows[1].get(0) * mRows[2].get(2) - mRows[2].get(0) * mRows[1].get(2)),
+				(mRows[0].get(0) * mRows[2].get(2) - mRows[2].get(0) * mRows[0].get(2)),
+				-(mRows[0].get(0) * mRows[1].get(2) - mRows[1].get(0) * mRows[0].get(2)),
+				(mRows[1].get(0) * mRows[2].get(1) - mRows[2].get(0) * mRows[1].get(1)),
+				-(mRows[0].get(0) * mRows[2].get(1) - mRows[2].get(0) * mRows[0].get(1)),
+				(mRows[0].get(0) * mRows[1].get(1) - mRows[0].get(1) * mRows[1].get(0)));
+		return Matrix3x3.multiply(invDeterminant, tempMatrix);
+	}
+
+	/**
 	 * Calculates the trace of this matrix and returns it.
 	 *
 	 * @return The trace of this matrix
@@ -258,8 +284,7 @@ public class Matrix3x3 {
 	}
 
 	/**
-	 * Creates a matrix where each value is the absolute of the value for this matrix and returns
-	 * it.
+	 * Creates a matrix where each value is the absolute of the value for this matrix and returns it.
 	 *
 	 * @return A new matrix which is the absolute version of this one
 	 */
@@ -401,6 +426,17 @@ public class Matrix3x3 {
 	}
 
 	/**
+	 * Multiplies a float value by a matrix and returns the result as a new matrix.
+	 *
+	 * @param value The value
+	 * @param matrix The matrix
+	 * @return The resulting matrix
+	 */
+	public static Matrix3x3 multiply(float value, Matrix3x3 matrix) {
+		return multiply(matrix, value);
+	}
+
+	/**
 	 * Multiplies a matrix by a float value and returns the result as a new matrix.
 	 *
 	 * @param matrix The matrix
@@ -424,19 +460,19 @@ public class Matrix3x3 {
 	public static Matrix3x3 multiply(Matrix3x3 matrix1, Matrix3x3 matrix2) {
 		return new Matrix3x3(
 				matrix1.get(0, 0) * matrix2.get(0, 0) + matrix1.get(0, 1) * matrix2.get(1, 0)
-				+ matrix1.get(0, 2) * matrix2.get(2, 0), matrix1.get(0, 0) * matrix2.get(0, 1)
+						+ matrix1.get(0, 2) * matrix2.get(2, 0), matrix1.get(0, 0) * matrix2.get(0, 1)
 				+ matrix1.get(0, 1) * matrix2.get(1, 1) + matrix1.get(0, 2) * matrix2.get(2, 1),
 				matrix1.get(0, 0) * matrix2.get(0, 2) + matrix1.get(0, 1) * matrix2.get(1, 2)
-				+ matrix1.get(0, 2) * matrix2.get(2, 2), matrix1.get(1, 0) * matrix2.get(0, 0)
+						+ matrix1.get(0, 2) * matrix2.get(2, 2), matrix1.get(1, 0) * matrix2.get(0, 0)
 				+ matrix1.get(1, 1) * matrix2.get(1, 0) + matrix1.get(1, 2) * matrix2.get(2, 0),
 				matrix1.get(1, 0) * matrix2.get(0, 1) + matrix1.get(1, 1) * matrix2.get(1, 1)
-				+ matrix1.get(1, 2) * matrix2.get(2, 1), matrix1.get(1, 0) * matrix2.get(0, 2)
+						+ matrix1.get(1, 2) * matrix2.get(2, 1), matrix1.get(1, 0) * matrix2.get(0, 2)
 				+ matrix1.get(1, 1) * matrix2.get(1, 2) + matrix1.get(1, 2) * matrix2.get(2, 2),
 				matrix1.get(2, 0) * matrix2.get(0, 0) + matrix1.get(2, 1) * matrix2.get(1, 0)
-				+ matrix1.get(2, 2) * matrix2.get(2, 0), matrix1.get(2, 0) * matrix2.get(0, 1)
+						+ matrix1.get(2, 2) * matrix2.get(2, 0), matrix1.get(2, 0) * matrix2.get(0, 1)
 				+ matrix1.get(2, 1) * matrix2.get(1, 1) + matrix1.get(2, 2) * matrix2.get(2, 1),
 				matrix1.get(2, 0) * matrix2.get(0, 2) + matrix1.get(2, 1) * matrix2.get(1, 2)
-				+ matrix1.get(2, 2) * matrix2.get(2, 2));
+						+ matrix1.get(2, 2) * matrix2.get(2, 2));
 	}
 
 	/**
