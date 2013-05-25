@@ -41,16 +41,18 @@ public class BoxShape extends CollisionShape {
 	/**
 	 * Constructs a box shape from its extents which is the vector between the two opposing corners
 	 * that are the furthest away.
+	 *
 	 * @param extent The extent vector
 	 */
 	public BoxShape(Vector3 extent) {
-		super(CollisionShape.CollisionShapeType.BOX);
+		super(CollisionShapeType.BOX);
 		mExtent.set(extent);
 	}
 
 	/**
 	 * Gets the extent vector, which is the vector between the two opposing corners that are the
 	 * furthest away.
+	 *
 	 * @return The extents vector
 	 */
 	public Vector3 getExtent() {
@@ -60,6 +62,7 @@ public class BoxShape extends CollisionShape {
 	/**
 	 * Sets the extent vector, which is the vector between the two opposing corners that are the
 	 * furthest away.
+	 *
 	 * @param extent The extents vector
 	 */
 	public void setExtent(Vector3 extent) {

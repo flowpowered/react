@@ -143,8 +143,8 @@ public class Transform {
 	@Override
 	public int hashCode() {
 		int hash = 3;
-		hash = 11 * hash + (mPosition != null ? mPosition.hashCode() : 0);
-		hash = 11 * hash + (mOrientation != null ? mOrientation.hashCode() : 0);
+		hash = 11 * hash + mPosition.hashCode() ;
+		hash = 11 * hash +  mOrientation.hashCode();
 		return hash;
 	}
 
@@ -154,10 +154,10 @@ public class Transform {
 			return false;
 		}
 		final Transform other = (Transform) obj;
-		if (mPosition != other.mPosition && (mPosition == null || !mPosition.equals(other.mPosition))) {
+		if (mPosition != other.mPosition && !mPosition.equals(other.mPosition)) {
 			return false;
 		}
-		if (mOrientation != other.mOrientation && (mOrientation == null || !mOrientation.equals(other.mOrientation))) {
+		if (mOrientation != other.mOrientation && !mOrientation.equals(other.mOrientation)) {
 			return false;
 		}
 		return true;
@@ -209,7 +209,7 @@ public class Transform {
 		final Vector3 interPosition = Vector3.add(
 				Vector3.multiply(transform1.getPosition(), (1 - percent)),
 				Vector3.multiply(transform2.getPosition(), percent));
-		final Quaternion interOrientation = Quaternion.slerp(transform1.mOrientation, transform2.mOrientation, percent);
+		final Quaternion interOrientation = Quaternion.slerp(transform1.getOrientation(), transform2.getOrientation(), percent);
 		return new Transform(interPosition, interOrientation);
 	}
 }

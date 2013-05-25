@@ -146,7 +146,7 @@ public class ConeShape extends CollisionShape {
 		final float diagXZ = 0.15f * mass * (rSquare + mHalfHeight);
 		tensor.setAllValues(
 				diagXZ, 0, 0,
-				0, 0.3f * mass * rSquare,
-				0, 0, 0, diagXZ);
+				0, 0.3f * mass * rSquare, 0,
+				0, 0, diagXZ);
 	}
 }

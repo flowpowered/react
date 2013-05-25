@@ -311,7 +311,7 @@ public class Matrix3x3 {
 	/**
 	 * Multiplies the matrix to this one. Doesn't create a new matrix.
 	 *
-	 * @param matrix The matrix to multiply
+	 * @param value The value to multiply
 	 * @return This matrix for chained calls
 	 */
 	public Matrix3x3 multiply(float value) {
@@ -443,7 +443,7 @@ public class Matrix3x3 {
 	 * Multiplies a matrix by a vector and returns the result as a new vector.
 	 *
 	 * @param matrix The matrix
-	 * @param value The vector
+	 * @param vector The vector
 	 * @return The resulting matrix
 	 */
 	public static Vector3 multiply(Matrix3x3 matrix, Vector3 vector) {

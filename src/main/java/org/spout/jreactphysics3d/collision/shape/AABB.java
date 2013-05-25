@@ -93,15 +93,14 @@ public class AABB {
 	/**
 	 * Sets the maximum vector3 of this AABB to the desired maximum.
 	 *
-	 * @param min the maximum vector3 to set
+	 * @param max the maximum vector3 to set
 	 */
 	public void setMax(Vector3 max) {
 		mMaxCoordinates.set(max);
 	}
 
 	/**
-	 * Test whether or not two AABBs are colliding. Returns true if they are colliding, false if
-	 * not.
+	 * Test whether or not two AABBs are colliding. Returns true if they are colliding, false if not.
 	 *
 	 * @param aabb The AABB to test for collision
 	 * @return True if the AABBs are colliding, false if not
