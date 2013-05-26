@@ -136,7 +136,7 @@ public class Constraint {
 		if (index >= mNbConstraints) {
 			throw new IllegalArgumentException("index cannot be greater than nbConstraints");
 		}
-		mCachedLambdas.setElementAt(lambda, index);
+		mCachedLambdas.set(index, lambda);
 	}
 
 	/**
