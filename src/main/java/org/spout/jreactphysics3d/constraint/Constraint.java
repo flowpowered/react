@@ -26,6 +26,123 @@
  */
 package org.spout.jreactphysics3d.constraint;
 
-public class Constraint {
+import java.util.Vector;
 
+import org.spout.jreactphysics3d.body.RigidBody;
+
+/**
+ * This is the base class of a constraint in the physics engine. A constraint can be a collision
+ * contact or a joint for instance. Each constraint can be made of several auxiliary "mathematical
+ * constraints" needed to represent the main constraint.
+ */
+public class Constraint {
+	protected final RigidBody mBody1;
+	protected final RigidBody mBody2;
+	protected final boolean mActive;
+	protected final int mNbConstraints;
+	protected final ConstraintType mType;
+	protected final Vector<Float> mCachedLambdas = new Vector<Float>();
+
+	/**
+	 * Constructs a new constraint from the two bodies, the number of auxiliary constraints, the
+	 * activity status and the type of constraint.
+	 *
+	 * @param body1 The first body
+	 * @param body2 The second body
+	 * @param nbConstraints The number of auxiliary constraints
+	 * @param active True if this constraint is active, false if not
+	 * @param type The type of this constraint
+	 */
+	public Constraint(RigidBody body1, RigidBody body2, int nbConstraints, boolean active, ConstraintType type) {
+		mBody1 = body1;
+		mBody2 = body2;
+		mActive = active;
+		mNbConstraints = nbConstraints;
+		mType = type;
+		for (int i = 0; i < nbConstraints; i++) {
+			mCachedLambdas.add(0f);
+		}
+	}
+
+	/**
+	 * Gets the first body.
+	 *
+	 * @return The first body
+	 */
+	public RigidBody getBody1() {
+		return mBody1;
+	}
+
+	/**
+	 * Gets the second body.
+	 *
+	 * @return The second body
+	 */
+	public RigidBody getBody2() {
+		return mBody2;
+	}
+
+	/**
+	 * Returns true if the constraint is active, false if not.
+	 *
+	 * @return Whether or not the constraint is active
+	 */
+	public boolean isActive() {
+		return mActive;
+	}
+
+	/**
+	 * Gets the type of constraint.
+	 *
+	 * @return The constraint type
+	 */
+	public ConstraintType getType() {
+		return mType;
+	}
+
+	/**
+	 * Gets the number auxiliary constraints.
+	 *
+	 * @return The amount of auxiliary constraints
+	 */
+	public int getNbConstraints() {
+		return mNbConstraints;
+	}
+
+	/**
+	 * Gets the previous lambda value at the desired index.
+	 *
+	 * @param index The index of the lambda value
+	 * @return The lambda value
+	 * @throws IllegalArgumentException If the index is greater than the number of constraints, as
+	 * defined by {@link #getNbConstraints()};
+	 */
+	public float getCachedLambda(int index) {
+		if (index >= mNbConstraints) {
+			throw new IllegalArgumentException("index cannot be greater than nbConstraints");
+		}
+		return mCachedLambdas.get(index);
+	}
+
+	/**
+	 * Sets the lambda value at the desired index.
+	 *
+	 * @param index The index to set the lambda value at
+	 * @param lambda The lambda value to set
+	 * @throws IllegalArgumentException If the index is greater than the number of constraints, as
+	 * defined by {@link #getNbConstraints()};
+	 */
+	public void setCachedLambda(int index, float lambda) {
+		if (index >= mNbConstraints) {
+			throw new IllegalArgumentException("index cannot be greater than nbConstraints");
+		}
+		mCachedLambdas.setElementAt(lambda, index);
+	}
+
+	/**
+	 * An enumeration of the possible constraint types (contact).
+	 */
+	public static enum ConstraintType {
+		CONTACT
+	}
 }

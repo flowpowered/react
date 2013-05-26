@@ -30,9 +30,6 @@ package org.spout.jreactphysics3d.body;
  * This is the base class for a body for the physics engine.
  */
 public class Body {
-	/**
-	 * The body's unique ID.
-	 */
 	protected final long mID;
 
 	/**
