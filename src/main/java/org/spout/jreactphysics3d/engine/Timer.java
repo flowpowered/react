@@ -26,6 +26,121 @@
  */
 package org.spout.jreactphysics3d.engine;
 
+/**
+ * This class takes care of the time in the physics engine. It uses {@link System#nanoTime()} to get
+ * the current time.
+ */
 public class Timer {
+	private double mTimeStep;
+	private double mTime;
+	private double mLastUpdateTime;
+	private double mDeltaTime;
+	private double mAccumulator;
+	private boolean mIsRunning;
 
+	/**
+	 * Constructs a new time from the time step.
+	 *
+	 * @param timeStep The time step
+	 */
+	public Timer(double timeStep) {
+		if (timeStep <= 0) {
+			throw new IllegalArgumentException("timeStep cannot be smaller or equal to zero");
+		}
+		mTimeStep = timeStep;
+		mIsRunning = false;
+	}
+
+	/**
+	 * Gets the time step of the physics engine.
+	 *
+	 * @return The time step
+	 */
+	public double getTimeStep() {
+		return mTimeStep;
+	}
+
+	/**
+	 * Sets the time step of the physics engine.
+	 *
+	 * @param timeStep The time step to set
+	 */
+	public void setTimeStep(double timeStep) {
+		assert (timeStep > 0);
+		mTimeStep = timeStep;
+	}
+
+	/**
+	 * Gets the current time.
+	 *
+	 * @return The current time
+	 */
+	public double getTime() {
+		return mTime;
+	}
+
+	/**
+	 * Returns true if the timer is running, false if not.
+	 *
+	 * @return Whether or not the timer is running
+	 */
+	public boolean getIsRunning() {
+		return mIsRunning;
+	}
+
+	/**
+	 * Start the timer.
+	 */
+	public void start() {
+		mLastUpdateTime = System.nanoTime() / 1000000000.0;
+		mAccumulator = 0;
+		mIsRunning = true;
+	}
+
+	/**
+	 * Stop the timer.
+	 */
+	public void stop() {
+		System.out.println("TimeR stop");
+		mIsRunning = false;
+	}
+
+	/**
+	 * Returns true if it's possible to take a new step, false if not.
+	 *
+	 * @return Whether or not a new step is possible
+	 */
+	public boolean isPossibleToTakeStep() {
+		return mAccumulator >= mTimeStep;
+	}
+
+	/**
+	 * Takes a new step: updates the timer by adding the timeStep value to the current time.
+	 */
+	public void nextStep() {
+		if (!mIsRunning) {
+			throw new IllegalStateException("Timer is not running");
+		}
+		mTime += mTimeStep;
+		mAccumulator -= mTimeStep;
+	}
+
+	/**
+	 * Compute the interpolation factor for the time step.
+	 *
+	 * @return The interpolation factor
+	 */
+	public float computeInterpolationFactor() {
+		return (float) (mAccumulator / mTimeStep);
+	}
+
+	/**
+	 * Compute the time since the last {@link #update()} call and add it to the accumulator.
+	 */
+	public void update() {
+		final double currentTime = System.nanoTime() / 1000000000.0;
+		mDeltaTime = currentTime - mLastUpdateTime;
+		mLastUpdateTime = currentTime;
+		mAccumulator += mDeltaTime;
+	}
 }
