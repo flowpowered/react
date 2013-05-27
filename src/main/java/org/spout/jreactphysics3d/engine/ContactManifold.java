@@ -32,6 +32,17 @@ import org.spout.jreactphysics3d.constraint.ContactPoint;
 import org.spout.jreactphysics3d.mathematics.Transform;
 import org.spout.jreactphysics3d.mathematics.Vector3;
 
+/**
+ * Represents the set of contact points between two bodies. The contact manifold is implemented in a
+ * way to cache the contact points among the frames for better stability, following the "Contact
+ * Generation" presentation by Erwin Coumans at the GDC 2010 conference
+ * (bullet.googlecode.com/files/GDC10_Coumans_Erwin_Contact.pdf). Some code from this class is based
+ * on the implementation of the btPersistentManifold class from the Bullet physics engine
+ * (www.http://bulletphysics.org). The contacts between two bodies are added one after the other in
+ * the cache. When the cache is full, one point needs to be removed. The idea is to keep the point
+ * with the deepest penetration depth and  producing the larger area (for a more stable contact
+ * manifold). The new added point is always kept.
+ */
 public class ContactManifold {
 	private static final int MAX_CONTACT_POINTS_IN_MANIFOLD = 4;
 	private final Body mBody1;
@@ -169,7 +180,7 @@ public class ContactManifold {
 	}
 
 	/**
-	 * Add a contact point in the manifold.
+	 * Adds a contact point in the manifold.
 	 *
 	 * @param contact The contact point to add
 	 */
@@ -191,7 +202,7 @@ public class ContactManifold {
 	}
 
 	/**
-	 * Clear the contact manifold. Removes all contact points.
+	 * Clears the contact manifold. Removes all contact points.
 	 */
 	public void clear() {
 		for (int i = 0; i < mNbContactPoints; i++) {
@@ -233,8 +244,6 @@ public class ContactManifold {
 		}
 		final float squarePersistentContactThreshold = Configuration.PERSISTENT_CONTACT_DIST_THRESHOLD *
 				Configuration.PERSISTENT_CONTACT_DIST_THRESHOLD;
-
-		// Remove the contact points that don't represent very well the contact manifold
 		for (int i = mNbContactPoints - 1; i >= 0; i--) {
 			if (i >= mNbContactPoints) {
 				throw new IllegalStateException("i must be smaller than nbContactPoints");
@@ -258,8 +267,8 @@ public class ContactManifold {
 	// This corresponding contact will be kept in the cache.
 	// The method returns -1 is the new contact is the deepest.
 	private int getIndexOfDeepestPenetration(ContactPoint newContact) {
-		if (mNbContactPoints == MAX_CONTACT_POINTS_IN_MANIFOLD) {
-			throw new IllegalStateException("nbContactPoints cannot be equal to MAX_CONTACT_POINTS_IN_MANIFOLD");
+		if (mNbContactPoints != MAX_CONTACT_POINTS_IN_MANIFOLD) {
+			throw new IllegalStateException("nbContactPoints must be equal to MAX_CONTACT_POINTS_IN_MANIFOLD");
 		}
 		int indexMaxPenetrationDepth = -1;
 		float maxPenetrationDepth = newContact.getPenetrationDepth();
@@ -282,8 +291,8 @@ public class ContactManifold {
 	// because we do not compute the actual diagonals of the quadrilateral.
 	// Therefore, this is only a guess that is faster to compute.
 	private int getIndexToRemove(int indexMaxPenetration, Vector3 newPoint) {
-		if (mNbContactPoints == MAX_CONTACT_POINTS_IN_MANIFOLD) {
-			throw new IllegalStateException("nbContactPoints cannot be equal to MAX_CONTACT_POINTS_IN_MANIFOLD");
+		if (mNbContactPoints != MAX_CONTACT_POINTS_IN_MANIFOLD) {
+			throw new IllegalStateException("nbContactPoints must be equal to MAX_CONTACT_POINTS_IN_MANIFOLD");
 		}
 		final float area123N;
 		final float area023N;

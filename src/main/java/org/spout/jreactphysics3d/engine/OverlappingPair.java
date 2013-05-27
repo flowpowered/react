@@ -26,5 +26,102 @@
  */
 package org.spout.jreactphysics3d.engine;
 
+import org.spout.jreactphysics3d.body.CollisionBody;
+import org.spout.jreactphysics3d.constraint.ContactPoint;
+import org.spout.jreactphysics3d.mathematics.Vector3;
+
+/**
+ * Represents a pair of two bodies that are overlapping during the broad-phase collision detection.
+ * It is created when the two bodies start to overlap and is destroyed when they do not overlap
+ * anymore. This class contains a contact manifold that stores all the contact points between the
+ * two bodies.
+ */
 public class OverlappingPair {
+	private final CollisionBody mBody1;
+	private final CollisionBody mBody2;
+	private final ContactManifold mContactManifold;
+	private final Vector3 mCachedSeparatingAxis;
+
+	/**
+	 * Constructs a new overlapping pair from the first and second body.
+	 *
+	 * @param body1 The first body
+	 * @param body2 The second body
+	 */
+	public OverlappingPair(CollisionBody body1, CollisionBody body2) {
+		mBody1 = body1;
+		mBody2 = body2;
+		mContactManifold = new ContactManifold(body1, body2);
+		mCachedSeparatingAxis = new Vector3(1, 1, 1);
+	}
+
+	/**
+	 * Gets the first body.
+	 *
+	 * @return The first body
+	 */
+	public CollisionBody getBody1() {
+		return mBody1;
+	}
+
+	/**
+	 * Gets the second body.
+	 *
+	 * @return The second body
+	 */
+	public CollisionBody getBody2() {
+		return mBody2;
+	}
+
+	/**
+	 * Adds a contact point to the contact manifold.
+	 *
+	 * @param contact The contact point to add
+	 */
+	public void addContact(ContactPoint contact) {
+		mContactManifold.addContactPoint(contact);
+	}
+
+	/**
+	 * Updates the contact manifold.
+	 */
+	public void update() {
+		mContactManifold.update(mBody1.getTransform(), mBody2.getTransform());
+	}
+
+	/**
+	 * Gets the cached separating axis.
+	 *
+	 * @return The cached separating axis
+	 */
+	public Vector3 getCachedSeparatingAxis() {
+		return mCachedSeparatingAxis;
+	}
+
+	/**
+	 * Sets the cached separating axis.
+	 *
+	 * @param axis The separating axis to set
+	 */
+	public void setCachedSeparatingAxis(Vector3 axis) {
+		mCachedSeparatingAxis.set(axis);
+	}
+
+	/**
+	 * Gets the number of contact points in the contact manifold.
+	 *
+	 * @return The number of contact points
+	 */
+	public int getNbContactPoints() {
+		return mContactManifold.getNbContactPoints();
+	}
+
+	/**
+	 * Gets the contact manifold.
+	 *
+	 * @return The contact manifold
+	 */
+	public ContactManifold getContactManifold() {
+		return mContactManifold;
+	}
 }
