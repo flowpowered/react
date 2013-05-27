@@ -110,12 +110,13 @@ public class Constraint {
 	}
 
 	/**
-	 * Gets the previous lambda value at the desired index.
+	 * Gets the previous lambda value at the desired index, which is greater or equal to zero and
+	 * smaller than {@link #getNbConstraints()}.
 	 *
 	 * @param index The index of the lambda value
 	 * @return The lambda value
 	 * @throws IllegalArgumentException If the index is greater than the number of constraints, as
-	 * defined by {@link #getNbConstraints()};
+	 * defined by {@link #getNbConstraints()}
 	 */
 	public float getCachedLambda(int index) {
 		if (index >= mNbConstraints) {
@@ -125,12 +126,13 @@ public class Constraint {
 	}
 
 	/**
-	 * Sets the lambda value at the desired index.
+	 * Sets the lambda value at the desired index, which is greater or equal to zero and smaller than
+	 * {@link #getNbConstraints()}.
 	 *
 	 * @param index The index to set the lambda value at
 	 * @param lambda The lambda value to set
 	 * @throws IllegalArgumentException If the index is greater than the number of constraints, as
-	 * defined by {@link #getNbConstraints()};
+	 * defined by {@link #getNbConstraints()}
 	 */
 	public void setCachedLambda(int index, float lambda) {
 		if (index >= mNbConstraints) {

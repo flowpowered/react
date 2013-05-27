@@ -26,5 +26,334 @@
  */
 package org.spout.jreactphysics3d.engine;
 
+import org.spout.jreactphysics3d.Configuration;
+import org.spout.jreactphysics3d.body.Body;
+import org.spout.jreactphysics3d.constraint.ContactPoint;
+import org.spout.jreactphysics3d.mathematics.Transform;
+import org.spout.jreactphysics3d.mathematics.Vector3;
+
 public class ContactManifold {
+	private static final int MAX_CONTACT_POINTS_IN_MANIFOLD = 4;
+	private final Body mBody1;
+	private final Body mBody2;
+	private final ContactPoint[] mContactPoints = new ContactPoint[MAX_CONTACT_POINTS_IN_MANIFOLD];
+	private int mNbContactPoints;
+	private final Vector3 mFrictionVector1 = new Vector3();
+	private final Vector3 mFrictionVector2 = new Vector3();
+	private float mFrictionImpulse1;
+	private float mFrictionImpulse2;
+	private float mFrictionTwistImpulse;
+
+	public ContactManifold(Body body1, Body body2) {
+		mBody1 = body1;
+		mBody2 = body2;
+		mNbContactPoints = 0;
+		mFrictionImpulse1 = 0;
+		mFrictionImpulse2 = 0;
+		mFrictionTwistImpulse = 0;
+	}
+
+	/**
+	 * Gets the number of contact points in the manifold.
+	 *
+	 * @return
+	 */
+	public int getNbContactPoints() {
+		return mNbContactPoints;
+	}
+
+	/**
+	 * Gets the first friction vector3 at the center of the contact manifold.
+	 *
+	 * @return
+	 */
+	public Vector3 getFrictionVector1() {
+		return mFrictionVector1;
+	}
+
+	/**
+	 * Sets the first friction vector3 at the center of the contact manifold.
+	 *
+	 * @param frictionVector1
+	 */
+	public void setFrictionVector1(Vector3 frictionVector1) {
+		mFrictionVector1.set(frictionVector1);
+	}
+
+	/**
+	 * Gets the second friction vector3 at the center of the contact manifold.
+	 *
+	 * @return
+	 */
+	public Vector3 getFrictionVector2() {
+		return mFrictionVector2;
+	}
+
+	/**
+	 * Sets the second friction vector3 at the center of the contact manifold.
+	 *
+	 * @param frictionVector2
+	 */
+	public void setFrictionVector2(Vector3 frictionVector2) {
+		mFrictionVector2.set(frictionVector2);
+	}
+
+	/**
+	 * Gets the accumulated impulse for the first friction.
+	 *
+	 * @return
+	 */
+	public float getFrictionImpulse1() {
+		return mFrictionImpulse1;
+	}
+
+	/**
+	 * Sets the accumulated impulse for the first friction.
+	 *
+	 * @param frictionImpulse1
+	 */
+	public void setFrictionImpulse1(float frictionImpulse1) {
+		mFrictionImpulse1 = frictionImpulse1;
+	}
+
+	/**
+	 * Gets the accumulated impulse for the second friction.
+	 *
+	 * @return
+	 */
+	public float getFrictionImpulse2() {
+		return mFrictionImpulse2;
+	}
+
+	/**
+	 * Sets the accumulated impulse for the second friction.
+	 *
+	 * @param frictionImpulse2
+	 */
+	public void setFrictionImpulse2(float frictionImpulse2) {
+		mFrictionImpulse2 = frictionImpulse2;
+	}
+
+	/**
+	 * Gets the accumulated impulse for the friction twist.
+	 *
+	 * @return
+	 */
+	public float getFrictionTwistImpulse() {
+		return mFrictionTwistImpulse;
+	}
+
+	/**
+	 * Sets the accumulated impulse for the friction twist.
+	 *
+	 * @param frictionTwistImpulse
+	 */
+	public void setFrictionTwistImpulse(float frictionTwistImpulse) {
+		mFrictionTwistImpulse = frictionTwistImpulse;
+	}
+
+	/**
+	 * Gets the contact point of the manifold at the desired index, which is greater or equal to zero
+	 * and smaller than {@link #getNbContactPoints()}.
+	 *
+	 * @param index The index of the contact point
+	 * @return The contact point
+	 * @throws IllegalArgumentException If the index is smaller than zero or greater than the number of
+	 * constraints, as defined by {@link #getNbContactPoints()}
+	 */
+	public ContactPoint getContactPoint(int index) {
+		if (index < 0 || index >= mNbContactPoints) {
+			throw new IllegalArgumentException("index must be greater than zero and smaller than nbContatPoints");
+		}
+		return mContactPoints[index];
+	}
+
+	/**
+	 * Add a contact point in the manifold.
+	 *
+	 * @param contact The contact point to add
+	 */
+	public void addContactPoint(ContactPoint contact) {
+		for (int i = 0; i < mNbContactPoints; i++) {
+			float distance = Vector3.subtract(mContactPoints[i].getWorldPointOnBody1(),
+					contact.getWorldPointOnBody1()).lengthSquare();
+			if (distance <= Configuration.PERSISTENT_CONTACT_DIST_THRESHOLD * Configuration.PERSISTENT_CONTACT_DIST_THRESHOLD) {
+				return;
+			}
+		}
+		if (mNbContactPoints == MAX_CONTACT_POINTS_IN_MANIFOLD) {
+			final int indexMaxPenetration = getIndexOfDeepestPenetration(contact);
+			final int indexToRemove = getIndexToRemove(indexMaxPenetration, contact.getLocalPointOnBody1());
+			removeContactPoint(indexToRemove);
+		}
+		mContactPoints[mNbContactPoints] = contact;
+		mNbContactPoints++;
+	}
+
+	/**
+	 * Clear the contact manifold. Removes all contact points.
+	 */
+	public void clear() {
+		for (int i = 0; i < mNbContactPoints; i++) {
+			mContactPoints[i] = null;
+		}
+		mNbContactPoints = 0;
+	}
+
+	// Remove a contact point from the manifold.
+	private void removeContactPoint(int index) {
+		if (index >= mNbContactPoints) {
+			throw new IllegalArgumentException("index must be smaller than nbContactPoints");
+		}
+		if (mNbContactPoints <= 0) {
+			throw new IllegalStateException("nbContactPoints must be greater than zero");
+		}
+		mContactPoints[index] = null;
+		if (index < mNbContactPoints - 1) {
+			mContactPoints[index] = mContactPoints[mNbContactPoints - 1];
+		}
+		mNbContactPoints--;
+	}
+
+	// Update the contact manifold.
+	// First the world space coordinates of the current contacts in the manifold are recomputed from
+	// the corresponding transforms for the bodies, because they have moved.
+	// Then we remove the contacts with a negative penetration depth
+	// (meaning that the bodies are not penetrating anymore) and with a distance between the
+	// contact points in the plane orthogonal to the contact normal that is too large.
+	public void update(Transform transform1, Transform transform2) {
+		if (mNbContactPoints == 0) {
+			return;
+		}
+		for (int i = 0; i < mNbContactPoints; i++) {
+			mContactPoints[i].setWorldPointOnBody1(Transform.multiply(transform1, mContactPoints[i].getLocalPointOnBody1()));
+			mContactPoints[i].setWorldPointOnBody2(Transform.multiply(transform2, mContactPoints[i].getLocalPointOnBody2()));
+			mContactPoints[i].setPenetrationDepth(Vector3.subtract(mContactPoints[i].getWorldPointOnBody1(), mContactPoints[i]
+					.getWorldPointOnBody2()).dot(mContactPoints[i].getNormal()));
+		}
+		final float squarePersistentContactThreshold = Configuration.PERSISTENT_CONTACT_DIST_THRESHOLD *
+				Configuration.PERSISTENT_CONTACT_DIST_THRESHOLD;
+
+		// Remove the contact points that don't represent very well the contact manifold
+		for (int i = mNbContactPoints - 1; i >= 0; i--) {
+			if (i >= mNbContactPoints) {
+				throw new IllegalStateException("i must be smaller than nbContactPoints");
+			}
+			final float distanceNormal = -mContactPoints[i].getPenetrationDepth();
+			if (distanceNormal > squarePersistentContactThreshold) {
+				removeContactPoint(i);
+			} else {
+				final Vector3 projOfPoint1 = Vector3.add(
+						mContactPoints[i].getWorldPointOnBody1(),
+						Vector3.multiply(mContactPoints[i].getNormal(), distanceNormal));
+				final Vector3 projDifference = Vector3.subtract(mContactPoints[i].getWorldPointOnBody2(), projOfPoint1);
+				if (projDifference.lengthSquare() > squarePersistentContactThreshold) {
+					removeContactPoint(i);
+				}
+			}
+		}
+	}
+
+	// Return the index of the contact point with the larger penetration depth.
+	// This corresponding contact will be kept in the cache.
+	// The method returns -1 is the new contact is the deepest.
+	private int getIndexOfDeepestPenetration(ContactPoint newContact) {
+		if (mNbContactPoints == MAX_CONTACT_POINTS_IN_MANIFOLD) {
+			throw new IllegalStateException("nbContactPoints cannot be equal to MAX_CONTACT_POINTS_IN_MANIFOLD");
+		}
+		int indexMaxPenetrationDepth = -1;
+		float maxPenetrationDepth = newContact.getPenetrationDepth();
+		for (int i = 0; i < mNbContactPoints; i++) {
+			if (mContactPoints[i].getPenetrationDepth() > maxPenetrationDepth) {
+				maxPenetrationDepth = mContactPoints[i].getPenetrationDepth();
+				indexMaxPenetrationDepth = i;
+			}
+		}
+		return indexMaxPenetrationDepth;
+	}
+
+	// Return the index that will be removed.
+	// The index of the contact point with the larger penetration depth is given as a parameter.
+	// This contact won't be removed. Given this contact, we compute the different area and we want
+	// to keep the contacts with the largest area. The new point is also kept.
+	// In order to compute the area of a quadrilateral, we use the formula :
+	// Area = 0.5 * ||AC x BD|| where AC and BD form the diagonals of the quadrilateral.
+	// Note that when we compute this area, we do not calculate it exactly but we only estimate it
+	// because we do not compute the actual diagonals of the quadrilateral.
+	// Therefore, this is only a guess that is faster to compute.
+	private int getIndexToRemove(int indexMaxPenetration, Vector3 newPoint) {
+		if (mNbContactPoints == MAX_CONTACT_POINTS_IN_MANIFOLD) {
+			throw new IllegalStateException("nbContactPoints cannot be equal to MAX_CONTACT_POINTS_IN_MANIFOLD");
+		}
+		final float area123N;
+		final float area023N;
+		final float area013N;
+		final float area012N;
+		if (indexMaxPenetration != 0) {
+			final Vector3 vector1 = Vector3.subtract(newPoint, mContactPoints[1].getLocalPointOnBody1());
+			final Vector3 vector2 = Vector3.subtract(mContactPoints[3].getLocalPointOnBody1(), mContactPoints[2].getLocalPointOnBody1());
+			final Vector3 crossProduct = vector1.cross(vector2);
+			area123N = crossProduct.lengthSquare();
+		} else {
+			area123N = 0;
+		}
+		if (indexMaxPenetration != 1) {
+			final Vector3 vector1 = Vector3.subtract(newPoint, mContactPoints[0].getLocalPointOnBody1());
+			final Vector3 vector2 = Vector3.subtract(mContactPoints[3].getLocalPointOnBody1(), mContactPoints[2].getLocalPointOnBody1());
+			final Vector3 crossProduct = vector1.cross(vector2);
+			area023N = crossProduct.lengthSquare();
+		} else {
+			area023N = 1;
+		}
+		if (indexMaxPenetration != 2) {
+			final Vector3 vector1 = Vector3.subtract(newPoint, mContactPoints[0].getLocalPointOnBody1());
+			final Vector3 vector2 = Vector3.subtract(mContactPoints[3].getLocalPointOnBody1(), mContactPoints[1].getLocalPointOnBody1());
+			final Vector3 crossProduct = vector1.cross(vector2);
+			area013N = crossProduct.lengthSquare();
+		} else {
+			area013N = 2;
+		}
+		if (indexMaxPenetration != 3) {
+			final Vector3 vector1 = Vector3.subtract(newPoint, mContactPoints[0].getLocalPointOnBody1());
+			final Vector3 vector2 = Vector3.subtract(mContactPoints[2].getLocalPointOnBody1(), mContactPoints[1].getLocalPointOnBody1());
+			final Vector3 crossProduct = vector1.cross(vector2);
+			area012N = crossProduct.lengthSquare();
+		} else {
+			area012N = 3;
+		}
+		return getMaxArea(area123N, area023N, area013N, area012N);
+	}
+
+	// Return the index of maximum area
+	private int getMaxArea(float area123N, float area023N, float area013N, float area012N) {
+		if (area123N < area023N) {
+			if (area023N < area013N) {
+				if (area013N < area012N) {
+					return 3;
+				} else {
+					return 2;
+				}
+			} else {
+				if (area023N < area012N) {
+					return 3;
+				} else {
+					return 1;
+				}
+			}
+		} else {
+			if (area123N < area013N) {
+				if (area013N < area012N) {
+					return 3;
+				} else {
+					return 2;
+				}
+			} else {
+				if (area123N < area012N) {
+					return 3;
+				} else {
+					return 0;
+				}
+			}
+		}
+	}
 }
