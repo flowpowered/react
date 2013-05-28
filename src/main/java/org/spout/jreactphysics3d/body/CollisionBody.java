@@ -52,7 +52,7 @@ public class CollisionBody extends Body {
 	 * @param collisionShape The collision shape
 	 * @param id The ID
 	 */
-	public CollisionBody(Transform transform, CollisionShape collisionShape, long id) {
+	public CollisionBody(Transform transform, CollisionShape collisionShape, int id) {
 		super(id);
 		if (collisionShape == null) {
 			throw new IllegalArgumentException("collisionShape cannot be null");
@@ -65,6 +65,7 @@ public class CollisionBody extends Body {
 		mIsCollisionEnabled = true;
 		mInterpolationFactor = 0;
 		mOldTransform.set(transform);
+		mAabb = new AABB();
 		mCollisionShape.updateAABB(mAabb, transform);
 	}
 

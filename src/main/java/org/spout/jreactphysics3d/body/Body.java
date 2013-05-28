@@ -30,14 +30,14 @@ package org.spout.jreactphysics3d.body;
  * This is the base class for a body for the physics engine.
  */
 public class Body {
-	protected final long mID;
+	protected final int mID;
 
 	/**
 	 * Construct a new body from its ID.
 	 *
 	 * @param id The body's ID
 	 */
-	public Body(long id) {
+	public Body(int id) {
 		mID = id;
 	}
 
@@ -46,7 +46,7 @@ public class Body {
 	 *
 	 * @return The body's ID
 	 */
-	public long getID() {
+	public int getID() {
 		return mID;
 	}
 

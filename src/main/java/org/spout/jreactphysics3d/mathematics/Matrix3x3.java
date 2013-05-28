@@ -58,7 +58,11 @@ public class Matrix3x3 {
 	 * The third column of the matrix. Value of 2
 	 */
 	public static final int THIRD_COLUMN = 2;
-	private final Vector3[] mRows = new Vector3[3];
+	private final Vector3[] mRows = {
+			new Vector3(),
+			new Vector3(),
+			new Vector3()
+	};
 
 	/**
 	 * Default constructor. All values are 0.

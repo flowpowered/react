@@ -45,6 +45,17 @@
 		</repository>
 	</repositories>
 
+	<!-- Project dependencies -->
+	<dependencies>
+		<!-- Testing only -->
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.11</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
 	<!-- Build plugin repositories -->
 	<pluginRepositories>
 		<pluginRepository>

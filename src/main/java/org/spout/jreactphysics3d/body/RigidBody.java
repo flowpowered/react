@@ -59,7 +59,7 @@ public class RigidBody extends CollisionBody {
 	 * @param collisionShape The collision shape
 	 * @param id The ID
 	 */
-	public RigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape, long id) {
+	public RigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape, int id) {
 		super(transform, collisionShape, id);
 		if (collisionShape == null) {
 			throw new IllegalArgumentException("collisionShape cannot be null");
