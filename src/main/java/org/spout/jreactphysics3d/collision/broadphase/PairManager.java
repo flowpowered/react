@@ -26,7 +26,8 @@
  */
 package org.spout.jreactphysics3d.collision.broadphase;
 
-import org.spout.jreactphysics3d.IntPair;
+import org.spout.jreactphysics3d.Utilities;
+import org.spout.jreactphysics3d.Utilities.IntPair;
 import org.spout.jreactphysics3d.body.CollisionBody;
 import org.spout.jreactphysics3d.collision.CollisionDetection;
 
@@ -110,9 +111,9 @@ public class PairManager {
 	}
 
 	// This method returns an hash value for a 32 bits key.
-	/// using Thomas Wang's hash technique.
-	/// This hash function can be found at :
-	/// http://www.concentric.net/~ttwang/tech/inthash.htm
+	// using Thomas Wang's hash technique.
+	// This hash function can be found at :
+	// http://www.concentric.net/~ttwang/tech/inthash.htm
 	private int computeHash32Bits(int key) {
 		key += ~(key << 15);
 		key ^= (key >> 10);
@@ -141,8 +142,8 @@ public class PairManager {
 	}
 
 	// Find a pair given two body IDs and an hash value.
-	/// This internal version is used to avoid computing multiple times in the
-	/// caller method
+	// This internal version is used to avoid computing multiple times in the
+	// caller method
 	private BodyPair findPairWithHashValue(int id1, int id2, int hashValue) {
 		if (mHashTable == null) {
 			return null;
@@ -163,12 +164,11 @@ public class PairManager {
 
 	// Compute the offset of a given pair in the array of overlapping pairs
 	private int computePairOffset(BodyPair pair) {
-		for (int i = 0; i < mOverlappingPairs.length; i++) {
-			if (pair.equals(mOverlappingPairs[i])) {
-				return i;
-			}
+		final int offset = Utilities.indexOf(mOverlappingPairs, pair);
+		if (offset == -1) {
+			throw new IllegalArgumentException("pair not in mOverlappingPairs[]");
 		}
-		throw new IllegalArgumentException("pair not in mOverlappingPairs[]");
+		return offset;
 	}
 
 	/**

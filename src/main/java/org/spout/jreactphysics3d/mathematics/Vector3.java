@@ -446,6 +446,11 @@ public class Vector3 {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "(" + x + ", " + y + ", " + z + ")";
+	}
+
 	/**
 	 * Adds a vector3 to another vector3. Creates a new vector.
 	 *

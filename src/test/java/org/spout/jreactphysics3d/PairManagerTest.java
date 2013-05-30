@@ -43,7 +43,7 @@ public class PairManagerTest {
 		final PairManager manager = new PairManager(null);
 		Assert.assertEquals(manager.getNbOverlappingPairs(), 0);
 		for (int i = 0; i < 20; i += 2) {
-			final BodyPair pair = manager.addPair(newBody(i), newBody(i + 1));
+			final BodyPair pair = manager.addPair(newCollisionBody(i), newCollisionBody(i + 1));
 			Assert.assertNotNull(pair);
 			Assert.assertEquals(pair.getFirstBody().getID(), i);
 			Assert.assertEquals(pair.getSecondBody().getID(), i + 1);
@@ -62,7 +62,7 @@ public class PairManagerTest {
 		Assert.assertEquals(manager.getNbOverlappingPairs(), 0);
 	}
 
-	private static CollisionBody newBody(int id) {
+	private static CollisionBody newCollisionBody(int id) {
 		return new CollisionBody(Transform.identity(), new BoxShape(new Vector3()), id);
 	}
 }
