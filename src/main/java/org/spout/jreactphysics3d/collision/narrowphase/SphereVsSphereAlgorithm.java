@@ -26,6 +26,37 @@
  */
 package org.spout.jreactphysics3d.collision.narrowphase;
 
-public class SphereVsSphereAlgorithm {
+import org.spout.jreactphysics3d.collision.ContactInfo;
+import org.spout.jreactphysics3d.collision.shape.CollisionShape;
+import org.spout.jreactphysics3d.collision.shape.SphereShape;
+import org.spout.jreactphysics3d.mathematics.Transform;
+import org.spout.jreactphysics3d.mathematics.Vector3;
 
+/**
+ * This class is used to compute the narrow-phase collision detection between two sphere shaped
+ * collision volumes.
+ */
+public class SphereVsSphereAlgorithm extends NarrowPhaseAlgorithm {
+	@Override
+	public boolean testCollision(CollisionShape collisionShape1, Transform transform1,
+								 CollisionShape collisionShape2, Transform transform2,
+								 ContactInfo contactInfo) {
+		final SphereShape sphereShape1 = (SphereShape) collisionShape1;
+		final SphereShape sphereShape2 = (SphereShape) collisionShape2;
+		final Vector3 vectorBetweenCenters = Vector3.subtract(transform2.getPosition(), transform1.getPosition());
+		final float squaredDistanceBetweenCenters = vectorBetweenCenters.lengthSquare();
+		final float sumRadius = sphereShape1.getRadius() + sphereShape2.getRadius();
+		if (squaredDistanceBetweenCenters <= sumRadius * sumRadius) {
+			final Vector3 centerSphere2InBody1LocalSpace = Transform.multiply(transform1.inverse(), transform2.getPosition());
+			final Vector3 centerSphere1InBody2LocalSpace = Transform.multiply(transform2.inverse(), transform1.getPosition());
+			final Vector3 intersectionOnBody1 = Vector3.multiply(sphereShape1.getRadius(), centerSphere2InBody1LocalSpace.getUnit());
+			final Vector3 intersectionOnBody2 = Vector3.multiply(sphereShape2.getRadius(), centerSphere1InBody2LocalSpace.getUnit());
+			final float penetrationDepth = sumRadius - (float) Math.sqrt(squaredDistanceBetweenCenters);
+			contactInfo.set(
+					vectorBetweenCenters.getUnit(), penetrationDepth,
+					intersectionOnBody1, intersectionOnBody2);
+			return true;
+		}
+		return false;
+	}
 }

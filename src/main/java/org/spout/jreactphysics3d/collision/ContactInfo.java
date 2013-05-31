@@ -125,4 +125,19 @@ public class ContactInfo {
 	public void setLocalPoint2(Vector3 localPoint2) {
 		this.localPoint2.set(localPoint2);
 	}
+
+	/**
+	 * Sets all the values of this contact info.
+	 *
+	 * @param normal The normal vector to set
+	 * @param penetrationDepth The penetration depth to set
+	 * @param localPoint1 The contact point to set for the first body
+	 * @param localPoint2 The contact point to set for second body body
+	 */
+	public void set(Vector3 normal, float penetrationDepth, Vector3 localPoint1, Vector3 localPoint2) {
+		setNormal(normal);
+		setPenetrationDepth(penetrationDepth);
+		setLocalPoint1(localPoint1);
+		setLocalPoint2(localPoint2);
+	}
 }
