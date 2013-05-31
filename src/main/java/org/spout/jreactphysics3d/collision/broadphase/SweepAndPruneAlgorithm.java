@@ -26,7 +26,6 @@
  */
 package org.spout.jreactphysics3d.collision.broadphase;
 
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Vector;
@@ -284,7 +283,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 		}
 	}
 
-	// Resizes the boxes and end-points arrays when they are full.
+	// Re-sizes the boxes and end-points arrays when they are full.
 	private void resizeArrays() {
 		final int nbSentinels = 2;
 		final int newNbMaxBoxes = mNbMaxBoxes != 0 ? 2 * mNbMaxBoxes : 100;
@@ -401,35 +400,6 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 
 		private void setBody(CollisionBody body) {
 			this.body = body;
-		}
-
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) {
-				return true;
-			}
-			if (!(o instanceof BoxAABB)) {
-				return false;
-			}
-			final BoxAABB boxAABB = (BoxAABB) o;
-			if (body != null ? !body.equals(boxAABB.getBody()) : boxAABB.getBody() != null) {
-				return false;
-			}
-			if (!Arrays.equals(max, boxAABB.getMax())) {
-				return false;
-			}
-			if (!Arrays.equals(min, boxAABB.getMin())) {
-				return false;
-			}
-			return true;
-		}
-
-		@Override
-		public int hashCode() {
-			int result = Arrays.hashCode(min);
-			result = 31 * result + Arrays.hashCode(max);
-			result = 31 * result + (body != null ? body.hashCode() : 0);
-			return result;
 		}
 	}
 
