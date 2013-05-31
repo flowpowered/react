@@ -34,9 +34,9 @@ import org.spout.jreactphysics3d.mathematics.Vector3;
  * Represents a pair of bodies during the broad-phase collision detection.
  */
 public class BroadPhasePair {
-	public CollisionBody body1;
-	public CollisionBody body2;
-	public final Vector3 previousSeparatingAxis;
+	private CollisionBody body1;
+	private CollisionBody body2;
+	private final Vector3 previousSeparatingAxis;
 
 	/**
 	 * Constructs a new broad phase pair from the first and the second body.
@@ -63,6 +63,60 @@ public class BroadPhasePair {
 			throw new IllegalStateException("First int of the pair cannot be equal to the second int of the pair");
 		}
 		return indexPair;
+	}
+
+	/**
+	 * Gets the previous separating axis.
+	 *
+	 * @return The previous separating axis
+	 */
+	public Vector3 getPreviousSeparatingAxis() {
+		return previousSeparatingAxis;
+	}
+
+	/**
+	 * Sets the previous separating axis.
+	 *
+	 * @param previousSeparatingAxis The axis to set
+	 */
+	public void setPreviousSeparatingAxis(Vector3 previousSeparatingAxis) {
+		this.previousSeparatingAxis.set(previousSeparatingAxis);
+	}
+
+	/**
+	 * Gets the first body of the pair.
+	 *
+	 * @return The first body
+	 */
+	public CollisionBody getBody1() {
+		return body1;
+	}
+
+	/**
+	 * Sets the first body of the pair.
+	 *
+	 * @param body1 The first body
+	 */
+	public void setBody1(CollisionBody body1) {
+		this.body1 = body1;
+	}
+
+	/**
+	 * Gets the second body of the pair.
+	 *
+	 * @return The second body
+	 */
+	public CollisionBody getBody2() {
+		return body2;
+	}
+
+	/**
+	 * Sets the second body of the pair.
+	 *
+	 * @param body2 The second body
+	 */
+	public void setBody2(CollisionBody body2) {
+		this.body2 = body2;
 	}
 
 	/**

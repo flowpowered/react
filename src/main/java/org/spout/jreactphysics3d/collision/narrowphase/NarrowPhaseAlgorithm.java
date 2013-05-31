@@ -26,6 +26,49 @@
  */
 package org.spout.jreactphysics3d.collision.narrowphase;
 
-public class NarrowPhaseAlgorithm {
+import org.spout.jreactphysics3d.collision.BroadPhasePair;
+import org.spout.jreactphysics3d.collision.ContactInfo;
+import org.spout.jreactphysics3d.collision.shape.CollisionShape;
+import org.spout.jreactphysics3d.mathematics.Transform;
 
+/**
+ * This class is an abstract class that represents an algorithm used to perform the narrow-phase of
+ * a collision detection. The goal of the narrow phase algorithm is to compute contact information
+ * of a collision between two bodies.
+ */
+public abstract class NarrowPhaseAlgorithm {
+	protected BroadPhasePair mCurrentOverlappingPair;
+
+	/**
+	 * Default constructor. The current overlapping pair is null.
+	 */
+	public NarrowPhaseAlgorithm() {
+		mCurrentOverlappingPair = null;
+	}
+
+	/**
+	 * Sets the current overlapping pair.
+	 *
+	 * @param overlappingPair The overlapping pair
+	 */
+	public void setCurrentOverlappingPair(BroadPhasePair overlappingPair) {
+		mCurrentOverlappingPair = overlappingPair;
+	}
+
+	/**
+	 * Returns true and computes the contact info if the two bounding volume collide. If they do not,
+	 * this method returns false and the contact info will remain unchanged. The new contact info is
+	 * stored in the {@code ContactInfo} parameter.
+	 *
+	 * @param collisionShape1 The first collisionShape of the collision
+	 * @param transform1 The first shape's transform
+	 * @param collisionShape2 The second collisionShape of the collision
+	 * @param transform2 The second shape's transform
+	 * @param contactInfo Where to store the contact info of this collision
+	 * @return True if the volumes collided, false if not
+	 */
+	public abstract boolean testCollision(
+			CollisionShape collisionShape1, Transform transform1,
+			CollisionShape collisionShape2, Transform transform2,
+			ContactInfo contactInfo);
 }

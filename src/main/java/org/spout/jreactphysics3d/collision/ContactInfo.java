@@ -35,7 +35,7 @@ import org.spout.jreactphysics3d.mathematics.Vector3;
  */
 public class ContactInfo {
 	private final Vector3 normal;
-	private final float penetrationDepth;
+	private float penetrationDepth;
 	private final Vector3 localPoint1;
 	private final Vector3 localPoint2;
 
@@ -55,7 +55,7 @@ public class ContactInfo {
 	}
 
 	/**
-	 * The normal vector for the collision contact in world space.
+	 * Gets the normal vector for the collision contact in world space.
 	 *
 	 * @return The normal vector
 	 */
@@ -64,7 +64,16 @@ public class ContactInfo {
 	}
 
 	/**
-	 * Penetration depth of the contact
+	 * Sets the normal vector for the collision contact in world space.
+	 *
+	 * @param normal The normal vector to set
+	 */
+	public void setNormal(Vector3 normal) {
+		this.normal.set(normal);
+	}
+
+	/**
+	 * Gets the penetration depth of the contact.
 	 *
 	 * @return The penetration depth
 	 */
@@ -73,20 +82,47 @@ public class ContactInfo {
 	}
 
 	/**
-	 * Contact point of body 1 in local space of body 1
+	 * Sets the penetration depth of the contact.
 	 *
-	 * @return The local point of contact for body 1
+	 * @param penetrationDepth The penetration depth to set
+	 */
+	public void setPenetrationDepth(float penetrationDepth) {
+		this.penetrationDepth = penetrationDepth;
+	}
+
+	/**
+	 * Gets the contact point of the first body in local space of the first body.
+	 *
+	 * @return The local point of contact for the first body
 	 */
 	public Vector3 getLocalPoint1() {
 		return localPoint1;
 	}
 
 	/**
-	 * Contact point of body 2 in local space of body 2
+	 * Sets the contact point of the first body in local space of the first body.
 	 *
-	 * @return The local point of contact for body 2
+	 * @param localPoint1 The contact point to set for the first body
+	 */
+	public void setLocalPoint1(Vector3 localPoint1) {
+		this.localPoint1.set(localPoint1);
+	}
+
+	/**
+	 * Gets the contact point of second body body in local space of second body body.
+	 *
+	 * @return The local point of contact for second body body
 	 */
 	public Vector3 getLocalPoint2() {
 		return localPoint2;
+	}
+
+	/**
+	 * Sets the contact point of the second body in local space of the second body.
+	 *
+	 * @param localPoint2 The contact point to set for second body body
+	 */
+	public void setLocalPoint2(Vector3 localPoint2) {
+		this.localPoint2.set(localPoint2);
 	}
 }
