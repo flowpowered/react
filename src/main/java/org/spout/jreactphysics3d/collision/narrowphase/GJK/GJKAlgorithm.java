@@ -27,5 +27,6 @@
 package org.spout.jreactphysics3d.collision.narrowphase.GJK;
 
 public class GJKAlgorithm {
-
+	public static final float REL_ERROR = 1.0e-3f;
+	public static final float REL_ERROR_SQUARE = REL_ERROR * REL_ERROR;
 }
