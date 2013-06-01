@@ -225,7 +225,7 @@ public class Simplex {
 	// A proper subset X is a subset where for all point "y_i" in X, we have detX_i value bigger than zero.
 	private boolean isProperSubset(int subset) {
 		for (int i = 0, bit = 0x1; i < 4; i++, bit <<= 1) {
-			if (overlap(subset, bit) && mDet[subset][i] <= 0.0) {
+			if (overlap(subset, bit) && mDet[subset][i] <= 0) {
 				return false;
 			}
 		}
