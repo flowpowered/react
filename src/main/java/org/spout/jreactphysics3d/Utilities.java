@@ -55,7 +55,7 @@ public class Utilities {
 		private int second;
 
 		/**
-		 * Constructs a new int pair with both ints being 0.
+		 * Constructs a new int pair with both integers being 0.
 		 */
 		public IntPair() {
 			this(0, 0);
@@ -116,6 +116,30 @@ public class Utilities {
 			first = second;
 			second = temp;
 		}
-	}
 
+		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (!(o instanceof IntPair)) {
+				return false;
+			}
+			final IntPair intPair = (IntPair) o;
+			if (first != intPair.getFirst()) {
+				return false;
+			}
+			if (second != intPair.getSecond()) {
+				return false;
+			}
+			return true;
+		}
+
+		@Override
+		public int hashCode() {
+			int result = first;
+			result = 31 * result + second;
+			return result;
+		}
+	}
 }

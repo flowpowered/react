@@ -34,25 +34,10 @@ import org.spout.jreactphysics3d.mathematics.Vector3;
  * two bodies. The information fields are immutable.
  */
 public class ContactInfo {
-	private final Vector3 normal;
+	private final Vector3 normal = new Vector3();
 	private float penetrationDepth;
-	private final Vector3 localPoint1;
-	private final Vector3 localPoint2;
-
-	/**
-	 * Default constructor. Sets all the fields.
-	 *
-	 * @param normal The normal vector for the collision contact in world space
-	 * @param penetrationDepth Penetration depth of the contact
-	 * @param localPoint1 Contact point of body 1 in local space of body 1
-	 * @param localPoint2 Contact point of body 2 in local space of body 2
-	 */
-	public ContactInfo(Vector3 normal, float penetrationDepth, Vector3 localPoint1, Vector3 localPoint2) {
-		this.normal = normal;
-		this.penetrationDepth = penetrationDepth;
-		this.localPoint1 = localPoint1;
-		this.localPoint2 = localPoint2;
-	}
+	private final Vector3 localPoint1 = new Vector3();
+	private final Vector3 localPoint2 = new Vector3();
 
 	/**
 	 * Gets the normal vector for the collision contact in world space.

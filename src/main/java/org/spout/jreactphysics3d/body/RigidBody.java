@@ -117,7 +117,11 @@ public class RigidBody extends CollisionBody {
 		mAngularVelocity.set(angularVelocity);
 	}
 
-	// Set the inverse of the mass
+	/**
+	 * Sets the inverse of the mass
+	 *
+	 * @param massInverse The inverse of the mass
+	 */
 	public void setMassInverse(float massInverse) {
 		mMassInverse = massInverse;
 	}

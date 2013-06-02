@@ -55,6 +55,12 @@ public class ContactManifold {
 	private float mFrictionImpulse2;
 	private float mFrictionTwistImpulse;
 
+	/**
+	 * Constructs a new contact manifold from the two bodies.
+	 *
+	 * @param body1 The first body
+	 * @param body2 The second body
+	 */
 	public ContactManifold(Body body1, Body body2) {
 		mBody1 = body1;
 		mBody2 = body2;
@@ -67,7 +73,7 @@ public class ContactManifold {
 	/**
 	 * Gets the number of contact points in the manifold.
 	 *
-	 * @return
+	 * @return The number of contact points
 	 */
 	public int getNbContactPoints() {
 		return mNbContactPoints;
@@ -76,7 +82,7 @@ public class ContactManifold {
 	/**
 	 * Gets the first friction vector3 at the center of the contact manifold.
 	 *
-	 * @return
+	 * @return The first friction vector
 	 */
 	public Vector3 getFrictionVector1() {
 		return mFrictionVector1;
@@ -85,7 +91,7 @@ public class ContactManifold {
 	/**
 	 * Sets the first friction vector3 at the center of the contact manifold.
 	 *
-	 * @param frictionVector1
+	 * @param frictionVector1 The friction vector to set
 	 */
 	public void setFrictionVector1(Vector3 frictionVector1) {
 		mFrictionVector1.set(frictionVector1);
@@ -94,7 +100,7 @@ public class ContactManifold {
 	/**
 	 * Gets the second friction vector3 at the center of the contact manifold.
 	 *
-	 * @return
+	 * @return The second friction vector
 	 */
 	public Vector3 getFrictionVector2() {
 		return mFrictionVector2;
@@ -103,7 +109,7 @@ public class ContactManifold {
 	/**
 	 * Sets the second friction vector3 at the center of the contact manifold.
 	 *
-	 * @param frictionVector2
+	 * @param frictionVector2 The friction vector to set
 	 */
 	public void setFrictionVector2(Vector3 frictionVector2) {
 		mFrictionVector2.set(frictionVector2);
@@ -112,7 +118,7 @@ public class ContactManifold {
 	/**
 	 * Gets the accumulated impulse for the first friction.
 	 *
-	 * @return
+	 * @return The accumulated impulse
 	 */
 	public float getFrictionImpulse1() {
 		return mFrictionImpulse1;
@@ -121,7 +127,7 @@ public class ContactManifold {
 	/**
 	 * Sets the accumulated impulse for the first friction.
 	 *
-	 * @param frictionImpulse1
+	 * @param frictionImpulse1 The impulse to set
 	 */
 	public void setFrictionImpulse1(float frictionImpulse1) {
 		mFrictionImpulse1 = frictionImpulse1;
@@ -130,7 +136,7 @@ public class ContactManifold {
 	/**
 	 * Gets the accumulated impulse for the second friction.
 	 *
-	 * @return
+	 * @return The accumulated impulse
 	 */
 	public float getFrictionImpulse2() {
 		return mFrictionImpulse2;
@@ -139,7 +145,7 @@ public class ContactManifold {
 	/**
 	 * Sets the accumulated impulse for the second friction.
 	 *
-	 * @param frictionImpulse2
+	 * @param frictionImpulse2 The impulse to set
 	 */
 	public void setFrictionImpulse2(float frictionImpulse2) {
 		mFrictionImpulse2 = frictionImpulse2;
@@ -148,7 +154,7 @@ public class ContactManifold {
 	/**
 	 * Gets the accumulated impulse for the friction twist.
 	 *
-	 * @return
+	 * @return The accumulated twist impulse
 	 */
 	public float getFrictionTwistImpulse() {
 		return mFrictionTwistImpulse;
@@ -157,7 +163,7 @@ public class ContactManifold {
 	/**
 	 * Sets the accumulated impulse for the friction twist.
 	 *
-	 * @param frictionTwistImpulse
+	 * @param frictionTwistImpulse The twist impulse to set
 	 */
 	public void setFrictionTwistImpulse(float frictionTwistImpulse) {
 		mFrictionTwistImpulse = frictionTwistImpulse;
@@ -211,7 +217,7 @@ public class ContactManifold {
 		mNbContactPoints = 0;
 	}
 
-	// Remove a contact point from the manifold.
+	// Removes a contact point from the manifold.
 	private void removeContactPoint(int index) {
 		if (index >= mNbContactPoints) {
 			throw new IllegalArgumentException("index must be smaller than nbContactPoints");
@@ -226,12 +232,16 @@ public class ContactManifold {
 		mNbContactPoints--;
 	}
 
-	// Update the contact manifold.
-	// First the world space coordinates of the current contacts in the manifold are recomputed from
-	// the corresponding transforms for the bodies, because they have moved.
-	// Then we remove the contacts with a negative penetration depth
-	// (meaning that the bodies are not penetrating anymore) and with a distance between the
-	// contact points in the plane orthogonal to the contact normal that is too large.
+	/**
+	 * Updates the contact manifold. First the world space coordinates of the current contacts in the
+	 * manifold are recomputed from the corresponding transforms for the bodies because they have
+	 * moved. Then we remove the contacts with a negative penetration depth (meaning that the bodies
+	 * are not penetrating anymore) and with a distance between the contact points in the plane
+	 * orthogonal to the contact normal that is too large.
+	 *
+	 * @param transform1 The transform of the first body
+	 * @param transform2 The transform of the second body
+	 */
 	public void update(Transform transform1, Transform transform2) {
 		if (mNbContactPoints == 0) {
 			return;
@@ -263,9 +273,9 @@ public class ContactManifold {
 		}
 	}
 
-	// Return the index of the contact point with the larger penetration depth.
+	// Returns the index of the contact point with the largest penetration depth.
 	// This corresponding contact will be kept in the cache.
-	// The method returns -1 is the new contact is the deepest.
+	// The method returns -1 if the new contact is the deepest.
 	private int getIndexOfDeepestPenetration(ContactPoint newContact) {
 		if (mNbContactPoints != MAX_CONTACT_POINTS_IN_MANIFOLD) {
 			throw new IllegalStateException("nbContactPoints must be equal to MAX_CONTACT_POINTS_IN_MANIFOLD");
@@ -281,15 +291,15 @@ public class ContactManifold {
 		return indexMaxPenetrationDepth;
 	}
 
-	// Return the index that will be removed.
-	// The index of the contact point with the larger penetration depth is given as a parameter.
-	// This contact won't be removed. Given this contact, we compute the different area and we want
+	// Returns the index that will be removed.
+	// The index of the contact point with the largest penetration depth is given as a parameter.
+	// This contact won't be removed. Given this contact, we compute the different area; we want
 	// to keep the contacts with the largest area. The new point is also kept.
 	// In order to compute the area of a quadrilateral, we use the formula :
 	// Area = 0.5 * ||AC x BD|| where AC and BD form the diagonals of the quadrilateral.
-	// Note that when we compute this area, we do not calculate it exactly but we only estimate it
+	// Note that when we compute this area, we do not calculate it exactly but only estimate it,
 	// because we do not compute the actual diagonals of the quadrilateral.
-	// Therefore, this is only a guess that is faster to compute.
+	// Therefore, this is only a guess, which is faster to compute.
 	private int getIndexToRemove(int indexMaxPenetration, Vector3 newPoint) {
 		if (mNbContactPoints != MAX_CONTACT_POINTS_IN_MANIFOLD) {
 			throw new IllegalStateException("nbContactPoints must be equal to MAX_CONTACT_POINTS_IN_MANIFOLD");
@@ -333,7 +343,7 @@ public class ContactManifold {
 		return getMaxArea(area123N, area023N, area013N, area012N);
 	}
 
-	// Return the index of maximum area
+	// Returns the index of maximum area.
 	private int getMaxArea(float area123N, float area023N, float area013N, float area012N) {
 		if (area123N < area023N) {
 			if (area023N < area013N) {

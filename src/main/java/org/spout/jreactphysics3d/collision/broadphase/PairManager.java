@@ -225,8 +225,7 @@ public class PairManager {
 		mOverlappingPairs[mNbOverlappingPairs] = newPair;
 		mOffsetNextPair[mNbOverlappingPairs] = mHashTable[hashValue];
 		mHashTable[hashValue] = mNbOverlappingPairs++;
-		// TODO: uncomment me once I've been implemented!
-		// mCollisionDetection.broadPhaseNotifyAddedOverlappingPair(newPair);
+		mCollisionDetection.broadPhaseNotifyAddedOverlappingPair(newPair);
 		return newPair;
 	}
 
@@ -253,8 +252,7 @@ public class PairManager {
 		if (pair.getSecondBody().getID() != id2) {
 			throw new IllegalStateException("Incorrect pair was found");
 		}
-		// TODO: uncomment me once I've been implemented!
-		// mCollisionDetection.broadPhaseNotifyRemovedOverlappingPair(pair);
+		mCollisionDetection.broadPhaseNotifyRemovedOverlappingPair(pair);
 		removePairWithHashValue(id1, id2, hashValue, computePairOffset(pair));
 		shrinkMemory();
 		return true;

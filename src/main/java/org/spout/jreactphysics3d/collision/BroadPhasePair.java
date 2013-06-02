@@ -88,7 +88,7 @@ public class BroadPhasePair {
 	 *
 	 * @return The first body
 	 */
-	public CollisionBody getBody1() {
+	public CollisionBody getFirstBody() {
 		return body1;
 	}
 
@@ -106,7 +106,7 @@ public class BroadPhasePair {
 	 *
 	 * @return The second body
 	 */
-	public CollisionBody getBody2() {
+	public CollisionBody getSecondBody() {
 		return body2;
 	}
 

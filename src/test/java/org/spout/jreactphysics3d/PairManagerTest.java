@@ -29,21 +29,16 @@ package org.spout.jreactphysics3d;
 import org.junit.Assert;
 import org.junit.Test;
 
-import org.spout.jreactphysics3d.body.CollisionBody;
 import org.spout.jreactphysics3d.collision.broadphase.PairManager;
 import org.spout.jreactphysics3d.collision.broadphase.PairManager.BodyPair;
-import org.spout.jreactphysics3d.collision.shape.BoxShape;
-import org.spout.jreactphysics3d.mathematics.Transform;
-import org.spout.jreactphysics3d.mathematics.Vector3;
 
 public class PairManagerTest {
 	@Test
 	public void test() {
-		// TODO: when CollisionDetection gets implements, this test will fail because null is passed.
-		final PairManager manager = new PairManager(null);
+		final PairManager manager = new PairManager(Dummies.newCollisionDetection());
 		Assert.assertEquals(manager.getNbOverlappingPairs(), 0);
 		for (int i = 0; i < 20; i += 2) {
-			final BodyPair pair = manager.addPair(newCollisionBody(i), newCollisionBody(i + 1));
+			final BodyPair pair = manager.addPair(Dummies.newCollisionBody(i), Dummies.newCollisionBody(i + 1));
 			Assert.assertNotNull(pair);
 			Assert.assertEquals(pair.getFirstBody().getID(), i);
 			Assert.assertEquals(pair.getSecondBody().getID(), i + 1);
@@ -60,9 +55,5 @@ public class PairManagerTest {
 			Assert.assertTrue(manager.removePair(i, i + 1));
 		}
 		Assert.assertEquals(manager.getNbOverlappingPairs(), 0);
-	}
-
-	private static CollisionBody newCollisionBody(int id) {
-		return new CollisionBody(Transform.identity(), new BoxShape(new Vector3()), id);
 	}
 }
