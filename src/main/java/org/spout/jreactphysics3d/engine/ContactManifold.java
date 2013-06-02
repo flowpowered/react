@@ -44,7 +44,7 @@ import org.spout.jreactphysics3d.mathematics.Vector3;
  * manifold). The new added point is always kept.
  */
 public class ContactManifold {
-	private static final int MAX_CONTACT_POINTS_IN_MANIFOLD = 4;
+	public static final int MAX_CONTACT_POINTS_IN_MANIFOLD = 4;
 	private final Body mBody1;
 	private final Body mBody2;
 	private final ContactPoint[] mContactPoints = new ContactPoint[MAX_CONTACT_POINTS_IN_MANIFOLD];

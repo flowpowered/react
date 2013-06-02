@@ -97,7 +97,7 @@ public class BroadPhasePair {
 	 *
 	 * @param body1 The first body
 	 */
-	public void setBody1(CollisionBody body1) {
+	public void setFirstBody(CollisionBody body1) {
 		this.body1 = body1;
 	}
 
@@ -115,7 +115,7 @@ public class BroadPhasePair {
 	 *
 	 * @param body2 The second body
 	 */
-	public void setBody2(CollisionBody body2) {
+	public void setSecondBody(CollisionBody body2) {
 		this.body2 = body2;
 	}
 

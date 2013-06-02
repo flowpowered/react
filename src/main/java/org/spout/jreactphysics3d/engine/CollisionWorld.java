@@ -49,7 +49,7 @@ public abstract class CollisionWorld {
 	protected final CollisionDetection mCollisionDetection;
 	protected final Set<CollisionBody> mBodies = new HashSet<CollisionBody>();
 	protected final Map<IntPair, OverlappingPair> mOverlappingPairs = new HashMap<IntPair, OverlappingPair>();
-	protected int mCurrentBodyID;
+	private int mCurrentBodyID;
 	protected final Vector<Integer> mFreeBodiesIDs = new Vector<Integer>();
 
 	/**
@@ -90,7 +90,7 @@ public abstract class CollisionWorld {
 	public abstract void updateOverlappingPair(BroadPhasePair pair);
 
 	/**
-	 * Returns an iterator to the beginning of the bodies of the physics world.
+	 * Gets an iterator to the beginning of the bodies of the physics world.
 	 *
 	 * @return The {@link java.util.Iterator} of {@link org.spout.jreactphysics3d.body.CollisionBody}
 	 */
@@ -127,8 +127,12 @@ public abstract class CollisionWorld {
 		mBodies.remove(collisionBody);
 	}
 
-	// Returns the next available body ID.
-	private int computeNextAvailableBodyID() {
+	/**
+	 * Returns the next available body ID.
+	 *
+	 * @return An available boy ID
+	 */
+	protected int computeNextAvailableBodyID() {
 		final int bodyID;
 		if (!mFreeBodiesIDs.isEmpty()) {
 			bodyID = mFreeBodiesIDs.lastElement();

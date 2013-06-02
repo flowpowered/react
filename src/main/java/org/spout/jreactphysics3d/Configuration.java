@@ -31,65 +31,35 @@ package org.spout.jreactphysics3d;
  */
 public class Configuration {
 	/**
-	 * The machine epsilon
+	 * The machine epsilon.
 	 */
 	public static final float MACHINE_EPSILON = 1.1920929E-7f;
 	/**
-	 * Default internal constant timestep in seconds
+	 * Default internal constant timestep in seconds.
 	 */
-	public static final float DEFAULT_TIMESTEP = 1.0F / 60.0F;
+	public static final float DEFAULT_TIMESTEP = 1.0f / 60.0f;
 	/**
-	 * True if the deactivation (sleeping) of inactive bodies is enabled
+	 * Default friction coefficient for a rigid body.
+	 */
+	public static final float DEFAULT_FRICTION_COEFFICIENT = 0.3f;
+	/**
+	 * True if the deactivation (sleeping) of inactive bodies is enabled.
 	 */
 	public static final boolean DEACTIVATION_ENABLED = true;
-	// GJK Algorithm parameters
 	/**
-	 * Object margin for collision detection in cm
+	 * Object margin for collision detection in cm.
 	 */
-	public static final float OBJECT_MARGIN = 0.04F;
-	// Contact constants
+	public static final float OBJECT_MARGIN = 0.04f;
 	/**
-	 * Friction coefficient
+	 * Distance threshold for two contact points for a valid persistent contact.
 	 */
-	public static final float DEFAULT_FRICTION_COEFFICIENT = 0.4F;
+	public static final float PERSISTENT_CONTACT_DIST_THRESHOLD = 0.02f;
 	/**
-	 * Distance threshold for two contact points for a valid persistent contact
+	 * Velocity threshold for contact velocity restitution.
 	 */
-	public static final float PERSISTENT_CONTACT_DIST_THRESHOLD = 0.02F;
-	// Constraint solver constants
+	public static final float RESTITUTION_VELOCITY_THRESHOLD = 1;
 	/**
-	 * Maximum number of bodies
+	 * Number of iterations when solving a LCP problem.
 	 */
-	public static final int NB_MAX_BODIES = 100000;
-	/**
-	 * Maximum number of contacts (for memory pool allocation)
-	 */
-	public static final int NB_MAX_CONTACTS = 100000;
-	/**
-	 * Maximum number of constraints
-	 */
-	public static final int NB_MAX_CONSTRAINTS = 100000;
-	/**
-	 * Maximum number of collision pairs of bodies (for memory pool allocation)
-	 */
-	public static final int NB_MAX_COLLISION_PAIRS = 10000;
-	// Constraint solver constants
-	/**
-	 * Number of iterations when solving a LCP problem
-	 */
-	public static final int DEFAULT_LCP_ITERATIONS = 15;
-	/**
-	 * Number of iterations when solving a LCP problem for error correction
-	 */
-	public static final int DEFAULT_LCP_ITERATIONS_ERROR_CORRECTION = 5;
-	/**
-	 * True if the error correction projection (first order world) is active in the constraint
-	 * solver
-	 */
-	public static final boolean ERROR_CORRECTION_PROJECTION_ENABLED = true;
-	/**
-	 * Contacts with penetration depth (in meters) larger that this use error correction with
-	 * projection
-	 */
-	public static final float PENETRATION_DEPTH_THRESHOLD_ERROR_CORRECTION = 0.20F;
+	public static final int DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS = 15;
 }
