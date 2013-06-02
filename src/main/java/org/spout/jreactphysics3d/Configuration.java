@@ -37,7 +37,7 @@ public class Configuration {
 	/**
 	 * Default internal constant timestep in seconds.
 	 */
-	public static final float DEFAULT_TIMESTEP = 1.0f / 60.0f;
+	public static final float DEFAULT_TIMESTEP = 1f / 60;
 	/**
 	 * Default friction coefficient for a rigid body.
 	 */
