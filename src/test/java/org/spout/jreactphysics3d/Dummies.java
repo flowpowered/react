@@ -34,22 +34,43 @@ import org.spout.jreactphysics3d.collision.CollisionDetection;
 import org.spout.jreactphysics3d.collision.ContactInfo;
 import org.spout.jreactphysics3d.collision.shape.AABB;
 import org.spout.jreactphysics3d.collision.shape.BoxShape;
+import org.spout.jreactphysics3d.collision.shape.SphereShape;
 import org.spout.jreactphysics3d.engine.CollisionWorld;
+import org.spout.jreactphysics3d.mathematics.Quaternion;
 import org.spout.jreactphysics3d.mathematics.Transform;
 import org.spout.jreactphysics3d.mathematics.Vector3;
 
 /**
- * Provides fake implementations for tests.
+ * Provides fake implementations and objects for tests.
  */
 public class Dummies {
 	private static final Random RANDOM = new Random();
+
+	public static Vector3 newPosition() {
+		return new Vector3(RANDOM.nextInt(21) - 10, RANDOM.nextInt(21) - 10, RANDOM.nextInt(21) - 10);
+	}
+
+	public static Quaternion newOrientation() {
+		final float phi = RANDOM.nextFloat() * 2 * (float) Math.PI;
+		final float theta = RANDOM.nextFloat() * 2 * (float) Math.PI;
+		final float x = (float) Math.sin(theta) * (float) Math.cos(phi);
+		final float y = (float) Math.sin(theta) * (float) Math.sin(phi);
+		final float z = (float) Math.cos(theta);
+		final float halfAngle = (float) Math.toRadians(RANDOM.nextFloat() * 2 * Math.PI) / 2;
+		final float q = (float) Math.sin(halfAngle);
+		return new Quaternion(x * q, y * q, z * q, (float) Math.cos(halfAngle));
+	}
+
+	public static Transform newTransform() {
+		return new Transform(newPosition(), newOrientation());
+	}
 
 	public static CollisionBody newCollisionBody(int id) {
 		return new CollisionBody(Transform.identity(), new BoxShape(new Vector3()), id);
 	}
 
 	public static AABB newAABB() {
-		final Vector3 min = new Vector3(RANDOM.nextInt(21) - 10, RANDOM.nextInt(21) - 10, RANDOM.nextInt(21) - 10);
+		final Vector3 min = newPosition();
 		return new AABB(min, Vector3.add(min, new Vector3(RANDOM.nextInt(3) + 2, RANDOM.nextInt(3) + 2, RANDOM.nextInt(3) + 2)));
 	}
 
@@ -67,6 +88,10 @@ public class Dummies {
 		return new AABB(min, max);
 	}
 
+	public static SphereShape newSphereShape() {
+		return new SphereShape(RANDOM.nextInt(3) + 2);
+	}
+
 	public static CollisionWorld newCollisionWorld() {
 		return new DummyCollisionWorld();
 	}
@@ -75,7 +100,7 @@ public class Dummies {
 		return new CollisionDetection(newCollisionWorld());
 	}
 
-	public static class DummyCollisionWorld extends CollisionWorld {
+	private static class DummyCollisionWorld extends CollisionWorld {
 		private DummyCollisionWorld() {
 		}
 
