@@ -27,8 +27,8 @@
 package org.spout.physics.collision.shape;
 
 import org.spout.physics.Configuration;
-import org.spout.physics.mathematics.Matrix3x3;
-import org.spout.physics.mathematics.Vector3;
+import org.spout.physics.math.Matrix3x3;
+import org.spout.physics.math.Vector3;
 
 /**
  * Represents a cylinder collision shape around the Y axis and centered at the origin. The cylinder

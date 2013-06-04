@@ -34,7 +34,7 @@ import org.spout.physics.Utilities;
 import org.spout.physics.body.CollisionBody;
 import org.spout.physics.collision.CollisionDetection;
 import org.spout.physics.collision.shape.AABB;
-import org.spout.physics.mathematics.Vector3;
+import org.spout.physics.math.Vector3;
 
 /**
  * This class implements the Sweep-And-Prune (SAP) broad-phase collision detection algorithm. This

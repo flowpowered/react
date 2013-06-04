@@ -28,7 +28,7 @@ package org.spout.physics.body;
 
 import org.spout.physics.collision.shape.AABB;
 import org.spout.physics.collision.shape.CollisionShape;
-import org.spout.physics.mathematics.Transform;
+import org.spout.physics.math.Transform;
 
 /**
  * Represents a body that is able to collide with others bodies. This class inherits from the Body

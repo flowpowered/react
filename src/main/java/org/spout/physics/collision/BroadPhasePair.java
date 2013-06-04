@@ -28,7 +28,7 @@ package org.spout.physics.collision;
 
 import org.spout.physics.Utilities.IntPair;
 import org.spout.physics.body.CollisionBody;
-import org.spout.physics.mathematics.Vector3;
+import org.spout.physics.math.Vector3;
 
 /**
  * Represents a pair of bodies during the broad-phase collision detection.

@@ -26,7 +26,7 @@
  */
 package org.spout.physics.collision.shape;
 
-import org.spout.physics.mathematics.Vector3;
+import org.spout.physics.math.Vector3;
 
 /**
  * Represents a bounding volume of type "Axis Aligned Bounding Box". It's a box where all the edges

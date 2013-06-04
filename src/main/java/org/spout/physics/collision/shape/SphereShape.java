@@ -27,9 +27,9 @@
 package org.spout.physics.collision.shape;
 
 import org.spout.physics.Configuration;
-import org.spout.physics.mathematics.Matrix3x3;
-import org.spout.physics.mathematics.Transform;
-import org.spout.physics.mathematics.Vector3;
+import org.spout.physics.math.Matrix3x3;
+import org.spout.physics.math.Transform;
+import org.spout.physics.math.Vector3;
 
 /**
  * Represents a sphere collision shape that is centered at the origin and defined by its radius.

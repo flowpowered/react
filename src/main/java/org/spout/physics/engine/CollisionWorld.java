@@ -39,7 +39,7 @@ import org.spout.physics.collision.BroadPhasePair;
 import org.spout.physics.collision.CollisionDetection;
 import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.shape.CollisionShape;
-import org.spout.physics.mathematics.Transform;
+import org.spout.physics.math.Transform;
 
 /**
  * Represents a world where it is possible to move bodies by hand and to test collisions between

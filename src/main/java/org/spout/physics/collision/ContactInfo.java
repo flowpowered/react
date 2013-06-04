@@ -26,7 +26,7 @@
  */
 package org.spout.physics.collision;
 
-import org.spout.physics.mathematics.Vector3;
+import org.spout.physics.math.Vector3;
 
 /**
  * This class contains information about a collision contact computed during the narrow-phase

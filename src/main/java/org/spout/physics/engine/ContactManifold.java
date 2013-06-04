@@ -29,8 +29,8 @@ package org.spout.physics.engine;
 import org.spout.physics.Configuration;
 import org.spout.physics.body.Body;
 import org.spout.physics.constraint.ContactPoint;
-import org.spout.physics.mathematics.Transform;
-import org.spout.physics.mathematics.Vector3;
+import org.spout.physics.math.Transform;
+import org.spout.physics.math.Vector3;
 
 /**
  * Represents the set of contact points between two bodies. The contact manifold is implemented in a

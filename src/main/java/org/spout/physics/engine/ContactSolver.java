@@ -35,8 +35,8 @@ import java.util.Vector;
 import org.spout.physics.Configuration;
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.constraint.ContactPoint;
-import org.spout.physics.mathematics.Matrix3x3;
-import org.spout.physics.mathematics.Vector3;
+import org.spout.physics.math.Matrix3x3;
+import org.spout.physics.math.Vector3;
 
 /**
  * Represents the contact solver that is used to solve rigid bodies contacts. The constraint solver

@@ -35,10 +35,10 @@ import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.narrowphase.GJK.GJKAlgorithm;
 import org.spout.physics.collision.narrowphase.GJK.Simplex;
 import org.spout.physics.collision.shape.CollisionShape;
-import org.spout.physics.mathematics.Matrix3x3;
-import org.spout.physics.mathematics.Quaternion;
-import org.spout.physics.mathematics.Transform;
-import org.spout.physics.mathematics.Vector3;
+import org.spout.physics.math.Matrix3x3;
+import org.spout.physics.math.Quaternion;
+import org.spout.physics.math.Transform;
+import org.spout.physics.math.Vector3;
 
 /**
  * This class is the implementation of the Expanding Polytope Algorithm (EPA). The EPA algorithm

@@ -26,7 +26,7 @@
  */
 package org.spout.physics.collision.narrowphase.GJK;
 
-import org.spout.physics.mathematics.Vector3;
+import org.spout.physics.math.Vector3;
 
 /**
  * Represents a simplex which is a set of 3D points. This class is used in the GJK algorithm. This

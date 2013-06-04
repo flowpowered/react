@@ -26,7 +26,7 @@
  */
 package org.spout.physics.collision.narrowphase.EPA;
 
-import org.spout.physics.mathematics.Vector3;
+import org.spout.physics.math.Vector3;
 
 /**
  * Represents a triangle face for the current polytope in the EPA algorithm.

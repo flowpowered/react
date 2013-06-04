@@ -31,8 +31,8 @@ import java.util.Vector;
 
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.ContactInfo;
-import org.spout.physics.mathematics.Transform;
-import org.spout.physics.mathematics.Vector3;
+import org.spout.physics.math.Transform;
+import org.spout.physics.math.Vector3;
 
 /**
  * Represents a collision contact point between two bodies in the physics engine. The ContactPoint

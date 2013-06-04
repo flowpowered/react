@@ -31,9 +31,9 @@ import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.narrowphase.EPA.EPAAlgorithm;
 import org.spout.physics.collision.narrowphase.NarrowPhaseAlgorithm;
 import org.spout.physics.collision.shape.CollisionShape;
-import org.spout.physics.mathematics.Matrix3x3;
-import org.spout.physics.mathematics.Transform;
-import org.spout.physics.mathematics.Vector3;
+import org.spout.physics.math.Matrix3x3;
+import org.spout.physics.math.Transform;
+import org.spout.physics.math.Vector3;
 
 /**
  * This class implements a narrow-phase collision detection algorithm. This algorithm uses the

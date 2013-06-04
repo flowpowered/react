@@ -28,7 +28,7 @@ package org.spout.physics.engine;
 
 import org.spout.physics.body.CollisionBody;
 import org.spout.physics.constraint.ContactPoint;
-import org.spout.physics.mathematics.Vector3;
+import org.spout.physics.math.Vector3;
 
 /**
  * Represents a pair of two bodies that are overlapping during the broad-phase collision detection.

@@ -29,7 +29,7 @@ package org.spout.physics.collision.narrowphase;
 import org.spout.physics.collision.BroadPhasePair;
 import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.shape.CollisionShape;
-import org.spout.physics.mathematics.Transform;
+import org.spout.physics.math.Transform;
 
 /**
  * This class is an abstract class that represents an algorithm used to perform the narrow-phase of

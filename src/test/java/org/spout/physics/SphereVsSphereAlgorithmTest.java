@@ -34,8 +34,8 @@ import org.junit.Test;
 import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.narrowphase.SphereVsSphereAlgorithm;
 import org.spout.physics.collision.shape.SphereShape;
-import org.spout.physics.mathematics.Transform;
-import org.spout.physics.mathematics.Vector3;
+import org.spout.physics.math.Transform;
+import org.spout.physics.math.Vector3;
 
 public class SphereVsSphereAlgorithmTest {
 	private static final Random RANDOM = new Random();

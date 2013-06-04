@@ -29,8 +29,8 @@ package org.spout.physics.collision.narrowphase;
 import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.collision.shape.SphereShape;
-import org.spout.physics.mathematics.Transform;
-import org.spout.physics.mathematics.Vector3;
+import org.spout.physics.math.Transform;
+import org.spout.physics.math.Vector3;
 
 /**
  * This class is used to compute the narrow-phase collision detection between two sphere shaped

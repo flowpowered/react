@@ -39,9 +39,9 @@ import org.spout.physics.collision.shape.ConeShape;
 import org.spout.physics.collision.shape.CylinderShape;
 import org.spout.physics.collision.shape.SphereShape;
 import org.spout.physics.engine.CollisionWorld;
-import org.spout.physics.mathematics.Quaternion;
-import org.spout.physics.mathematics.Transform;
-import org.spout.physics.mathematics.Vector3;
+import org.spout.physics.math.Quaternion;
+import org.spout.physics.math.Transform;
+import org.spout.physics.math.Vector3;
 
 /**
  * Provides fake implementations and objects for tests.
