@@ -3,13 +3,13 @@
 	<modelVersion>4.0.0</modelVersion>
 
 	<!-- Project information -->
-	<name>JReactPhysics3D</name>
+	<name>React</name>
 	<groupId>org.spout</groupId>
-	<artifactId>jreactphysics3d</artifactId>
+	<artifactId>react</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<url>http://www.spout.org</url>
 	<inceptionYear>2013</inceptionYear>
-	<description>Java port of the free ReactPhysics3D C++ physics library, re-licensed with permission.</description>
+	<description>Java port of the ReactReact3D C++ physics library, relicensed with permission.</description>
 
 	<!-- Build properties -->
 	<properties>
@@ -33,19 +33,26 @@
 		</license>
 	</licenses>
 
-	<!-- Dependency repositories -->
-	<repositories>
-		<repository>
-			<id>spout-repo</id>
-			<url>http://repo.spout.org</url>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-			</snapshots>
-		</repository>
-	</repositories>
+	<!-- Source code access -->
+	<scm>
+		<connection>scm:git:git://github.com/SpoutDev/React.git</connection>
+		<developerConnection>scm:git:git@github.com:SpoutDev/React.git</developerConnection>
+		<url>https://github.com/SpoutDev/React</url>
+	</scm>
 
-	<!-- Project dependencies -->
+	<!-- Continous integration -->
+	<ciManagement>
+		<system>travis</system>
+		<url>https://travis-ci.org/SpoutDev/React</url>
+	</ciManagement>
+
+	<!-- Issue management -->
+	<issueManagement>
+		<system>jira</system>
+		<url>http://spoutdev.atlassian.net/browse/REACT</url>
+	</issueManagement>
+
+    <!-- Project dependencies -->
 	<dependencies>
 		<!-- Testing only -->
 		<dependency>
@@ -56,14 +63,6 @@
 		</dependency>
 	</dependencies>
 
-	<!-- Build plugin repositories -->
-	<pluginRepositories>
-		<pluginRepository>
-			<id>spout-repo</id>
-			<url>http://repo.spout.org</url>
-		</pluginRepository>
-	</pluginRepositories>
-
 	<!-- Build configuration -->
 	<build>
 		<defaultGoal>clean install</defaultGoal>
@@ -73,7 +72,7 @@
 			<!-- Static resources -->
 			<resource>
 				<filtering>false</filtering>
-				<directory>${project.basedir}</directory>
+				<directory>.</directory>
 				<targetPath>.</targetPath>
 				<includes>
 					<include>LICENSE.txt</include>
@@ -81,7 +80,7 @@
 			</resource>
 			<resource>
 				<filtering>false</filtering>
-				<directory>${project.basedir}/src/main/resources</directory>
+				<directory>src/main/resources</directory>
 				<targetPath>.</targetPath>
 				<includes>
 					<include>**/*</include>
@@ -108,7 +107,7 @@
 							<quiet>true</quiet>
 							<encoding>UTF-8</encoding>
 							<strictCheck>true</strictCheck>
-							<header>${project.basedir}/HEADER.txt</header>
+							<header>HEADER.txt</header>
 							<mapping>
 								<java>SLASHSTAR_STYLE</java>
 							</mapping>
@@ -132,7 +131,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.0</version>
+				<version>3.1</version>
 				<configuration>
 					<source>1.6</source>
 					<target>1.6</target>
@@ -146,4 +145,24 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<!-- Reporting configuration -->
+	<reporting>
+		<!-- Reporting plugins -->
+		<plugins>
+			<!-- Javadoc creation plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>2.9</version>
+				<configuration>
+					<bottom><![CDATA[Copyright (c) {project.inceptionYear} <a href="${project.organization.url}" target="_blank">${project.organization.name}</a>. ${project.name} is licensed under <a href="http://www.gnu.org/licenses/lgpl.html" target="_blank">GNU Lesser General Public License Version 3</a>]]></bottom>
+					<doctitle><![CDATA[${project.name} ${project.version}-b${buildNumber}]]></doctitle>
+					<windowtitle>Javadoc | ${project.name} ${project.version}-b${buildNumber}</windowtitle>
+					<author>false</author>
+					<version>false</version>
+				</configuration>
+			</plugin>
+		</plugins>
+	</reporting>
 </project>
