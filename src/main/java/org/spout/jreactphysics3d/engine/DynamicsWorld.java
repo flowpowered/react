@@ -332,10 +332,10 @@ public class DynamicsWorld extends CollisionWorld {
 		int i = 0;
 		for (RigidBody rigidBody : mRigidBodies) {
 			mMapBodyToConstrainedVelocityIndex.put(rigidBody, i);
-			mConstrainedLinearVelocities.set(i, Vector3.add(
+			mConstrainedLinearVelocities.add(i, Vector3.add(
 					rigidBody.getLinearVelocity(),
 					Vector3.multiply(dt * rigidBody.getMassInverse(), rigidBody.getExternalForce())));
-			mConstrainedAngularVelocities.set(i, Vector3.add(
+			mConstrainedAngularVelocities.add(i, Vector3.add(
 					rigidBody.getAngularVelocity(),
 					Matrix3x3.multiply(
 							Matrix3x3.multiply(dt, rigidBody.getInertiaTensorInverseWorld()),
@@ -344,7 +344,7 @@ public class DynamicsWorld extends CollisionWorld {
 		}
 	}
 
-	// Cleanups the constrained velocities array at each step.
+	// Cleans up the constrained velocities array at each step.
 	private void cleanupConstrainedVelocitiesArray() {
 		mConstrainedLinearVelocities.clear();
 		mConstrainedAngularVelocities.clear();

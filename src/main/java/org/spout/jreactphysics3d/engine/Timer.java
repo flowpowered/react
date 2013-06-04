@@ -45,7 +45,7 @@ public class Timer {
 	 */
 	public Timer(double timeStep) {
 		if (timeStep <= 0) {
-			throw new IllegalArgumentException("timeStep cannot be smaller or equal to zero");
+			throw new IllegalArgumentException("time step cannot be smaller or equal to zero");
 		}
 		mTimeStep = timeStep;
 		mIsRunning = false;
@@ -101,7 +101,7 @@ public class Timer {
 	 * Stop the timer.
 	 */
 	public void stop() {
-		System.out.println("TimeR stop");
+		System.out.println("Timer stop");
 		mIsRunning = false;
 	}
 

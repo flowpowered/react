@@ -56,8 +56,8 @@ public abstract class CollisionWorld {
 	 * Constructs a new empty collision world.
 	 */
 	public CollisionWorld() {
-		mCollisionDetection = new CollisionDetection(this);
 		mCurrentBodyID = 0;
+		mCollisionDetection = new CollisionDetection(this);
 	}
 
 	/**

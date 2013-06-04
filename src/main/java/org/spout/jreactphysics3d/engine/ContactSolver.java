@@ -258,6 +258,9 @@ public class ContactSolver {
 		ContactManifold externalManifold;
 		for (Iterator<ContactManifold> iterator = mWorld.getContactManifoldsBeginIterator(); iterator.hasNext(); ) {
 			externalManifold = iterator.next();
+			if (mContactConstraints[mNbContactManifolds] == null) {
+				mContactConstraints[mNbContactManifolds] = new ContactManifoldSolver();
+			}
 			final ContactManifoldSolver internalManifold = mContactConstraints[mNbContactManifolds];
 			if (externalManifold.getNbContactPoints() <= 0) {
 				throw new IllegalStateException("external manifold must have at least one contact point");
@@ -285,6 +288,9 @@ public class ContactSolver {
 				internalManifold.frictionPointBody2.set(new Vector3(0, 0, 0));
 			}
 			for (int c = 0; c < externalManifold.getNbContactPoints(); c++) {
+				if (internalManifold.contacts[c] == null) {
+					internalManifold.contacts[c] = new ContactPointSolver();
+				}
 				final ContactPointSolver contactPoint = internalManifold.contacts[c];
 				final ContactPoint externalContact = externalManifold.getContactPoint(c);
 				final Vector3 p1 = externalContact.getWorldPointOnBody1();
