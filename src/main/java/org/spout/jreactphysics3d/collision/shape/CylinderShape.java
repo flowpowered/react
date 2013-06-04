@@ -111,8 +111,8 @@ public class CylinderShape extends CollisionShape {
 				supportPoint.setY(-mHalfHeight);
 			} else {
 				supportPoint.setY(mHalfHeight);
-				supportPoint.add(Vector3.multiply(mRadius / lengthW, w));
 			}
+			supportPoint.add(Vector3.multiply(mRadius / lengthW, w));
 		} else {
 			if (uDotv < 0.0) {
 				supportPoint.setY(-mHalfHeight);

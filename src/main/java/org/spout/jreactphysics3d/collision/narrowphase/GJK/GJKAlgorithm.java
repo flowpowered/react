@@ -47,7 +47,7 @@ import org.spout.jreactphysics3d.mathematics.Vector3;
  * to compute the correct penetration depth between the enlarged objects.
  */
 public class GJKAlgorithm extends NarrowPhaseAlgorithm {
-	public static final float REL_ERROR = 1.0e-3f;
+	public static final float REL_ERROR = 1e-3f;
 	public static final float REL_ERROR_SQUARE = REL_ERROR * REL_ERROR;
 	private final EPAAlgorithm mAlgoEPA = new EPAAlgorithm();
 
@@ -84,7 +84,7 @@ public class GJKAlgorithm extends NarrowPhaseAlgorithm {
 				return false;
 			}
 			if (simplex.isPointInSimplex(w) || distSquare - vDotw <= distSquare * REL_ERROR_SQUARE) {
-				simplex.computeClosestPointsOfAandB(pA, pB);
+				simplex.computeClosestPointsOfAAndB(pA, pB);
 				final float dist = (float) Math.sqrt(distSquare);
 				if (dist <= 0) {
 					throw new IllegalStateException("dist must be greater than zero");
@@ -101,7 +101,7 @@ public class GJKAlgorithm extends NarrowPhaseAlgorithm {
 			}
 			simplex.addPoint(w, suppA, suppB);
 			if (simplex.isAffinelyDependent()) {
-				simplex.computeClosestPointsOfAandB(pA, pB);
+				simplex.computeClosestPointsOfAAndB(pA, pB);
 				final float dist = (float) Math.sqrt(distSquare);
 				if (dist <= 0) {
 					throw new IllegalStateException("dist must be greater than zero");
@@ -117,7 +117,7 @@ public class GJKAlgorithm extends NarrowPhaseAlgorithm {
 				return true;
 			}
 			if (!simplex.computeClosestPoint(v)) {
-				simplex.computeClosestPointsOfAandB(pA, pB);
+				simplex.computeClosestPointsOfAAndB(pA, pB);
 				final float dist = (float) Math.sqrt(distSquare);
 				if (dist <= 0) {
 					throw new IllegalStateException("dist must be greater than zero");
@@ -137,7 +137,7 @@ public class GJKAlgorithm extends NarrowPhaseAlgorithm {
 			if (prevDistSquare - distSquare <= Configuration.MACHINE_EPSILON * prevDistSquare) {
 				simplex.backupClosestPointInSimplex(v);
 				distSquare = v.lengthSquare();
-				simplex.computeClosestPointsOfAandB(pA, pB);
+				simplex.computeClosestPointsOfAAndB(pA, pB);
 				final float dist = (float) Math.sqrt(distSquare);
 				if (dist <= 0) {
 					throw new IllegalStateException("dist must be greater than zero");

@@ -133,7 +133,7 @@ public class TriangleEPA {
 	 * @return True if the point is inside the triangle, false if not
 	 */
 	public boolean isClosestPointInternalToTriangle() {
-		return (mLambda1 >= 0 && mLambda2 >= 0 && (mLambda1 + mLambda2) <= mDet);
+		return mLambda1 >= 0 && mLambda2 >= 0 && (mLambda1 + mLambda2) <= mDet;
 	}
 
 	/**
@@ -145,7 +145,7 @@ public class TriangleEPA {
 	 */
 	public boolean isVisibleFromVertex(Vector3[] vertices, int index) {
 		final Vector3 closestToVert = Vector3.subtract(vertices[index], mClosestPoint);
-		return (mClosestPoint.dot(closestToVert) > 0);
+		return mClosestPoint.dot(closestToVert) > 0;
 	}
 
 	/**

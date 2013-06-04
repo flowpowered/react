@@ -34,6 +34,9 @@ import org.spout.jreactphysics3d.collision.CollisionDetection;
 import org.spout.jreactphysics3d.collision.ContactInfo;
 import org.spout.jreactphysics3d.collision.shape.AABB;
 import org.spout.jreactphysics3d.collision.shape.BoxShape;
+import org.spout.jreactphysics3d.collision.shape.CollisionShape;
+import org.spout.jreactphysics3d.collision.shape.ConeShape;
+import org.spout.jreactphysics3d.collision.shape.CylinderShape;
 import org.spout.jreactphysics3d.collision.shape.SphereShape;
 import org.spout.jreactphysics3d.engine.CollisionWorld;
 import org.spout.jreactphysics3d.mathematics.Quaternion;
@@ -71,7 +74,7 @@ public class Dummies {
 
 	public static AABB newAABB() {
 		final Vector3 min = newPosition();
-		return new AABB(min, Vector3.add(min, new Vector3(RANDOM.nextInt(3) + 2, RANDOM.nextInt(3) + 2, RANDOM.nextInt(3) + 2)));
+		return new AABB(min, Vector3.add(min, new Vector3(RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4)));
 	}
 
 	public static AABB newIntersectingAABB(AABB with) {
@@ -80,16 +83,43 @@ public class Dummies {
 		final int iSizeX = RANDOM.nextInt((int) wSize.getX() + 1);
 		final int iSizeY = RANDOM.nextInt((int) wSize.getY() + 1);
 		final int iSizeZ = RANDOM.nextInt((int) wSize.getZ() + 1);
-		final int eSizeX = RANDOM.nextInt(3) + 2;
-		final int eSizeY = RANDOM.nextInt(3) + 2;
-		final int eSizeZ = RANDOM.nextInt(3) + 2;
+		final int eSizeX = RANDOM.nextInt(5) + 4;
+		final int eSizeY = RANDOM.nextInt(5) + 4;
+		final int eSizeZ = RANDOM.nextInt(5) + 4;
 		final Vector3 min = Vector3.subtract(wMin, new Vector3(eSizeX, eSizeY, eSizeZ));
 		final Vector3 max = Vector3.add(wMin, new Vector3(iSizeX, iSizeY, iSizeZ));
 		return new AABB(min, max);
 	}
 
+	public static BoxShape newBoxShape() {
+		return new BoxShape(new Vector3(RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4));
+	}
+
+	public static ConeShape newConeShape() {
+		return new ConeShape(RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4);
+	}
+
+	public static CylinderShape newCylinderShape() {
+		return new CylinderShape(RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4);
+	}
+
 	public static SphereShape newSphereShape() {
-		return new SphereShape(RANDOM.nextInt(3) + 2);
+		return new SphereShape(RANDOM.nextInt(5) + 4);
+	}
+
+	public static CollisionShape newCollisionShape() {
+		switch (RANDOM.nextInt(4)) {
+			case 0:
+				return newBoxShape();
+			case 1:
+				return newConeShape();
+			case 2:
+				return newCylinderShape();
+			case 3:
+				return newSphereShape();
+			default:
+				throw new IllegalStateException("random int larger than shape types count");
+		}
 	}
 
 	public static CollisionWorld newCollisionWorld() {

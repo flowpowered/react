@@ -63,7 +63,7 @@ public class SphereVsSphereAlgorithmTest {
 		final float rad1 = s1.getRadius();
 		final float phi1 = RANDOM.nextFloat() * 2 * (float) Math.PI;
 		final float theta1 = RANDOM.nextFloat() * 2 * (float) Math.PI;
-		final float r1 = RANDOM.nextFloat() * (rad1 / 2) + rad1 / 2 + 0.01f;
+		final float r1 = RANDOM.nextFloat() * rad1;
 		final Vector3 in = new Vector3(
 				r1 * (float) Math.sin(theta1) * (float) Math.cos(phi1),
 				r1 * (float) Math.sin(theta1) * (float) Math.sin(phi1),

@@ -30,7 +30,6 @@ import org.spout.jreactphysics3d.Configuration;
 
 /**
  * Represents a 3D vector in space.
- *
  */
 public class Vector3 {
 	/**
@@ -374,12 +373,11 @@ public class Vector3 {
 
 	/**
 	 * Gets the corresponding float value from this vector based on the requested axis.<br><br>
+	 * <p/>
+	 * Valid axis are:<br> {@link Vector3#X_AXIS}<br> {@link Vector3#Y_AXIS}<br> {@link
+	 * Vector3#Z_AXIS}<br>
 	 *
-	 * Valid axis are:<br> {@link Vector3#X_AXIS}<br> {@link Vector3#Y_AXIS}<br>
-	 * {@link Vector3#Z_AXIS}<br>
-	 *
-	 * @param axis to get; {@link Vector3#X_AXIS} OR {@link Vector3#Y_AXIS} OR
-	 * {@link Vector3#Z_AXIS}
+	 * @param axis to get; {@link Vector3#X_AXIS} OR {@link Vector3#Y_AXIS} OR {@link Vector3#Z_AXIS}
 	 * @return {@link float} value of the axis
 	 */
 	public float get(int axis) {
@@ -396,12 +394,11 @@ public class Vector3 {
 
 	/**
 	 * Sets the corresponding float value from this vector based on the requested axis.<br><br>
+	 * <p/>
+	 * Valid axis are:<br> {@link Vector3#X_AXIS}<br> {@link Vector3#Y_AXIS}<br> {@link
+	 * Vector3#Z_AXIS}<br>
 	 *
-	 * Valid axis are:<br> {@link Vector3#X_AXIS}<br> {@link Vector3#Y_AXIS}<br>
-	 * {@link Vector3#Z_AXIS}<br>
-	 *
-	 * @param axis to set; {@link Vector3#X_AXIS} OR {@link Vector3#Y_AXIS} OR
-	 * {@link Vector3#Z_AXIS}
+	 * @param axis to set; {@link Vector3#X_AXIS} OR {@link Vector3#Y_AXIS} OR {@link Vector3#Z_AXIS}
 	 * @param value {@link float} value for the axis
 	 */
 	public float set(int axis, float value) {
@@ -430,6 +427,9 @@ public class Vector3 {
 
 	@Override
 	public boolean equals(Object obj) {
+		if (this == obj) {
+			return true;
+		}
 		if (!(obj instanceof Vector3)) {
 			return false;
 		}

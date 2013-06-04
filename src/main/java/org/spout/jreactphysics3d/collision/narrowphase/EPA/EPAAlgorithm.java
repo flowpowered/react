@@ -115,15 +115,14 @@ public class EPAAlgorithm {
 						collisionShape2.getLocalSupportPointWithMargin(Matrix3x3.multiply(rotateToBody2, Vector3.negate(v3))));
 				points[4] = Vector3.subtract(suppPointsA[4], suppPointsB[4]);
 				if (isOriginInTetrahedron(points[0], points[2], points[3], points[4]) == 0) {
-					suppPointsA[1] = suppPointsA[4];
-					suppPointsB[1] = suppPointsB[4];
-					points[1] = points[4];
+					suppPointsA[1].set(suppPointsA[4]);
+					suppPointsB[1].set(suppPointsB[4]);
+					points[1].set(points[4]);
 				} else if (isOriginInTetrahedron(points[1], points[2], points[3], points[4]) == 0) {
-					suppPointsA[0] = suppPointsA[4];
-					suppPointsB[0] = suppPointsB[4];
-					points[0] = points[4];
+					suppPointsA[0].set(suppPointsA[4]);
+					suppPointsB[0].set(suppPointsB[4]);
+					points[0].set(points[4]);
 				} else {
-
 					return false;
 				}
 				nbVertices = 4;
@@ -153,9 +152,9 @@ public class EPAAlgorithm {
 					break;
 				}
 				if (badVertex < 4) {
-					suppPointsA[badVertex - 1] = suppPointsA[4];
-					suppPointsB[badVertex - 1] = suppPointsB[4];
-					points[badVertex - 1] = points[4];
+					suppPointsA[badVertex - 1].set(suppPointsA[4]);
+					suppPointsB[badVertex - 1].set(suppPointsB[4]);
+					points[badVertex - 1].set(points[4]);
 				}
 				nbVertices = 3;
 			}
@@ -233,9 +232,9 @@ public class EPAAlgorithm {
 				}
 				final float error = wDotv - triangle.getDistSquare();
 				if (error <= Math.max(tolerance, GJKAlgorithm.REL_ERROR_SQUARE * wDotv)
-						|| points[indexNewVertex] == points[triangle.get(0)]
-						|| points[indexNewVertex] == points[triangle.get(1)]
-						|| points[indexNewVertex] == points[triangle.get(2)]) {
+						|| points[indexNewVertex].equals(points[triangle.get(0)])
+						|| points[indexNewVertex].equals(points[triangle.get(1)])
+						|| points[indexNewVertex].equals(points[triangle.get(2)])) {
 					break;
 				}
 				int i = triangleStore.getNbTriangles();

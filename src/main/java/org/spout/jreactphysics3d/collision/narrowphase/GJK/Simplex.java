@@ -35,12 +35,23 @@ import org.spout.jreactphysics3d.mathematics.Vector3;
  * that is closest to the origin and  the smallest simplex needed to represent that closest point.
  */
 public class Simplex {
-	private final Vector3[] mPoints = new Vector3[4];
+	private final Vector3[] mPoints = {
+			new Vector3(), new Vector3(), new Vector3(), new Vector3()
+	};
 	private final float[] mPointsLengthSquare = new float[4];
 	private float mMaxLengthSquare;
-	private final Vector3[] mSuppPointsA = new Vector3[4];
-	private final Vector3[] mSuppPointsB = new Vector3[4];
-	private final Vector3[][] mDiffLength = new Vector3[4][4];
+	private final Vector3[] mSuppPointsA = {
+			new Vector3(), new Vector3(), new Vector3(), new Vector3()
+	};
+	private final Vector3[] mSuppPointsB = {
+			new Vector3(), new Vector3(), new Vector3(), new Vector3()
+	};
+	private final Vector3[][] mDiffLength = {
+			{new Vector3(), new Vector3(), new Vector3(), new Vector3()},
+			{new Vector3(), new Vector3(), new Vector3(), new Vector3()},
+			{new Vector3(), new Vector3(), new Vector3(), new Vector3()},
+			{new Vector3(), new Vector3(), new Vector3(), new Vector3()}
+	};
 	private final float[][] mDet = new float[16][4];
 	private final float[][] mNormSquare = new float[4][4];
 	/// 4 bits that identify the current points of the simplex
@@ -108,13 +119,13 @@ public class Simplex {
 		if (mLastFound < 0 && mLastFound >= 4) {
 			throw new IllegalStateException("lastFount must be greater or equal to zero and smaller than four");
 		}
-		mPoints[mLastFound] = point;
+		mPoints[mLastFound].set(point);
 		mPointsLengthSquare[mLastFound] = point.dot(point);
 		mAllBits = mBitsCurrentSimplex | mLastFoundBit;
 		updateCache();
 		computeDeterminants();
-		mSuppPointsA[mLastFound] = suppPointA;
-		mSuppPointsB[mLastFound] = suppPointB;
+		mSuppPointsA[mLastFound].set(suppPointA);
+		mSuppPointsB[mLastFound].set(suppPointB);
 	}
 
 	/**
@@ -125,7 +136,7 @@ public class Simplex {
 	 */
 	public boolean isPointInSimplex(Vector3 point) {
 		for (int i = 0, bit = 0x1; i < 4; i++, bit <<= 1) {
-			if (overlap(mAllBits, bit) && point == mPoints[i]) {
+			if (overlap(mAllBits, bit) && point.equals(mPoints[i])) {
 				return true;
 			}
 		}
@@ -156,9 +167,9 @@ public class Simplex {
 		int nbVertices = 0;
 		for (int i = 0, bit = 0x1; i < 4; i++, bit <<= 1) {
 			if (overlap(mBitsCurrentSimplex, bit)) {
-				suppPointsA[nbVertices] = mSuppPointsA[nbVertices];
-				suppPointsB[nbVertices] = mSuppPointsB[nbVertices];
-				points[nbVertices] = mPoints[nbVertices];
+				suppPointsA[nbVertices] = new Vector3(mSuppPointsA[nbVertices]);
+				suppPointsB[nbVertices] = new Vector3(mSuppPointsB[nbVertices]);
+				points[nbVertices] = new Vector3(mPoints[nbVertices]);
 				nbVertices++;
 			}
 		}
@@ -171,7 +182,7 @@ public class Simplex {
 		if (!isEmpty()) {
 			for (int i = 0, bitI = 0x1; i < 4; i++, bitI <<= 1) {
 				if (overlap(mBitsCurrentSimplex, bitI)) {
-					int bit2 = bitI | mLastFoundBit;
+					final int bit2 = bitI | mLastFoundBit;
 					mDet[bit2][i] = mDiffLength[mLastFound][i].dot(mPoints[mLastFound]);
 					mDet[bit2][mLastFound] = mDiffLength[i][mLastFound].dot(mPoints[i]);
 					for (int j = 0, bitJ = 0x1; j < i; j++, bitJ <<= 1) {
@@ -275,7 +286,7 @@ public class Simplex {
 	 * @param pB sum(lambda_i * b_i), where "b_i" is the support point of object B, with lambda_i =
 	 * deltaX_i / deltaX
 	 */
-	public void computeClosestPointsOfAandB(Vector3 pA, Vector3 pB) {
+	public void computeClosestPointsOfAAndB(Vector3 pA, Vector3 pB) {
 		float deltaX = 0;
 		pA.setAllValues(0, 0, 0);
 		pB.setAllValues(0, 0, 0);
