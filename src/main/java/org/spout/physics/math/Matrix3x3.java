@@ -381,7 +381,10 @@ public class Matrix3x3 {
 	 * @return A new identity matrix
 	 */
 	public static Matrix3x3 identity() {
-		return new Matrix3x3(1, 0, 0, 0, 1, 0, 0, 0, 1);
+		return new Matrix3x3(
+				1, 0, 0,
+				0, 1, 0,
+				0, 0, 1);
 	}
 
 	/**
