@@ -240,7 +240,38 @@ public class DynamicsWorld extends CollisionWorld {
 	}
 
 	/**
-	 * Updates the physics simulation.
+	 * Updates the simulation, ignoring the actual elapsed time, assuming it to be equal to the time
+	 * step.
+	 */
+	public void forceUpdate() {
+		forceUpdate((float) mTimer.getTimeStep());
+	}
+
+	/**
+	 * Updates the simulation, ignoring the actual elapsed time, assuming it to be equal to the
+	 * provided time delta.
+	 *
+	 * @param dt The time delta to step the simulation with
+	 */
+	public void forceUpdate(float dt) {
+		applyGravity();
+		mContactManifolds.clear();
+		mCollisionDetection.computeCollisionDetection();
+		initConstrainedVelocitiesArray(dt);
+		if (!mContactManifolds.isEmpty()) {
+			mContactSolver.solve(dt);
+		}
+		resetBodiesMovementVariable();
+		updateRigidBodiesPositionAndOrientation(dt);
+		mContactSolver.cleanup();
+		cleanupConstrainedVelocitiesArray();
+		setInterpolationFactorToAllBodies(0);
+	}
+
+	/**
+	 * Updates the physics simulation. The elapsed time is determined by the timer. A step is only
+	 * actually taken if enough time has passed. If a lot of time has passed, more than twice the time
+	 * step, multiple steps will be taken, to catch up.
 	 */
 	public void update() {
 		if (!mTimer.getIsRunning()) {
@@ -264,9 +295,13 @@ public class DynamicsWorld extends CollisionWorld {
 		setInterpolationFactorToAllBodies();
 	}
 
-	// Updates the position and orientation of the rigid bodies.
+	// Updates the position and orientation of the rigid bodies using the timer's time step.
 	private void updateRigidBodiesPositionAndOrientation() {
-		final float dt = (float) mTimer.getTimeStep();
+		updateRigidBodiesPositionAndOrientation((float) mTimer.getTimeStep());
+	}
+
+	// Updates the position and orientation of the rigid bodies using the provided time delta.
+	private void updateRigidBodiesPositionAndOrientation(float dt) {
 		for (RigidBody rigidBody : getRigidBodies()) {
 			if (rigidBody == null) {
 				throw new IllegalStateException("rigid body cannot be null");
@@ -299,9 +334,14 @@ public class DynamicsWorld extends CollisionWorld {
 		}
 	}
 
-	// Computes and set the interpolation factor for all bodies.
+	// Computes and set the interpolation factor for all bodies,
+	// using the interpolation factor from the timer.
 	private void setInterpolationFactorToAllBodies() {
-		final float factor = mTimer.computeInterpolationFactor();
+		setInterpolationFactorToAllBodies(mTimer.computeInterpolationFactor());
+	}
+
+	// Computes and set the interpolation factor for all bodies.
+	private void setInterpolationFactorToAllBodies(float factor) {
 		if (factor < 0 && factor > 1) {
 			throw new IllegalStateException("interpolation factor must be greater or equal to zero"
 					+ " and smaller or equal to one");
@@ -314,13 +354,17 @@ public class DynamicsWorld extends CollisionWorld {
 		}
 	}
 
-	// Initializes the constrained velocities array at each step.
+	// Initializes the constrained velocities array using the timer's time step.
 	private void initConstrainedVelocitiesArray() {
+		initConstrainedVelocitiesArray((float) mTimer.getTimeStep());
+	}
+
+	// Initializes the constrained velocities array using the provided time delta.
+	private void initConstrainedVelocitiesArray(float dt) {
 		mConstrainedLinearVelocities.clear();
 		mConstrainedLinearVelocities.ensureCapacity(mRigidBodies.size());
 		mConstrainedAngularVelocities.clear();
 		mConstrainedAngularVelocities.ensureCapacity(mRigidBodies.size());
-		final float dt = (float) mTimer.getTimeStep();
 		int i = 0;
 		for (RigidBody rigidBody : mRigidBodies) {
 			mMapBodyToConstrainedVelocityIndex.put(rigidBody, i);
