@@ -48,7 +48,7 @@ public abstract class BroadPhaseAlgorithm {
 	 *
 	 * @param collisionDetection The collision detection
 	 */
-	BroadPhaseAlgorithm(CollisionDetection collisionDetection) {
+	protected BroadPhaseAlgorithm(CollisionDetection collisionDetection) {
 		mPairManager = new PairManager(collisionDetection);
 		mCollisionDetection = collisionDetection;
 	}
@@ -82,18 +82,18 @@ public abstract class BroadPhaseAlgorithm {
 	 *
 	 * @return The array of overlapping pairs
 	 */
-	public BodyPair[] beginOverlappingPairsPointer() {
-		return mPairManager.beginOverlappingPairsPointer();
+	public BodyPair[] getOverlappingPairs() {
+		return mPairManager.getOverlappingPairs();
 	}
 
 	/**
 	 * Return the last overlapping pair (used to iterate over the overlapping pairs) or returns null if
-	 * there are no overlapping pairs. Note that the array returned by {@link
-	 * #beginOverlappingPairsPointer()} contains trailing null elements.
+	 * there are no overlapping pairs. Note that the array returned by {@link #getOverlappingPairs()}
+	 * contains trailing null elements.
 	 *
 	 * @return The last overlapping pair
 	 */
-	public BodyPair endOverlappingPairsPointer() {
-		return mPairManager.endOverlappingPairsPointer();
+	public BodyPair getLastOverlappingPair() {
+		return mPairManager.getLastOverlappingPair();
 	}
 }

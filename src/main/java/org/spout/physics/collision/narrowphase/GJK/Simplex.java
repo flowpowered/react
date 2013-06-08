@@ -56,21 +56,13 @@ public class Simplex {
 	private final float[][] mNormSquare = new float[4][4];
 	/// 4 bits that identify the current points of the simplex
 	/// For instance, 0101 means that points[1] and points[3] are in the simplex
-	private int mBitsCurrentSimplex;
+	private int mBitsCurrentSimplex = 0x0;
 	/// Number between 1 and 4 that identify the last found support point
 	private int mLastFound;
 	/// Position of the last found support point (lastFoundBit = 0x1 << lastFound)
 	private int mLastFoundBit;
 	/// allBits = bitsCurrentSimplex | lastFoundBit;
-	private int mAllBits;
-
-	/**
-	 * Default constructor. The simplex is empty.
-	 */
-	public Simplex() {
-		mBitsCurrentSimplex = 0x0;
-		mAllBits = 0x0;
-	}
+	private int mAllBits = 0x0;
 
 	/**
 	 * Returns true if the simplex contains 4 points, false if not.

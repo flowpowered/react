@@ -26,7 +26,7 @@
  */
 package org.spout.physics.collision.shape;
 
-import org.spout.physics.Configuration;
+import org.spout.physics.ReactDefaults;
 import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
@@ -43,7 +43,7 @@ public abstract class CollisionShape {
 	 *
 	 * @param type The type of the collision shape
 	 */
-	public CollisionShape(CollisionShapeType type) {
+	protected CollisionShape(CollisionShapeType type) {
 		mType = type;
 	}
 
@@ -88,8 +88,8 @@ public abstract class CollisionShape {
 	public abstract float getMargin();
 
 	/**
-	 * Computes the local inertia tensor of the collision shape for the mass. Stores the results in
-	 * the passed matrix3x3.
+	 * Computes the local inertia tensor of the collision shape for the mass. Stores the results in the
+	 * passed matrix3x3.
 	 *
 	 * @param tensor The matrix3x3 in which the tensor should be stored
 	 * @param mass The mass of the shape
@@ -103,7 +103,7 @@ public abstract class CollisionShape {
 	 * @param transform The AABB's transform
 	 */
 	public void updateAABB(AABB aabb, Transform transform) {
-		final Vector3 extents = getLocalExtents(Configuration.OBJECT_MARGIN);
+		final Vector3 extents = getLocalExtents(ReactDefaults.OBJECT_MARGIN);
 		final Matrix3x3 worldAxis = transform.getOrientation().getMatrix().getAbsoluteMatrix();
 		final Vector3 worldExtents = new Vector3(
 				worldAxis.getColumn(Matrix3x3.FIRST_COLUMN).dot(extents),

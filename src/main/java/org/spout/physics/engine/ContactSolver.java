@@ -27,13 +27,12 @@
 package org.spout.physics.engine;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
 
 import gnu.trove.map.TObjectIntMap;
 
-import org.spout.physics.Configuration;
+import org.spout.physics.ReactDefaults;
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.constraint.ContactPoint;
 import org.spout.physics.math.Matrix3x3;
@@ -108,20 +107,20 @@ public class ContactSolver {
 	private static final float BETA = 0.2f;
 	private static final float BETA_SPLIT_IMPULSE = 0.2f;
 	private static final float SLOP = 0.01f;
+	private static final boolean WARM_STARTING_ACTIVE = true;
 	private final DynamicsWorld mWorld;
-	private int mNbIterations;
-	private Vector3[] mSplitLinearVelocities;
-	private Vector3[] mSplitAngularVelocities;
+	private int mNbIterations = ReactDefaults.DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS;
+	private Vector3[] mSplitLinearVelocities = null;
+	private Vector3[] mSplitAngularVelocities = null;
 	private float mTimeStep;
-	private ContactManifoldSolver[] mContactConstraints;
+	private ContactManifoldSolver[] mContactConstraints = null;
 	private int mNbContactManifolds;
 	private final Set<RigidBody> mConstraintBodies = new HashSet<RigidBody>();
 	private final Vector<Vector3> mConstrainedLinearVelocities;
 	private final Vector<Vector3> mConstrainedAngularVelocities;
 	private final TObjectIntMap<RigidBody> mMapBodyToConstrainedVelocityIndex;
-	private final boolean mIsWarmStartingActive;
-	private boolean mIsSplitImpulseActive;
-	private boolean mIsSolveFrictionAtContactManifoldCenterActive;
+	private boolean mIsSplitImpulseActive = true;
+	private boolean mIsSolveFrictionAtContactManifoldCenterActive = true;
 
 	/**
 	 * Constructs a new contact solver from the dynamics world, the constrained linear and angular
@@ -135,16 +134,9 @@ public class ContactSolver {
 	public ContactSolver(DynamicsWorld world, Vector<Vector3> constrainedLinearVelocities,
 						 Vector<Vector3> constrainedAngularVelocities, TObjectIntMap<RigidBody> mapBodyToVelocityIndex) {
 		mWorld = world;
-		mNbIterations = Configuration.DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS;
-		mSplitLinearVelocities = null;
-		mSplitAngularVelocities = null;
-		mContactConstraints = null;
 		mConstrainedLinearVelocities = constrainedLinearVelocities;
 		mConstrainedAngularVelocities = constrainedAngularVelocities;
 		mMapBodyToConstrainedVelocityIndex = mapBodyToVelocityIndex;
-		mIsWarmStartingActive = true;
-		mIsSplitImpulseActive = true;
-		mIsSolveFrictionAtContactManifoldCenterActive = true;
 	}
 
 	/**
@@ -199,7 +191,7 @@ public class ContactSolver {
 	 *
 	 * @param isActive True if the split impulses are active, false if not
 	 */
-	public void setIsSplitImpulseActive(boolean isActive) {
+	public void setSplitImpulseActive(boolean isActive) {
 		mIsSplitImpulseActive = isActive;
 	}
 
@@ -209,7 +201,7 @@ public class ContactSolver {
 	 *
 	 * @param isActive Whether or not to solve the friction constraint at the center of the manifold
 	 */
-	public void setIsSolveFrictionAtContactManifoldCenterActive(boolean isActive) {
+	public void setSolveFrictionAtContactManifoldCenterActive(boolean isActive) {
 		mIsSolveFrictionAtContactManifoldCenterActive = isActive;
 	}
 
@@ -256,9 +248,7 @@ public class ContactSolver {
 	private void initialize() {
 		mContactConstraints = new ContactManifoldSolver[mWorld.getNbContactManifolds()];
 		mNbContactManifolds = 0;
-		ContactManifold externalManifold;
-		for (Iterator<ContactManifold> iterator = mWorld.getContactManifoldsBeginIterator(); iterator.hasNext(); ) {
-			externalManifold = iterator.next();
+		for (ContactManifold externalManifold : mWorld.getContactManifolds()) {
 			if (mContactConstraints[mNbContactManifolds] == null) {
 				mContactConstraints[mNbContactManifolds] = new ContactManifoldSolver();
 			}
@@ -285,8 +275,8 @@ public class ContactSolver {
 			internalManifold.frictionCoefficient = computeMixedFrictionCoefficient(body1, body2);
 			internalManifold.externalContactManifold = externalManifold;
 			if (mIsSolveFrictionAtContactManifoldCenterActive) {
-				internalManifold.frictionPointBody1.set(new Vector3(0, 0, 0));
-				internalManifold.frictionPointBody2.set(new Vector3(0, 0, 0));
+				internalManifold.frictionPointBody1.setAllValues(0, 0, 0);
+				internalManifold.frictionPointBody2.setAllValues(0, 0, 0);
 			}
 			for (int c = 0; c < externalManifold.getNbContactPoints(); c++) {
 				if (internalManifold.contacts[c] == null) {
@@ -294,17 +284,17 @@ public class ContactSolver {
 				}
 				final ContactPointSolver contactPoint = internalManifold.contacts[c];
 				final ContactPoint externalContact = externalManifold.getContactPoint(c);
-				final Vector3 p1 = externalContact.getWorldPointOnBody1();
-				final Vector3 p2 = externalContact.getWorldPointOnBody2();
+				final Vector3 p1 = externalContact.getWorldPointOnFirstBody();
+				final Vector3 p2 = externalContact.getWorldPointOnSecondBody();
 				contactPoint.externalContact = externalContact;
 				contactPoint.normal.set(externalContact.getNormal());
 				contactPoint.r1.set(Vector3.subtract(p1, x1));
 				contactPoint.r2.set(Vector3.subtract(p2, x2));
 				contactPoint.penetrationDepth = externalContact.getPenetrationDepth();
-				contactPoint.isRestingContact = externalContact.getIsRestingContact();
-				externalContact.setIsRestingContact(true);
-				contactPoint.oldFrictionVector1.set(externalContact.getFrictionVector1());
-				contactPoint.oldFrictionVector2.set(externalContact.getFrictionVector2());
+				contactPoint.isRestingContact = externalContact.isRestingContact();
+				externalContact.setRestingContact(true);
+				contactPoint.oldFrictionVector1.set(externalContact.getFirstFrictionVector());
+				contactPoint.oldFrictionVector2.set(externalContact.getSecondFrictionVector());
 				contactPoint.penetrationImpulse = 0;
 				contactPoint.friction1Impulse = 0;
 				contactPoint.friction2Impulse = 0;
@@ -318,11 +308,11 @@ public class ContactSolver {
 				internalManifold.frictionPointBody2.divide(internalManifold.nbContacts);
 				internalManifold.r1Friction.set(Vector3.subtract(internalManifold.frictionPointBody1, x1));
 				internalManifold.r2Friction.set(Vector3.subtract(internalManifold.frictionPointBody2, x2));
-				internalManifold.oldFrictionVector1.set(externalManifold.getFrictionVector1());
-				internalManifold.oldFrictionVector2.set(externalManifold.getFrictionVector2());
-				if (mIsWarmStartingActive) {
-					internalManifold.friction1Impulse = externalManifold.getFrictionImpulse1();
-					internalManifold.friction2Impulse = externalManifold.getFrictionImpulse2();
+				internalManifold.oldFrictionVector1.set(externalManifold.getFirstFrictionVector());
+				internalManifold.oldFrictionVector2.set(externalManifold.getSecondFrictionVector());
+				if (WARM_STARTING_ACTIVE) {
+					internalManifold.friction1Impulse = externalManifold.getFirstFrictionImpulse();
+					internalManifold.friction2Impulse = externalManifold.getSecondFrictionImpulse();
 					internalManifold.frictionTwistImpulse = externalManifold.getFrictionTwistImpulse();
 				} else {
 					internalManifold.friction1Impulse = 0;
@@ -371,7 +361,7 @@ public class ContactSolver {
 			final Matrix3x3 I1 = manifold.inverseInertiaTensorBody1;
 			final Matrix3x3 I2 = manifold.inverseInertiaTensorBody2;
 			if (mIsSolveFrictionAtContactManifoldCenterActive) {
-				manifold.normal.set(new Vector3(0, 0, 0));
+				manifold.normal.setAllValues(0, 0, 0);
 			}
 			final Vector3 v1 = mConstrainedLinearVelocities.get(manifold.indexBody1);
 			final Vector3 w1 = mConstrainedAngularVelocities.get(manifold.indexBody1);
@@ -420,10 +410,10 @@ public class ContactSolver {
 				}
 				contactPoint.restitutionBias = 0;
 				final float deltaVDotN = deltaV.dot(contactPoint.normal);
-				if (deltaVDotN < Configuration.RESTITUTION_VELOCITY_THRESHOLD) {
+				if (deltaVDotN < ReactDefaults.RESTITUTION_VELOCITY_THRESHOLD) {
 					contactPoint.restitutionBias = manifold.restitutionFactor * deltaVDotN;
 				}
-				if (mIsWarmStartingActive) {
+				if (WARM_STARTING_ACTIVE) {
 					contactPoint.penetrationImpulse = externalContact.getCachedLambda(0);
 					contactPoint.friction1Impulse = externalContact.getCachedLambda(1);
 					contactPoint.friction2Impulse = externalContact.getCachedLambda(2);
@@ -695,7 +685,7 @@ public class ContactSolver {
 		mTimeStep = timeStep;
 		initialize();
 		initializeContactConstraints();
-		if (mIsWarmStartingActive) {
+		if (WARM_STARTING_ACTIVE) {
 			warmStart();
 		}
 		solveContactConstraints();
@@ -711,14 +701,14 @@ public class ContactSolver {
 				contactPoint.externalContact.setCachedLambda(0, contactPoint.penetrationImpulse);
 				contactPoint.externalContact.setCachedLambda(1, contactPoint.friction1Impulse);
 				contactPoint.externalContact.setCachedLambda(2, contactPoint.friction2Impulse);
-				contactPoint.externalContact.setFrictionVector1(contactPoint.frictionVector1);
-				contactPoint.externalContact.setFrictionVector2(contactPoint.frictionVector2);
+				contactPoint.externalContact.setFirstFrictionVector(contactPoint.frictionVector1);
+				contactPoint.externalContact.setSecondFrictionVector(contactPoint.frictionVector2);
 			}
-			manifold.externalContactManifold.setFrictionImpulse1(manifold.friction1Impulse);
-			manifold.externalContactManifold.setFrictionImpulse2(manifold.friction2Impulse);
+			manifold.externalContactManifold.setFirstFrictionImpulse(manifold.friction1Impulse);
+			manifold.externalContactManifold.setSecondFrictionImpulse(manifold.friction2Impulse);
 			manifold.externalContactManifold.setFrictionTwistImpulse(manifold.frictionTwistImpulse);
-			manifold.externalContactManifold.setFrictionVector1(manifold.frictionVector1);
-			manifold.externalContactManifold.setFrictionVector2(manifold.frictionVector2);
+			manifold.externalContactManifold.setFirstFrictionVector(manifold.frictionVector1);
+			manifold.externalContactManifold.setSecondFrictionVector(manifold.frictionVector2);
 		}
 	}
 
@@ -755,7 +745,7 @@ public class ContactSolver {
 		final Vector3 normalVelocity = Vector3.multiply(deltaVelocity.dot(contactPoint.normal), contactPoint.normal);
 		final Vector3 tangentVelocity = Vector3.subtract(deltaVelocity, normalVelocity);
 		final float lengthTangentVelocity = tangentVelocity.length();
-		if (lengthTangentVelocity > Configuration.MACHINE_EPSILON) {
+		if (lengthTangentVelocity > ReactDefaults.MACHINE_EPSILON) {
 			contactPoint.frictionVector1.set(Vector3.divide(tangentVelocity, lengthTangentVelocity));
 		} else {
 			contactPoint.frictionVector1.set(contactPoint.normal.getOneUnitOrthogonalVector());
@@ -772,7 +762,7 @@ public class ContactSolver {
 		final Vector3 normalVelocity = Vector3.multiply(deltaVelocity.dot(contact.normal), contact.normal);
 		final Vector3 tangentVelocity = Vector3.subtract(deltaVelocity, normalVelocity);
 		final float lengthTangentVelocity = tangentVelocity.length();
-		if (lengthTangentVelocity > Configuration.MACHINE_EPSILON) {
+		if (lengthTangentVelocity > ReactDefaults.MACHINE_EPSILON) {
 			contact.frictionVector1.set(Vector3.divide(tangentVelocity, lengthTangentVelocity));
 		} else {
 			contact.frictionVector1.set(contact.normal.getOneUnitOrthogonalVector());
@@ -798,10 +788,10 @@ public class ContactSolver {
 
 	// Represents an impulse that we can apply to bodies in the contact or constraint solver.
 	private static class Impulse {
-		public final Vector3 linearImpulseBody1;
-		public final Vector3 linearImpulseBody2;
-		public final Vector3 angularImpulseBody1;
-		public final Vector3 angularImpulseBody2;
+		private final Vector3 linearImpulseBody1;
+		private final Vector3 linearImpulseBody2;
+		private final Vector3 angularImpulseBody1;
+		private final Vector3 angularImpulseBody2;
 
 		private Impulse(
 				Vector3 linearImpulseBody1, Vector3 angularImpulseBody1,

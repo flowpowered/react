@@ -38,12 +38,12 @@ import org.spout.physics.collision.CollisionDetection;
  */
 public class PairManager {
 	private static final int INVALID_INDEX = Integer.MAX_VALUE;
-	private int mNbElementsHashTable;
-	private int mHashMask;
-	private int mNbOverlappingPairs;
-	private int[] mHashTable;
-	private int[] mOffsetNextPair;
-	private BodyPair[] mOverlappingPairs;
+	private int mNbElementsHashTable = 0;
+	private int mHashMask = 0;
+	private int mNbOverlappingPairs = 0;
+	private int[] mHashTable = null;
+	private int[] mOffsetNextPair = null;
+	private BodyPair[] mOverlappingPairs = null;
 	private final CollisionDetection mCollisionDetection;
 
 	/**
@@ -53,12 +53,6 @@ public class PairManager {
 	 */
 	public PairManager(CollisionDetection collisionDetection) {
 		mCollisionDetection = collisionDetection;
-		mHashTable = null;
-		mOverlappingPairs = null;
-		mOffsetNextPair = null;
-		mNbOverlappingPairs = 0;
-		mHashMask = 0;
-		mNbElementsHashTable = 0;
 	}
 
 	/**
@@ -72,21 +66,21 @@ public class PairManager {
 
 	// Compute the hash value of two bodies
 	private int computeHashBodies(int id1, int id2) {
-		return computeHash32Bits(id1 | (id2 << 16));
+		return computeHash32Bits(id1 | id2 << 16);
 	}
 
 	// Return true if pair1 and pair2 are the same
 	private boolean isDifferentPair(BodyPair pair1, int pair2ID1, int pair2ID2) {
-		return (pair2ID1 != pair1.getFirstBody().getID() || pair2ID2 != pair1.getSecondBody().getID());
+		return pair2ID1 != pair1.getFirstBody().getID() || pair2ID2 != pair1.getSecondBody().getID();
 	}
 
 	// Return the next power of two of a 32bits integer using a SWAR algorithm
 	private int computeNextPowerOfTwo(int number) {
-		number |= (number >> 1);
-		number |= (number >> 2);
-		number |= (number >> 4);
-		number |= (number >> 8);
-		number |= (number >> 16);
+		number |= number >> 1;
+		number |= number >> 2;
+		number |= number >> 4;
+		number |= number >> 8;
+		number |= number >> 16;
 		return number + 1;
 	}
 
@@ -116,11 +110,11 @@ public class PairManager {
 	// http://www.concentric.net/~ttwang/tech/inthash.htm
 	private int computeHash32Bits(int key) {
 		key += ~(key << 15);
-		key ^= (key >> 10);
-		key += (key << 3);
-		key ^= (key >> 6);
+		key ^= key >> 10;
+		key += key << 3;
+		key ^= key >> 6;
 		key += ~(key << 11);
-		key ^= (key >> 16);
+		key ^= key >> 16;
 		return key;
 	}
 
@@ -177,18 +171,18 @@ public class PairManager {
 	 *
 	 * @return The array of overlapping pairs
 	 */
-	public BodyPair[] beginOverlappingPairsPointer() {
+	public BodyPair[] getOverlappingPairs() {
 		return mOverlappingPairs;
 	}
 
 	/**
 	 * Return the last overlapping pair (used to iterate over the overlapping pairs) or returns null if
-	 * there are no overlapping pairs. Note that the array returned by {@link
-	 * #beginOverlappingPairsPointer()} contains trailing null elements.
+	 * there are no overlapping pairs. Note that the array returned by {@link #getOverlappingPairs()}
+	 * contains trailing null elements.
 	 *
 	 * @return The last overlapping pair
 	 */
-	public BodyPair endOverlappingPairsPointer() {
+	public BodyPair getLastOverlappingPair() {
 		if (mNbOverlappingPairs > 0) {
 			return mOverlappingPairs[mNbOverlappingPairs - 1];
 		} else {
@@ -253,13 +247,13 @@ public class PairManager {
 			throw new IllegalStateException("Incorrect pair was found");
 		}
 		mCollisionDetection.broadPhaseNotifyRemovedOverlappingPair(pair);
-		removePairWithHashValue(id1, id2, hashValue, computePairOffset(pair));
+		removePairWithHashValue(hashValue, computePairOffset(pair));
 		shrinkMemory();
 		return true;
 	}
 
 	// Internal method to remove a pair from the set of overlapping pair
-	private void removePairWithHashValue(int id1, int id2, int hashValue, int indexPair) {
+	private void removePairWithHashValue(int hashValue, int indexPair) {
 		int offset = mHashTable[hashValue];
 		if (offset == INVALID_INDEX) {
 			throw new IllegalStateException("offset cannot be equal to INVALID_INDEX");

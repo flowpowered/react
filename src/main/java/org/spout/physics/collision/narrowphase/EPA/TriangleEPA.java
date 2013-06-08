@@ -34,7 +34,7 @@ import org.spout.physics.math.Vector3;
 public class TriangleEPA {
 	private final int[] mIndicesVertices = new int[3];
 	private final EdgeEPA[] mAdjacentEdges = new EdgeEPA[3];
-	private boolean mIsObsolete;
+	private boolean mIsObsolete = false;
 	private float mDet;
 	private final Vector3 mClosestPoint = new Vector3();
 	private float mLambda1;
@@ -42,10 +42,11 @@ public class TriangleEPA {
 	private float mDistSquare;
 
 	/**
-	 * Default constructor for the triangle. It contains to vertices or edges and the closest point is
+	 * Default constructor for the triangle. It contains no vertices or edges and the closest point is
 	 * the zero vector. The triangle is not flagged as obsolete.
 	 */
 	public TriangleEPA() {
+		this(0, 0, 0);
 	}
 
 	/**
@@ -57,7 +58,6 @@ public class TriangleEPA {
 	 * @param indexVertex3 The third vertex index
 	 */
 	public TriangleEPA(int indexVertex1, int indexVertex2, int indexVertex3) {
-		mIsObsolete = false;
 		mIndicesVertices[0] = indexVertex1;
 		mIndicesVertices[1] = indexVertex2;
 		mIndicesVertices[2] = indexVertex3;

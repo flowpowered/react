@@ -36,7 +36,7 @@ public class Timer {
 	private double mLastUpdateTime;
 	private double mDeltaTime;
 	private double mAccumulator;
-	private boolean mIsRunning;
+	private boolean mIsRunning = false;
 
 	/**
 	 * Constructs a new time from the time step.
@@ -48,7 +48,6 @@ public class Timer {
 			throw new IllegalArgumentException("time step cannot be smaller or equal to zero");
 		}
 		mTimeStep = timeStep;
-		mIsRunning = false;
 	}
 
 	/**
@@ -66,7 +65,9 @@ public class Timer {
 	 * @param timeStep The time step to set
 	 */
 	public void setTimeStep(double timeStep) {
-		assert (timeStep > 0);
+		if (timeStep <= 0) {
+			throw new IllegalArgumentException("time step must be greater than zero");
+		}
 		mTimeStep = timeStep;
 	}
 
@@ -92,7 +93,7 @@ public class Timer {
 	 * Start the timer.
 	 */
 	public void start() {
-		mLastUpdateTime = System.nanoTime() / 1000000000.0;
+		mLastUpdateTime = System.nanoTime() / 1000000000d;
 		mAccumulator = 0;
 		mIsRunning = true;
 	}
@@ -101,7 +102,6 @@ public class Timer {
 	 * Stop the timer.
 	 */
 	public void stop() {
-		System.out.println("Timer stop");
 		mIsRunning = false;
 	}
 
@@ -135,10 +135,10 @@ public class Timer {
 	}
 
 	/**
-	 * Compute the time since the last {@link #update()} call and add it to the accumulator.
+	 * Compute the time since the last update call and add it to the accumulator.
 	 */
 	public void update() {
-		final double currentTime = System.nanoTime() / 1000000000.0;
+		final double currentTime = System.nanoTime() / 1000000000d;
 		mDeltaTime = currentTime - mLastUpdateTime;
 		mLastUpdateTime = currentTime;
 		mAccumulator += mDeltaTime;

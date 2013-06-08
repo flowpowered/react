@@ -30,7 +30,7 @@ import java.util.Comparator;
 import java.util.PriorityQueue;
 import java.util.Queue;
 
-import org.spout.physics.Configuration;
+import org.spout.physics.ReactDefaults;
 import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.narrowphase.GJK.GJKAlgorithm;
 import org.spout.physics.collision.narrowphase.GJK.Simplex;
@@ -84,7 +84,7 @@ public class EPAAlgorithm {
 		final Transform body2Tobody1 = Transform.multiply(transform1.inverse(), transform2);
 		final Matrix3x3 rotateToBody2 = Matrix3x3.multiply(transform2.getOrientation().getMatrix().getTranspose(), transform1.getOrientation().getMatrix());
 		int nbVertices = simplex.getSimplex(suppPointsA, suppPointsB, points);
-		final float tolerance = Configuration.MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint();
+		final float tolerance = ReactDefaults.MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint();
 		int nbTriangles = 0;
 		triangleStore.clear();
 		switch (nbVertices) {
@@ -296,8 +296,8 @@ public class EPAAlgorithm {
 	// Compares the EPA triangles in the queue.
 	private static class TriangleComparison implements Comparator<TriangleEPA> {
 		public int compare(TriangleEPA face1, TriangleEPA face2) {
-			float dist1 = face1.getDistSquare();
-			float dist2 = face2.getDistSquare();
+			final float dist1 = face1.getDistSquare();
+			final float dist2 = face2.getDistSquare();
 			if (dist1 == dist2) {
 				return 0;
 			}

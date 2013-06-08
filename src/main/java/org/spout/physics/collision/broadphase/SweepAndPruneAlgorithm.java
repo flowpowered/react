@@ -42,13 +42,13 @@ import org.spout.physics.math.Vector3;
  * here: www.codercorner.com/SAP.pdf.
  */
 public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
-	protected static final int INVALID_INDEX = Integer.MAX_VALUE;
-	protected BoxAABB[] mBoxes;
-	protected final EndPoint[][] mEndPoints = new EndPoint[3][];
-	protected int mNbBoxes;
-	protected int mNbMaxBoxes;
-	protected final TIntList mFreeBoxIndices = new TIntArrayList();
-	protected final TObjectIntMap<CollisionBody> mMapBodyToBoxIndex = new TObjectIntHashMap<CollisionBody>();
+	private static final int INVALID_INDEX = Integer.MAX_VALUE;
+	private BoxAABB[] mBoxes = null;
+	private final EndPoint[][] mEndPoints = {null, null, null};
+	private int mNbBoxes = 0;
+	private int mNbMaxBoxes = 0;
+	private final TIntList mFreeBoxIndices = new TIntArrayList();
+	private final TObjectIntMap<CollisionBody> mMapBodyToBoxIndex = new TObjectIntHashMap<CollisionBody>();
 
 	/**
 	 * Constructs a new sweep and prune algorithm from the collision detection it's associated to.
@@ -57,12 +57,6 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 	 */
 	public SweepAndPruneAlgorithm(CollisionDetection collisionDetection) {
 		super(collisionDetection);
-		mBoxes = null;
-		mEndPoints[0] = null;
-		mEndPoints[1] = null;
-		mEndPoints[2] = null;
-		mNbBoxes = 0;
-		mNbMaxBoxes = 0;
 	}
 
 	/**

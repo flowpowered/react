@@ -36,9 +36,10 @@ public class EdgeEPA {
 	private int mIndex;
 
 	/**
-	 * Default constructor. The owner triangle and index are null.
+	 * Default constructor. The owner triangle is null and the index is zero.
 	 */
 	public EdgeEPA() {
+		this(null, 0);
 	}
 
 	/**

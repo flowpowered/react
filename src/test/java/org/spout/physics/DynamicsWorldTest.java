@@ -41,33 +41,38 @@ public class DynamicsWorldTest {
 
 	@Test
 	public void test() throws InterruptedException {
-		final float timeStep = Configuration.DEFAULT_TIMESTEP;
-		final DynamicsWorld world = new DynamicsWorld(new Vector3(0, -9.81f, 0), timeStep);
-		final BoxShape floorShape = new BoxShape(new Vector3(10, 0.5f, 10));
-		final Transform floorTransform = new Transform(new Vector3(0, 0, 0), Quaternion.identity());
-		final Matrix3x3 floorInertia = new Matrix3x3();
-		final float floorMass = 100;
-		floorShape.computeLocalInertiaTensor(floorInertia, floorMass);
-		final RigidBody floor = world.createRigidBody(floorTransform, floorMass, floorInertia, floorShape);
-		floor.setIsMotionEnabled(false);
-		floor.setRestitution(0.5f);
-		final BoxShape boxShape = new BoxShape(new Vector3(1, 1, 1));
-		final Transform boxTransform = new Transform(new Vector3(0, 5, 0), Quaternion.identity());
-		final Matrix3x3 boxInertia = new Matrix3x3();
-		final float boxMass = 5;
-		boxShape.computeLocalInertiaTensor(boxInertia, boxMass);
-		final RigidBody box = world.createRigidBody(boxTransform, boxMass, boxInertia, boxShape);
-		box.setIsMotionEnabled(true);
-		box.setRestitution(0.5f);
-		world.start();
-		final int stepCount = Math.round((1 / timeStep) * RUN_TIME);
-		final int sleepTime = Math.round(timeStep * 1000);
-		for (int i = 0; i < stepCount; i++) {
-			final long start = System.nanoTime();
-			world.update();
-			final long delta = Math.round((System.nanoTime() - start) / 1000000d);
-			Thread.sleep(Math.max(sleepTime - delta, 0));
+		try {
+			final float timeStep = ReactDefaults.DEFAULT_TIMESTEP;
+			final DynamicsWorld world = new DynamicsWorld(new Vector3(0, -9.81f, 0), timeStep);
+			final BoxShape floorShape = new BoxShape(new Vector3(10, 0.5f, 10));
+			final Transform floorTransform = new Transform(new Vector3(0, 0, 0), Quaternion.identity());
+			final Matrix3x3 floorInertia = new Matrix3x3();
+			final float floorMass = 100;
+			floorShape.computeLocalInertiaTensor(floorInertia, floorMass);
+			final RigidBody floor = world.createRigidBody(floorTransform, floorMass, floorInertia, floorShape);
+			floor.setIsMotionEnabled(false);
+			floor.setRestitution(0.5f);
+			final BoxShape boxShape = new BoxShape(new Vector3(1, 1, 1));
+			final Transform boxTransform = new Transform(new Vector3(0, 5, 0), Quaternion.identity());
+			final Matrix3x3 boxInertia = new Matrix3x3();
+			final float boxMass = 5;
+			boxShape.computeLocalInertiaTensor(boxInertia, boxMass);
+			final RigidBody box = world.createRigidBody(boxTransform, boxMass, boxInertia, boxShape);
+			box.setIsMotionEnabled(true);
+			box.setRestitution(0.5f);
+			world.start();
+			final int stepCount = Math.round((1 / timeStep) * RUN_TIME);
+			final int sleepTime = Math.round(timeStep * 1000);
+			for (int i = 0; i < stepCount; i++) {
+				final long start = System.nanoTime();
+				world.update();
+				final long delta = Math.round((System.nanoTime() - start) / 1000000d);
+				Thread.sleep(Math.max(sleepTime - delta, 0));
+			}
+			world.stop();
+		} catch (Exception ex) {
+			ex.printStackTrace();
+			throw new RuntimeException(ex);
 		}
-		world.stop();
 	}
 }

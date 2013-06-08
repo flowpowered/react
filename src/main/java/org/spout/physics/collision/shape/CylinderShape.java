@@ -26,7 +26,7 @@
  */
 package org.spout.physics.collision.shape;
 
-import org.spout.physics.Configuration;
+import org.spout.physics.ReactDefaults;
 import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Vector3;
 
@@ -91,7 +91,7 @@ public class CylinderShape extends CollisionShape {
 	public Vector3 getLocalSupportPointWithMargin(Vector3 direction) {
 		final Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction);
 		final Vector3 unitVec;
-		if (direction.lengthSquare() > Configuration.MACHINE_EPSILON * Configuration.MACHINE_EPSILON) {
+		if (direction.lengthSquare() > ReactDefaults.MACHINE_EPSILON * ReactDefaults.MACHINE_EPSILON) {
 			unitVec = direction.getUnit();
 		} else {
 			unitVec = new Vector3(0, 1, 0);
@@ -106,7 +106,7 @@ public class CylinderShape extends CollisionShape {
 		final float uDotv = direction.getY();
 		final Vector3 w = new Vector3(direction.getX(), 0, direction.getZ());
 		final float lengthW = (float) Math.sqrt(direction.getX() * direction.getX() + direction.getZ() * direction.getZ());
-		if (lengthW > Configuration.MACHINE_EPSILON) {
+		if (lengthW > ReactDefaults.MACHINE_EPSILON) {
 			if (uDotv < 0.0) {
 				supportPoint.setY(-mHalfHeight);
 			} else {
@@ -130,7 +130,7 @@ public class CylinderShape extends CollisionShape {
 
 	@Override
 	public float getMargin() {
-		return Configuration.OBJECT_MARGIN;
+		return ReactDefaults.OBJECT_MARGIN;
 	}
 
 	@Override

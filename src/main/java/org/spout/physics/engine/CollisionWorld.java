@@ -28,7 +28,6 @@ package org.spout.physics.engine;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,14 +50,13 @@ public abstract class CollisionWorld {
 	protected final CollisionDetection mCollisionDetection;
 	protected final Set<CollisionBody> mBodies = new HashSet<CollisionBody>();
 	protected final Map<IntPair, OverlappingPair> mOverlappingPairs = new HashMap<IntPair, OverlappingPair>();
-	private int mCurrentBodyID;
+	protected int mCurrentBodyID = 0;
 	protected final TIntList mFreeBodiesIDs = new TIntArrayList();
 
 	/**
 	 * Constructs a new empty collision world.
 	 */
-	public CollisionWorld() {
-		mCurrentBodyID = 0;
+	protected CollisionWorld() {
 		mCollisionDetection = new CollisionDetection(this);
 	}
 
@@ -92,12 +90,12 @@ public abstract class CollisionWorld {
 	public abstract void updateOverlappingPair(BroadPhasePair pair);
 
 	/**
-	 * Gets an iterator to the beginning of the bodies of the physics world.
+	 * Gets the set of the bodies of the physics world.
 	 *
-	 * @return The {@link java.util.Iterator} of {@link org.spout.physics.body.CollisionBody}
+	 * @return The {@link java.util.Set} of {@link org.spout.physics.body.CollisionBody}
 	 */
-	public Iterator<CollisionBody> getBodiesBeginIterator() {
-		return mBodies.iterator();
+	public Set<CollisionBody> getBodies() {
+		return mBodies;
 	}
 
 	/**

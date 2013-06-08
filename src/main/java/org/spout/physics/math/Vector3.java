@@ -26,7 +26,7 @@
  */
 package org.spout.physics.math;
 
-import org.spout.physics.Configuration;
+import org.spout.physics.ReactDefaults;
 
 /**
  * Represents a 3D vector in space.
@@ -56,6 +56,15 @@ public class Vector3 {
 	}
 
 	/**
+	 * Copy constructor
+	 *
+	 * @param vector to copy
+	 */
+	public Vector3(Vector3 vector) {
+		this(vector.getX(), vector.getY(), vector.getZ());
+	}
+
+	/**
 	 * Constructor with arguments.
 	 *
 	 * @param x value
@@ -63,18 +72,7 @@ public class Vector3 {
 	 * @param z value
 	 */
 	public Vector3(float x, float y, float z) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
-	}
-
-	/**
-	 * Copy constructor
-	 *
-	 * @param vector to copy
-	 */
-	public Vector3(Vector3 vector) {
-		this(vector.getX(), vector.getY(), vector.getZ());
+		setAllValues(x, y, z);
 	}
 
 	/**
@@ -111,7 +109,7 @@ public class Vector3 {
 	 * @param y value to set
 	 * @param z value to set
 	 */
-	public void setAllValues(float x, float y, float z) {
+	public final void setAllValues(float x, float y, float z) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -123,9 +121,7 @@ public class Vector3 {
 	 * @param vector The vector3 to copy the values from
 	 */
 	public Vector3 set(Vector3 vector) {
-		x = vector.getX();
-		y = vector.getY();
-		z = vector.getZ();
+		setAllValues(vector.getX(), vector.getY(), vector.getZ());
 		return this;
 	}
 
@@ -160,9 +156,7 @@ public class Vector3 {
 	 * Sets the x, y and z values to zero.
 	 */
 	public void setToZero() {
-		x = 0;
-		y = 0;
-		z = 0;
+		setAllValues(0, 0, 0);
 	}
 
 	/**
@@ -226,7 +220,7 @@ public class Vector3 {
 	 */
 	public Vector3 getUnit() {
 		final float lengthVector = length();
-		if (lengthVector <= Configuration.MACHINE_EPSILON) {
+		if (lengthVector <= ReactDefaults.MACHINE_EPSILON) {
 			throw new IllegalArgumentException("Cannot normalize the zero vector");
 		}
 		final float lengthInv = 1 / lengthVector;
@@ -239,7 +233,7 @@ public class Vector3 {
 	 * @return an orthogonal {@link Vector3} of the current vector
 	 */
 	public Vector3 getOneUnitOrthogonalVector() {
-		if (length() <= Configuration.MACHINE_EPSILON) {
+		if (length() <= ReactDefaults.MACHINE_EPSILON) {
 			throw new IllegalArgumentException("Cannot normalize the zero vector");
 		}
 		final Vector3 vectorAbs = new Vector3(Math.abs(x), Math.abs(y), Math.abs(z));
@@ -260,7 +254,7 @@ public class Vector3 {
 	 */
 	public Vector3 normalize() {
 		final float l = length();
-		if (l <= Configuration.MACHINE_EPSILON) {
+		if (l <= ReactDefaults.MACHINE_EPSILON) {
 			throw new IllegalArgumentException("Cannot normalize the zero vector");
 		}
 		x /= l;
@@ -323,9 +317,7 @@ public class Vector3 {
 	 * @return this vector, after negation is finished
 	 */
 	public Vector3 negate() {
-		x = -x;
-		y = -y;
-		z = -z;
+		setAllValues(-x, -y, -z);
 		return this;
 	}
 
@@ -362,7 +354,7 @@ public class Vector3 {
 	 * @return this vector, after division is finished
 	 */
 	public Vector3 divide(float value) {
-		if (value <= Configuration.MACHINE_EPSILON) {
+		if (value <= ReactDefaults.MACHINE_EPSILON) {
 			throw new IllegalArgumentException("Cannot divide by zero");
 		}
 		x /= value;
@@ -526,7 +518,7 @@ public class Vector3 {
 	 * @return the quotient (vector3) of the vector and the value
 	 */
 	public static Vector3 divide(Vector3 vector, float value) {
-		if (value <= Configuration.MACHINE_EPSILON) {
+		if (value <= ReactDefaults.MACHINE_EPSILON) {
 			throw new IllegalArgumentException("Cannot divide by zero");
 		}
 		return new Vector3(

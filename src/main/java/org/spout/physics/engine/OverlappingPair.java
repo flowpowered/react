@@ -39,8 +39,8 @@ import org.spout.physics.math.Vector3;
 public class OverlappingPair {
 	private final CollisionBody mBody1;
 	private final CollisionBody mBody2;
-	private final ContactManifold mContactManifold;
-	private final Vector3 mCachedSeparatingAxis;
+	private final ContactManifold mContactManifold = new ContactManifold();
+	private final Vector3 mCachedSeparatingAxis = new Vector3(1, 1, 1);
 
 	/**
 	 * Constructs a new overlapping pair from the first and second body.
@@ -51,8 +51,6 @@ public class OverlappingPair {
 	public OverlappingPair(CollisionBody body1, CollisionBody body2) {
 		mBody1 = body1;
 		mBody2 = body2;
-		mContactManifold = new ContactManifold(body1, body2);
-		mCachedSeparatingAxis = new Vector3(1, 1, 1);
 	}
 
 	/**
@@ -60,7 +58,7 @@ public class OverlappingPair {
 	 *
 	 * @return The first body
 	 */
-	public CollisionBody getBody1() {
+	public CollisionBody getFirstBody() {
 		return mBody1;
 	}
 
@@ -69,7 +67,7 @@ public class OverlappingPair {
 	 *
 	 * @return The second body
 	 */
-	public CollisionBody getBody2() {
+	public CollisionBody getSecondBody() {
 		return mBody2;
 	}
 

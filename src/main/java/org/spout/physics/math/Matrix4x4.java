@@ -75,11 +75,7 @@ public class Matrix4x4 {
 	 * Default constructor. All values are 0.
 	 */
 	public Matrix4x4() {
-		setAllValues(
-				0, 0, 0, 0,
-				0, 0, 0, 0,
-				0, 0, 0, 0,
-				0, 0, 0, 0);
+		this(0);
 	}
 
 	/**
@@ -88,11 +84,24 @@ public class Matrix4x4 {
 	 * @param value The value to use
 	 */
 	public Matrix4x4(float value) {
-		setAllValues(
+		this(
 				value, value, value, value,
 				value, value, value, value,
 				value, value, value, value,
 				value, value, value, value);
+	}
+
+	/**
+	 * Copy constructor.
+	 *
+	 * @param matrix The matrix to copy
+	 */
+	public Matrix4x4(Matrix4x4 matrix) {
+		this(
+				matrix.get(0, 0), matrix.get(0, 1), matrix.get(0, 2), matrix.get(0, 3),
+				matrix.get(1, 0), matrix.get(1, 1), matrix.get(1, 2), matrix.get(1, 3),
+				matrix.get(2, 0), matrix.get(2, 1), matrix.get(2, 2), matrix.get(2, 3),
+				matrix.get(3, 0), matrix.get(3, 1), matrix.get(3, 2), matrix.get(3, 3));
 	}
 
 	/**
@@ -123,19 +132,6 @@ public class Matrix4x4 {
 	}
 
 	/**
-	 * Copy constructor.
-	 *
-	 * @param matrix The matrix to copy
-	 */
-	public Matrix4x4(Matrix4x4 matrix) {
-		setAllValues(
-				matrix.get(0, 0), matrix.get(0, 1), matrix.get(0, 2), matrix.get(0, 3),
-				matrix.get(1, 0), matrix.get(1, 1), matrix.get(1, 2), matrix.get(1, 3),
-				matrix.get(2, 0), matrix.get(2, 1), matrix.get(2, 2), matrix.get(2, 3),
-				matrix.get(3, 0), matrix.get(3, 1), matrix.get(3, 2), matrix.get(3, 3));
-	}
-
-	/**
 	 * Sets all the values to the provided ones.
 	 *
 	 * @param a1 The value for 0,0
@@ -159,22 +155,10 @@ public class Matrix4x4 {
 								   float b1, float b2, float b3, float b4,
 								   float c1, float c2, float c3, float c4,
 								   float d1, float d2, float d3, float d4) {
-		mRows[0].setX(a1);
-		mRows[0].setY(a2);
-		mRows[0].setZ(a3);
-		mRows[0].setW(a4);
-		mRows[1].setX(b1);
-		mRows[1].setY(b2);
-		mRows[1].setZ(b3);
-		mRows[1].setW(b4);
-		mRows[2].setX(c1);
-		mRows[2].setY(c2);
-		mRows[2].setZ(c3);
-		mRows[2].setW(c4);
-		mRows[3].setX(d1);
-		mRows[3].setY(d2);
-		mRows[3].setZ(d3);
-		mRows[3].setW(d4);
+		mRows[0].setAllValues(a1, a2, a3, a4);
+		mRows[1].setAllValues(b1, b2, b3, b4);
+		mRows[2].setAllValues(c1, c2, c3, c4);
+		mRows[3].setAllValues(d1, d2, d3, d4);
 	}
 
 	/**
@@ -265,22 +249,10 @@ public class Matrix4x4 {
 	 * Sets all the matrix values to identity.
 	 */
 	public void setToIdentity() {
-		mRows[0].set(0, 1);
-		mRows[0].set(1, 0);
-		mRows[0].set(2, 0);
-		mRows[0].set(3, 0);
-		mRows[1].set(0, 0);
-		mRows[1].set(1, 1);
-		mRows[1].set(2, 0);
-		mRows[1].set(3, 0);
-		mRows[2].set(0, 0);
-		mRows[2].set(1, 0);
-		mRows[2].set(2, 1);
-		mRows[2].set(3, 0);
-		mRows[3].set(0, 0);
-		mRows[3].set(1, 0);
-		mRows[3].set(2, 0);
-		mRows[3].set(3, 1);
+		mRows[0].setAllValues(1, 0, 0, 0);
+		mRows[1].setAllValues(0, 1, 0, 0);
+		mRows[2].setAllValues(0, 0, 1, 0);
+		mRows[3].setAllValues(0, 0, 0, 1);
 	}
 
 	/**

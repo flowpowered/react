@@ -37,14 +37,7 @@ import org.spout.physics.math.Transform;
  * of a collision between two bodies.
  */
 public abstract class NarrowPhaseAlgorithm {
-	protected BroadPhasePair mCurrentOverlappingPair;
-
-	/**
-	 * Default constructor. The current overlapping pair is null.
-	 */
-	public NarrowPhaseAlgorithm() {
-		mCurrentOverlappingPair = null;
-	}
+	protected BroadPhasePair mCurrentOverlappingPair = null;
 
 	/**
 	 * Sets the current overlapping pair.

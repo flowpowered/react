@@ -26,7 +26,7 @@
  */
 package org.spout.physics.collision.shape;
 
-import org.spout.physics.Configuration;
+import org.spout.physics.ReactDefaults;
 import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Vector3;
 
@@ -96,7 +96,7 @@ public class BoxShape extends CollisionShape {
 
 	@Override
 	public float getMargin() {
-		return Configuration.OBJECT_MARGIN;
+		return ReactDefaults.OBJECT_MARGIN;
 	}
 
 	@Override

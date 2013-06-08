@@ -26,10 +26,11 @@
  */
 package org.spout.physics.math;
 
-import org.spout.physics.Configuration;
+import org.spout.physics.ReactDefaults;
 
 /**
- * Represents a quaternion. The notation q = (x*i, y*j, z*k, w) is used to represent the quaternion.
+ * Represents a quaternion. The notation q = (x*i, y*j, z*k, w) is used to represent the
+ * quaternion.
  */
 public class Quaternion {
 	private float x;
@@ -42,21 +43,6 @@ public class Quaternion {
 	 */
 	public Quaternion() {
 		this(0, 0, 0, 0);
-	}
-
-	/**
-	 * Constructs a new quaternion with the desired values for each component.
-	 *
-	 * @param x The value of the x component
-	 * @param y The value of the y component
-	 * @param z The value of the z component
-	 * @param w The value of the w component
-	 */
-	public Quaternion(float x, float y, float z, float w) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		this.w = w;
 	}
 
 	/**
@@ -77,6 +63,18 @@ public class Quaternion {
 	 */
 	public Quaternion(Quaternion quaternion) {
 		this(quaternion.getX(), quaternion.getY(), quaternion.getZ(), quaternion.getW());
+	}
+
+	/**
+	 * Constructs a new quaternion with the desired values for each component.
+	 *
+	 * @param x The value of the x component
+	 * @param y The value of the y component
+	 * @param z The value of the z component
+	 * @param w The value of the w component
+	 */
+	public Quaternion(float x, float y, float z, float w) {
+		setAllValues(x, y, z, w);
 	}
 
 	/**
@@ -206,10 +204,7 @@ public class Quaternion {
 	 * @param quaternion The quaternion to copy the values from
 	 */
 	public Quaternion set(Quaternion quaternion) {
-		x = quaternion.getX();
-		y = quaternion.getY();
-		z = quaternion.getZ();
-		w = quaternion.getW();
+		setAllValues(quaternion.getX(), quaternion.getY(), quaternion.getZ(), quaternion.getW());
 		return this;
 	}
 
@@ -221,7 +216,7 @@ public class Quaternion {
 	 * @param z The desired z value
 	 * @param w The desired w value
 	 */
-	public void setAllValues(float x, float y, float z, float w) {
+	public final void setAllValues(float x, float y, float z, float w) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -232,10 +227,7 @@ public class Quaternion {
 	 * Sets the x, y, z and w values of this quaternion to zero.
 	 */
 	public void setToZero() {
-		x = 0;
-		y = 0;
-		z = 0;
-		w = 0;
+		setAllValues(0, 0, 0, 0);
 	}
 
 	/**
@@ -261,7 +253,7 @@ public class Quaternion {
 	 */
 	public void normalize() {
 		final float l = length();
-		if (l <= Configuration.MACHINE_EPSILON) {
+		if (l <= ReactDefaults.MACHINE_EPSILON) {
 			throw new IllegalArgumentException("Cannot normalize the zero quaternion");
 		}
 		x /= l;
@@ -271,14 +263,14 @@ public class Quaternion {
 	}
 
 	/**
-	 * Gets the unit length quaternion for this quaternion. Both have the same orientation. Creates
-	 * a new quaternion.
+	 * Gets the unit length quaternion for this quaternion. Both have the same orientation. Creates a
+	 * new quaternion.
 	 *
 	 * @return The unit length quaternion for this one
 	 */
 	public Quaternion getUnit() {
 		final float lengthQuaternion = length();
-		if (lengthQuaternion <= Configuration.MACHINE_EPSILON) {
+		if (lengthQuaternion <= ReactDefaults.MACHINE_EPSILON) {
 			throw new IllegalArgumentException("Cannot normalize the zero quaternion");
 		}
 		return new Quaternion(
@@ -305,7 +297,7 @@ public class Quaternion {
 	public Quaternion getInverse() {
 		float lengthQuaternion = length();
 		lengthQuaternion *= lengthQuaternion;
-		if (lengthQuaternion <= Configuration.MACHINE_EPSILON) {
+		if (lengthQuaternion <= ReactDefaults.MACHINE_EPSILON) {
 			throw new IllegalArgumentException("Cannot normalize the zero quaternion");
 		}
 		return new Quaternion(
@@ -327,8 +319,7 @@ public class Quaternion {
 
 	/**
 	 * Gets the rotation represented as an angle around an axis. The angle part is returned by the
-	 * method, while the axis, represented as a vector, will be stored in the passed vector
-	 * parameter.
+	 * method, while the axis, represented as a vector, will be stored in the passed vector parameter.
 	 *
 	 * @param axis The vector in which to store the axis component values
 	 * @return The angle as a float
@@ -472,7 +463,7 @@ public class Quaternion {
 		return new Quaternion(
 				quaternion1.getW() * quaternion2.getW() - quaternion1.getVectorV().dot(quaternion2.getVectorV()),
 				quaternion2.getVectorV().multiply(quaternion1.getW()).add(quaternion1.getVectorV().multiply(quaternion2.getW())).
-				add(quaternion1.getVectorV().cross(quaternion2.getVectorV())));
+						add(quaternion1.getVectorV().cross(quaternion2.getVectorV())));
 	}
 
 	/**
@@ -496,12 +487,12 @@ public class Quaternion {
 	 * @return The interpolated quaternion
 	 */
 	public static Quaternion slerp(Quaternion quaternion1, Quaternion quaternion2, float percent) {
-		if (percent < 0.0 && percent > 1.0) {
+		if (percent < 0 && percent > 1) {
 			throw new IllegalArgumentException("\"percent\" must be greater than zero and smaller than one");
 		}
 		final float invert;
 		float cosineTheta = quaternion1.dot(quaternion2);
-		if (cosineTheta < 0.0) {
+		if (cosineTheta < 0) {
 			cosineTheta = -cosineTheta;
 			invert = -1;
 		} else {

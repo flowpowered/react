@@ -28,7 +28,7 @@ package org.spout.physics.math;
 
 import java.util.Arrays;
 
-import org.spout.physics.Configuration;
+import org.spout.physics.ReactDefaults;
 
 /**
  * Represents a 3x3 matrix.
@@ -68,7 +68,7 @@ public class Matrix3x3 {
 	 * Default constructor. All values are 0.
 	 */
 	public Matrix3x3() {
-		setAllValues(0, 0, 0, 0, 0, 0, 0, 0, 0);
+		this(0);
 	}
 
 	/**
@@ -77,7 +77,19 @@ public class Matrix3x3 {
 	 * @param value The value to use
 	 */
 	public Matrix3x3(float value) {
-		setAllValues(value, value, value, value, value, value, value, value, value);
+		this(value, value, value, value, value, value, value, value, value);
+	}
+
+	/**
+	 * Copy constructor.
+	 *
+	 * @param matrix The matrix to copy
+	 */
+	public Matrix3x3(Matrix3x3 matrix) {
+		this(
+				matrix.get(0, 0), matrix.get(0, 1), matrix.get(0, 2),
+				matrix.get(1, 0), matrix.get(1, 1), matrix.get(1, 2),
+				matrix.get(2, 0), matrix.get(2, 1), matrix.get(2, 2));
 	}
 
 	/**
@@ -100,18 +112,6 @@ public class Matrix3x3 {
 	}
 
 	/**
-	 * Copy constructor.
-	 *
-	 * @param matrix The matrix to copy
-	 */
-	public Matrix3x3(Matrix3x3 matrix) {
-		setAllValues(
-				matrix.get(0, 0), matrix.get(0, 1), matrix.get(0, 2),
-				matrix.get(1, 0), matrix.get(1, 1), matrix.get(1, 2),
-				matrix.get(2, 0), matrix.get(2, 1), matrix.get(2, 2));
-	}
-
-	/**
 	 * Sets all the values to the provided ones.
 	 *
 	 * @param a1 The value for 0,0
@@ -127,15 +127,9 @@ public class Matrix3x3 {
 	public final void setAllValues(float a1, float a2, float a3,
 								   float b1, float b2, float b3,
 								   float c1, float c2, float c3) {
-		mRows[0].setX(a1);
-		mRows[0].setY(a2);
-		mRows[0].setZ(a3);
-		mRows[1].setX(b1);
-		mRows[1].setY(b2);
-		mRows[1].setZ(b3);
-		mRows[2].setX(c1);
-		mRows[2].setY(c2);
-		mRows[2].setZ(c3);
+		mRows[0].setAllValues(a1, a2, a3);
+		mRows[1].setAllValues(b1, b2, b3);
+		mRows[2].setAllValues(c1, c2, c3);
 	}
 
 	/**
@@ -220,15 +214,9 @@ public class Matrix3x3 {
 	 * Sets all the matrix values to identity.
 	 */
 	public void setToIdentity() {
-		mRows[0].set(0, 1);
-		mRows[0].set(1, 0);
-		mRows[0].set(2, 0);
-		mRows[1].set(0, 0);
-		mRows[1].set(1, 1);
-		mRows[1].set(2, 0);
-		mRows[2].set(0, 0);
-		mRows[2].set(1, 0);
-		mRows[2].set(2, 1);
+		mRows[0].setAllValues(1, 0, 0);
+		mRows[1].setAllValues(0, 1, 0);
+		mRows[2].setAllValues(0, 0, 1);
 	}
 
 	/**
@@ -261,7 +249,7 @@ public class Matrix3x3 {
 	 */
 	public Matrix3x3 getInverse() {
 		final float determinant = getDeterminant();
-		if (Math.abs(determinant) <= Configuration.MACHINE_EPSILON) {
+		if (Math.abs(determinant) <= ReactDefaults.MACHINE_EPSILON) {
 			throw new IllegalStateException("Determinant of matrix cannot be zero");
 		}
 		final float invDeterminant = 1 / determinant;

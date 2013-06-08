@@ -27,14 +27,13 @@
 package org.spout.physics.engine;
 
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 import java.util.Vector;
 
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
 
-import org.spout.physics.Configuration;
+import org.spout.physics.ReactDefaults;
 import org.spout.physics.Utilities.IntPair;
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.BroadPhasePair;
@@ -54,12 +53,11 @@ import org.spout.physics.math.Vector3;
 public class DynamicsWorld extends CollisionWorld {
 	private final Timer mTimer;
 	private final ContactSolver mContactSolver;
-	private final boolean mIsDeactivationActive;
 	private final Set<RigidBody> mRigidBodies = new HashSet<RigidBody>();
 	private final Vector<ContactManifold> mContactManifolds = new Vector<ContactManifold>();
 	private final Vector<Constraint> mConstraints = new Vector<Constraint>();
 	private final Vector3 mGravity;
-	private boolean mIsGravityOn;
+	private boolean mIsGravityOn = true;
 	private final Vector<Vector3> mConstrainedLinearVelocities = new Vector<Vector3>();
 	private final Vector<Vector3> mConstrainedAngularVelocities = new Vector<Vector3>();
 	private final TObjectIntMap<RigidBody> mMapBodyToConstrainedVelocityIndex = new TObjectIntHashMap<RigidBody>();
@@ -70,7 +68,7 @@ public class DynamicsWorld extends CollisionWorld {
 	 * @param gravity The gravity
 	 */
 	public DynamicsWorld(Vector3 gravity) {
-		this(gravity, Configuration.DEFAULT_TIMESTEP);
+		this(gravity, ReactDefaults.DEFAULT_TIMESTEP);
 	}
 
 	/**
@@ -82,13 +80,11 @@ public class DynamicsWorld extends CollisionWorld {
 	public DynamicsWorld(Vector3 gravity, float timeStep) {
 		mTimer = new Timer(timeStep);
 		mGravity = gravity;
-		mIsGravityOn = true;
 		mContactSolver = new ContactSolver(
 				this,
 				mConstrainedLinearVelocities,
 				mConstrainedAngularVelocities,
 				mMapBodyToConstrainedVelocityIndex);
-		mIsDeactivationActive = Configuration.DEACTIVATION_ENABLED;
 	}
 
 	/**
@@ -102,7 +98,6 @@ public class DynamicsWorld extends CollisionWorld {
 	 * Stops the physics simulation.
 	 */
 	public void stop() {
-		System.out.println("Stop Simulation");
 		mTimer.stop();
 	}
 
@@ -121,7 +116,7 @@ public class DynamicsWorld extends CollisionWorld {
 	 * @param isActive True if the split impulses are active, false if not
 	 */
 	public void setIsSplitImpulseActive(boolean isActive) {
-		mContactSolver.setIsSplitImpulseActive(isActive);
+		mContactSolver.setSplitImpulseActive(isActive);
 	}
 
 	/**
@@ -131,13 +126,13 @@ public class DynamicsWorld extends CollisionWorld {
 	 * @param isActive Whether or not to solve the friction constraint at the center of the manifold
 	 */
 	public void setIsSolveFrictionAtContactManifoldCenterActive(boolean isActive) {
-		mContactSolver.setIsSolveFrictionAtContactManifoldCenterActive(isActive);
+		mContactSolver.setSolveFrictionAtContactManifoldCenterActive(isActive);
 	}
 
 	// Resets the boolean movement variable for each body.
 	private void resetBodiesMovementVariable() {
-		for (Iterator<RigidBody> iterator = getRigidBodiesBeginIterator(); iterator.hasNext(); ) {
-			iterator.next().setHasMoved(false);
+		for (RigidBody rigidBody : getRigidBodies()) {
+			rigidBody.setHasMoved(false);
 		}
 	}
 
@@ -186,17 +181,17 @@ public class DynamicsWorld extends CollisionWorld {
 	 *
 	 * @return Whether or not the gravity is on
 	 */
-	public boolean getIsGravityOn() {
+	public boolean isGravityOn() {
 		return mIsGravityOn;
 	}
 
 	/**
 	 * Sets the gravity on if true, off is false.
 	 *
-	 * @param isGravityOn True to turn on the gravity, false to turn it off
+	 * @param gravityOn True to turn on the gravity, false to turn it off
 	 */
-	public void setIsGravityOn(boolean isGravityOn) {
-		mIsGravityOn = isGravityOn;
+	public void setGravityOn(boolean gravityOn) {
+		mIsGravityOn = gravityOn;
 	}
 
 	/**
@@ -209,12 +204,12 @@ public class DynamicsWorld extends CollisionWorld {
 	}
 
 	/**
-	 * Gets an iterator to the beginning of the bodies of the physics world.
+	 * Gets the set of bodies of the physics world.
 	 *
-	 * @return The iterator for the rigid bodies
+	 * @return The rigid bodies
 	 */
-	public Iterator<RigidBody> getRigidBodiesBeginIterator() {
-		return mRigidBodies.iterator();
+	public Set<RigidBody> getRigidBodies() {
+		return mRigidBodies;
 	}
 
 	/**
@@ -227,21 +222,21 @@ public class DynamicsWorld extends CollisionWorld {
 	}
 
 	/**
-	 * Gets the iterator on the constraint list.
+	 * Gets the constraint list.
 	 *
-	 * @return The iterator for the constraints
+	 * @return The constraints
 	 */
-	public Iterator<Constraint> getConstraintsBeginIterator() {
-		return mConstraints.iterator();
+	public Vector<Constraint> getConstraints() {
+		return mConstraints;
 	}
 
 	/**
-	 * Gets the iterator on the contact manifolds list.
+	 * Gets the contact manifolds list.
 	 *
-	 * @return The iterator for the contact manifolds
+	 * @return The contact manifolds
 	 */
-	public Iterator<ContactManifold> getContactManifoldsBeginIterator() {
-		return mContactManifolds.iterator();
+	public Vector<ContactManifold> getContactManifolds() {
+		return mContactManifolds;
 	}
 
 	/**
@@ -272,9 +267,7 @@ public class DynamicsWorld extends CollisionWorld {
 	// Updates the position and orientation of the rigid bodies.
 	private void updateRigidBodiesPositionAndOrientation() {
 		final float dt = (float) mTimer.getTimeStep();
-		RigidBody rigidBody;
-		for (Iterator<RigidBody> iterator = getRigidBodiesBeginIterator(); iterator.hasNext(); ) {
-			rigidBody = iterator.next();
+		for (RigidBody rigidBody : getRigidBodies()) {
 			if (rigidBody == null) {
 				throw new IllegalStateException("rigid body cannot be null");
 			}
@@ -309,13 +302,11 @@ public class DynamicsWorld extends CollisionWorld {
 	// Computes and set the interpolation factor for all bodies.
 	private void setInterpolationFactorToAllBodies() {
 		final float factor = mTimer.computeInterpolationFactor();
-		if (factor < 0 && factor > 1.0) {
+		if (factor < 0 && factor > 1) {
 			throw new IllegalStateException("interpolation factor must be greater or equal to zero"
 					+ " and smaller or equal to one");
 		}
-		RigidBody rigidBody;
-		for (Iterator<RigidBody> iterator = getRigidBodiesBeginIterator(); iterator.hasNext(); ) {
-			rigidBody = iterator.next();
+		for (RigidBody rigidBody : getRigidBodies()) {
 			if (rigidBody == null) {
 				throw new IllegalStateException("rigid body cannot be null");
 			}
@@ -354,9 +345,7 @@ public class DynamicsWorld extends CollisionWorld {
 
 	// Applies the gravity force to all bodies of the physics world.
 	private void applyGravity() {
-		RigidBody rigidBody;
-		for (Iterator<RigidBody> iterator = getRigidBodiesBeginIterator(); iterator.hasNext(); ) {
-			rigidBody = iterator.next();
+		for (RigidBody rigidBody : getRigidBodies()) {
 			if (rigidBody == null) {
 				throw new IllegalStateException("rigid body cannot be null");
 			}

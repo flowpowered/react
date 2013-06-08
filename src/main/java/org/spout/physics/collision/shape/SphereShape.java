@@ -26,7 +26,7 @@
  */
 package org.spout.physics.collision.shape;
 
-import org.spout.physics.Configuration;
+import org.spout.physics.ReactDefaults;
 import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
@@ -68,7 +68,7 @@ public class SphereShape extends CollisionShape {
 	@Override
 	public Vector3 getLocalSupportPointWithMargin(Vector3 direction) {
 		final float margin = getMargin();
-		if (direction.lengthSquare() >= Configuration.MACHINE_EPSILON * Configuration.MACHINE_EPSILON) {
+		if (direction.lengthSquare() >= ReactDefaults.MACHINE_EPSILON * ReactDefaults.MACHINE_EPSILON) {
 			return Vector3.multiply(margin, direction.getUnit());
 		}
 		return new Vector3(0, margin, 0);
@@ -86,7 +86,7 @@ public class SphereShape extends CollisionShape {
 
 	@Override
 	public float getMargin() {
-		return mRadius + Configuration.OBJECT_MARGIN;
+		return mRadius + ReactDefaults.OBJECT_MARGIN;
 	}
 
 	@Override
@@ -100,7 +100,7 @@ public class SphereShape extends CollisionShape {
 
 	@Override
 	public void updateAABB(AABB aabb, Transform transform) {
-		final Vector3 extents = getLocalExtents(Configuration.OBJECT_MARGIN);
+		final Vector3 extents = getLocalExtents(ReactDefaults.OBJECT_MARGIN);
 		final Vector3 minCoordinates = Vector3.subtract(transform.getPosition(), extents);
 		final Vector3 maxCoordinates = Vector3.add(transform.getPosition(), extents);
 		aabb.setMin(minCoordinates);

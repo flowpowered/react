@@ -29,7 +29,7 @@ package org.spout.physics;
 /**
  * Physics engine constants
  */
-public class Configuration {
+public class ReactDefaults {
 	/**
 	 * The machine epsilon.
 	 */

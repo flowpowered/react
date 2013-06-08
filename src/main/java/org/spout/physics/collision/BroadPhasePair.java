@@ -36,7 +36,7 @@ import org.spout.physics.math.Vector3;
 public class BroadPhasePair {
 	private CollisionBody body1;
 	private CollisionBody body2;
-	private final Vector3 previousSeparatingAxis;
+	private final Vector3 previousSeparatingAxis = new Vector3(1, 1, 1);
 
 	/**
 	 * Constructs a new broad phase pair from the first and the second body.
@@ -47,7 +47,6 @@ public class BroadPhasePair {
 	public BroadPhasePair(CollisionBody body1, CollisionBody body2) {
 		this.body1 = body1;
 		this.body2 = body2;
-		previousSeparatingAxis = new Vector3(1, 1, 1);
 	}
 
 	/**

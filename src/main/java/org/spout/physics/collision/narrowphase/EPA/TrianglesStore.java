@@ -35,14 +35,7 @@ import org.spout.physics.math.Vector3;
 public class TrianglesStore {
 	public static final int MAX_TRIANGLES = 200;
 	private final TriangleEPA[] mTriangles = new TriangleEPA[MAX_TRIANGLES];
-	private int mNbTriangles;
-
-	/**
-	 * Default constructor. Creates a new empty triangle store.
-	 */
-	public TrianglesStore() {
-		mNbTriangles = 0;
-	}
+	private int mNbTriangles = 0;
 
 	/**
 	 * Clears all the triangles in the storage.

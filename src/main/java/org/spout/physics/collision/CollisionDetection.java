@@ -27,7 +27,6 @@
 package org.spout.physics.collision;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -52,8 +51,8 @@ public class CollisionDetection {
 	private final CollisionWorld mWorld;
 	private final Map<IntPair, BroadPhasePair> mOverlappingPairs = new HashMap<IntPair, BroadPhasePair>();
 	private final BroadPhaseAlgorithm mBroadPhaseAlgorithm;
-	private final GJKAlgorithm mNarrowPhaseGJKAlgorithm;
-	private final SphereVsSphereAlgorithm mNarrowPhaseSphereVsSphereAlgorithm;
+	private final GJKAlgorithm mNarrowPhaseGJKAlgorithm = new GJKAlgorithm();
+	private final SphereVsSphereAlgorithm mNarrowPhaseSphereVsSphereAlgorithm = new SphereVsSphereAlgorithm();
 
 	/**
 	 * Constructs a new collision detection from the collision world.
@@ -62,8 +61,6 @@ public class CollisionDetection {
 	 */
 	public CollisionDetection(CollisionWorld world) {
 		mWorld = world;
-		mNarrowPhaseGJKAlgorithm = new GJKAlgorithm();
-		mNarrowPhaseSphereVsSphereAlgorithm = new SphereVsSphereAlgorithm();
 		mBroadPhaseAlgorithm = new SweepAndPruneAlgorithm(this);
 	}
 
@@ -95,9 +92,7 @@ public class CollisionDetection {
 
 	// Computes the broad-phase collision detection.
 	private void computeBroadPhase() {
-		CollisionBody body;
-		for (Iterator<CollisionBody> iterator = mWorld.getBodiesBeginIterator(); iterator.hasNext(); ) {
-			body = iterator.next();
+		for (CollisionBody body : mWorld.getBodies()) {
 			if (body.getHasMoved()) {
 				mBroadPhaseAlgorithm.updateObject(body, body.getAABB());
 			}

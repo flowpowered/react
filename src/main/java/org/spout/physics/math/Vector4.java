@@ -26,7 +26,7 @@
  */
 package org.spout.physics.math;
 
-import org.spout.physics.Configuration;
+import org.spout.physics.ReactDefaults;
 
 /**
  * Represents a 4D vector in space.
@@ -61,6 +61,15 @@ public class Vector4 {
 	}
 
 	/**
+	 * Copy constructor
+	 *
+	 * @param vector to copy
+	 */
+	public Vector4(Vector4 vector) {
+		this(vector.getX(), vector.getY(), vector.getZ(), vector.getW());
+	}
+
+	/**
 	 * Constructor with arguments.
 	 *
 	 * @param x value
@@ -69,19 +78,7 @@ public class Vector4 {
 	 * @param w value
 	 */
 	public Vector4(float x, float y, float z, float w) {
-		this.x = x;
-		this.y = y;
-		this.z = z;
-		this.w = w;
-	}
-
-	/**
-	 * Copy constructor
-	 *
-	 * @param vector to copy
-	 */
-	public Vector4(Vector4 vector) {
-		this(vector.getX(), vector.getY(), vector.getZ(), vector.getW());
+		setAllValues(x, y, z, w);
 	}
 
 	/**
@@ -128,7 +125,7 @@ public class Vector4 {
 	 * @param z value to set
 	 * @param w value to set
 	 */
-	public void setAllValues(float x, float y, float z, float w) {
+	public final void setAllValues(float x, float y, float z, float w) {
 		this.x = x;
 		this.y = y;
 		this.z = z;
@@ -141,10 +138,7 @@ public class Vector4 {
 	 * @param vector The vector4 to copy the values from
 	 */
 	public Vector4 set(Vector4 vector) {
-		x = vector.getX();
-		y = vector.getY();
-		z = vector.getZ();
-		w = vector.getW();
+		setAllValues(vector.getX(), vector.getY(), vector.getZ(), vector.getW());
 		return this;
 	}
 
@@ -188,10 +182,7 @@ public class Vector4 {
 	 * Sets the x, y, z and w values to zero.
 	 */
 	public void setToZero() {
-		x = 0;
-		y = 0;
-		z = 0;
-		w = 0;
+		setAllValues(0, 0, 0, 0);
 	}
 
 	/**
@@ -269,7 +260,7 @@ public class Vector4 {
 	 */
 	public Vector4 getUnit() {
 		final float lengthVector = length();
-		if (lengthVector <= Configuration.MACHINE_EPSILON) {
+		if (lengthVector <= ReactDefaults.MACHINE_EPSILON) {
 			throw new IllegalArgumentException("Cannot normalize the zero vector");
 		}
 		final float lengthInv = 1 / lengthVector;
@@ -283,7 +274,7 @@ public class Vector4 {
 	 */
 	public Vector4 normalize() {
 		final float l = length();
-		if (l <= Configuration.MACHINE_EPSILON) {
+		if (l <= ReactDefaults.MACHINE_EPSILON) {
 			throw new IllegalArgumentException("Cannot normalize the zero vector");
 		}
 		x /= l;
@@ -336,10 +327,7 @@ public class Vector4 {
 	 * @return this vector, after negation is finished
 	 */
 	public Vector4 negate() {
-		x = -x;
-		y = -y;
-		z = -z;
-		w = -w;
+		setAllValues(-x, -y, -z, -w);
 		return this;
 	}
 
@@ -378,7 +366,7 @@ public class Vector4 {
 	 * @return this vector, after division is finished
 	 */
 	public Vector4 divide(float value) {
-		if (value <= Configuration.MACHINE_EPSILON) {
+		if (value <= ReactDefaults.MACHINE_EPSILON) {
 			throw new IllegalArgumentException("Cannot divide by zero");
 		}
 		x /= value;
@@ -554,7 +542,7 @@ public class Vector4 {
 	 * @return the quotient (vector4) of the vector and the value
 	 */
 	public static Vector4 divide(Vector4 vector, float value) {
-		if (value <= Configuration.MACHINE_EPSILON) {
+		if (value <= ReactDefaults.MACHINE_EPSILON) {
 			throw new IllegalArgumentException("Cannot divide by zero");
 		}
 		return new Vector4(

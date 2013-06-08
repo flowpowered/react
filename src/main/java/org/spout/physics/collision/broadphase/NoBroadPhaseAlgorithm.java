@@ -69,6 +69,5 @@ public class NoBroadPhaseAlgorithm extends BroadPhaseAlgorithm {
 
 	@Override
 	public void updateObject(CollisionBody body, AABB aabb) {
-		return;
 	}
 }

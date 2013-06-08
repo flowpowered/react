@@ -50,7 +50,7 @@ public class SweepAndPruneAlgorithmTest {
 			sweepAndPrune.addObject(body, Dummies.newAABB());
 		}
 		Assert.assertEquals(BODY_COUNT / 10, sweepAndPrune.getNbObjects());
-		Assert.assertTrue(countNotNull(sweepAndPrune.beginOverlappingPairsPointer()) >= 0);
+		Assert.assertTrue(countNotNull(sweepAndPrune.getOverlappingPairs()) >= 0);
 		for (int i = 0; i < BODY_COUNT / 2; i++) {
 			final AABB aabb = Dummies.newAABB();
 			final CollisionBody body0 = Dummies.newCollisionBody(ID++);
@@ -61,7 +61,7 @@ public class SweepAndPruneAlgorithmTest {
 			sweepAndPrune.addObject(body1, Dummies.newIntersectingAABB(aabb));
 		}
 		Assert.assertEquals(BODY_COUNT + BODY_COUNT / 10, sweepAndPrune.getNbObjects());
-		Assert.assertTrue(countNotNull(sweepAndPrune.beginOverlappingPairsPointer()) >= BODY_COUNT / 2);
+		Assert.assertTrue(countNotNull(sweepAndPrune.getOverlappingPairs()) >= BODY_COUNT / 2);
 		for (CollisionBody body : bodies) {
 			sweepAndPrune.removeObject(body);
 		}

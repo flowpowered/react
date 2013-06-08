@@ -42,7 +42,7 @@ public class Constraint {
 	protected final boolean mActive;
 	protected final int mNbConstraints;
 	protected final ConstraintType mType;
-	protected final TFloatList mCachedLambdas = new TFloatArrayList();
+	protected final TFloatList mCachedLambdas;
 
 	/**
 	 * Constructs a new constraint from the two bodies, the number of auxiliary constraints, the
@@ -60,9 +60,8 @@ public class Constraint {
 		mActive = active;
 		mNbConstraints = nbConstraints;
 		mType = type;
-		for (int i = 0; i < nbConstraints; i++) {
-			mCachedLambdas.add(0f);
-		}
+		mCachedLambdas = new TFloatArrayList(nbConstraints);
+		mCachedLambdas.fill(0, nbConstraints, 0);
 	}
 
 	/**

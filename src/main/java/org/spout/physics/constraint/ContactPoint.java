@@ -26,9 +26,6 @@
  */
 package org.spout.physics.constraint;
 
-import java.util.Arrays;
-import java.util.Vector;
-
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.math.Transform;
@@ -39,14 +36,15 @@ import org.spout.physics.math.Vector3;
  * class inherits from the Constraint class.
  */
 public class ContactPoint extends Constraint {
-	protected final Vector3 mNormal = new Vector3();
-	protected float mPenetrationDepth;
-	protected final Vector3 mLocalPointOnBody1 = new Vector3();
-	protected final Vector3 mLocalPointOnBody2 = new Vector3();
-	protected final Vector3 mWorldPointOnBody1 = new Vector3();
-	protected final Vector3 mWorldPointOnBody2 = new Vector3();
-	protected boolean mIsRestingContact;
-	protected final Vector<Vector3> mFrictionVectors = new Vector<Vector3>(2);
+	private final Vector3 mNormal = new Vector3();
+	private float mPenetrationDepth;
+	private final Vector3 mLocalPointOnBody1 = new Vector3();
+	private final Vector3 mLocalPointOnBody2 = new Vector3();
+	private final Vector3 mWorldPointOnBody1 = new Vector3();
+	private final Vector3 mWorldPointOnBody2 = new Vector3();
+	private boolean mIsRestingContact = false;
+	private final Vector3 mFrictionVector1 = new Vector3();
+	private final Vector3 mFrictionVector2 = new Vector3();
 
 	/**
 	 * Constructs a new contact point from the first and second body, and the contact info.
@@ -66,8 +64,6 @@ public class ContactPoint extends Constraint {
 		mLocalPointOnBody2.set(contactInfo.getLocalPoint2());
 		mWorldPointOnBody1.set(Transform.multiply(body1.getTransform(), contactInfo.getLocalPoint1()));
 		mWorldPointOnBody2.set(Transform.multiply(body2.getTransform(), contactInfo.getLocalPoint2()));
-		mIsRestingContact = false;
-		mFrictionVectors.addAll(Arrays.asList(new Vector3(0, 0, 0), new Vector3(0, 0, 0)));
 	}
 
 	/**
@@ -102,7 +98,7 @@ public class ContactPoint extends Constraint {
 	 *
 	 * @return The contact point
 	 */
-	public Vector3 getLocalPointOnBody1() {
+	public Vector3 getLocalPointOnFirstBody() {
 		return mLocalPointOnBody1;
 	}
 
@@ -111,7 +107,7 @@ public class ContactPoint extends Constraint {
 	 *
 	 * @return The contact point
 	 */
-	public Vector3 getLocalPointOnBody2() {
+	public Vector3 getLocalPointOnSecondBody() {
 		return mLocalPointOnBody2;
 	}
 
@@ -120,7 +116,7 @@ public class ContactPoint extends Constraint {
 	 *
 	 * @return The contact point
 	 */
-	public Vector3 getWorldPointOnBody1() {
+	public Vector3 getWorldPointOnFirstBody() {
 		return mWorldPointOnBody1;
 	}
 
@@ -129,7 +125,7 @@ public class ContactPoint extends Constraint {
 	 *
 	 * @return The contact point
 	 */
-	public Vector3 getWorldPointOnBody2() {
+	public Vector3 getWorldPointOnSecondBody() {
 		return mWorldPointOnBody2;
 	}
 
@@ -138,7 +134,7 @@ public class ContactPoint extends Constraint {
 	 *
 	 * @param worldPoint The contact point in world space
 	 */
-	public void setWorldPointOnBody1(Vector3 worldPoint) {
+	public void setWorldPointOnFirstBody(Vector3 worldPoint) {
 		mWorldPointOnBody1.set(worldPoint);
 	}
 
@@ -147,7 +143,7 @@ public class ContactPoint extends Constraint {
 	 *
 	 * @param worldPoint The contact point in world space
 	 */
-	public void setWorldPointOnBody2(Vector3 worldPoint) {
+	public void setWorldPointOnSecondBody(Vector3 worldPoint) {
 		mWorldPointOnBody2.set(worldPoint);
 	}
 
@@ -156,7 +152,7 @@ public class ContactPoint extends Constraint {
 	 *
 	 * @return Whether or not the contact is a resting contact
 	 */
-	public boolean getIsRestingContact() {
+	public boolean isRestingContact() {
 		return mIsRestingContact;
 	}
 
@@ -165,7 +161,7 @@ public class ContactPoint extends Constraint {
 	 *
 	 * @param isRestingContact True for a resting contact, false if otherwise.
 	 */
-	public void setIsRestingContact(boolean isRestingContact) {
+	public void setRestingContact(boolean isRestingContact) {
 		mIsRestingContact = isRestingContact;
 	}
 
@@ -174,17 +170,17 @@ public class ContactPoint extends Constraint {
 	 *
 	 * @return The friction vector
 	 */
-	public Vector3 getFrictionVector1() {
-		return mFrictionVectors.get(0);
+	public Vector3 getFirstFrictionVector() {
+		return mFrictionVector1;
 	}
 
 	/**
 	 * Sets the first friction vector.
 	 *
-	 * @param frictionVector1 The friction vector to set
+	 * @param firstFrictionVector The friction vector to set
 	 */
-	public void setFrictionVector1(Vector3 frictionVector1) {
-		mFrictionVectors.set(0, frictionVector1);
+	public void setFirstFrictionVector(Vector3 firstFrictionVector) {
+		mFrictionVector1.set(firstFrictionVector);
 	}
 
 	/**
@@ -192,16 +188,16 @@ public class ContactPoint extends Constraint {
 	 *
 	 * @return The friction vector
 	 */
-	public Vector3 getFrictionVector2() {
-		return mFrictionVectors.get(1);
+	public Vector3 getSecondFrictionVector() {
+		return mFrictionVector2;
 	}
 
 	/**
 	 * Sets the second friction vector.
 	 *
-	 * @param frictionVector2 The friction vector to set
+	 * @param secondFrictionVector The friction vector to set
 	 */
-	public void setFrictionVector2(Vector3 frictionVector2) {
-		mFrictionVectors.set(1, frictionVector2);
+	public void setSecondFrictionVector(Vector3 secondFrictionVector) {
+		mFrictionVector2.set(secondFrictionVector);
 	}
 }

@@ -52,9 +52,7 @@ public class SphereVsSphereAlgorithm extends NarrowPhaseAlgorithm {
 			final Vector3 intersectionOnBody1 = Vector3.multiply(sphereShape1.getRadius(), centerSphere2InBody1LocalSpace.getUnit());
 			final Vector3 intersectionOnBody2 = Vector3.multiply(sphereShape2.getRadius(), centerSphere1InBody2LocalSpace.getUnit());
 			final float penetrationDepth = sumRadius - (float) Math.sqrt(squaredDistanceBetweenCenters);
-			contactInfo.set(
-					vectorBetweenCenters.getUnit(), penetrationDepth,
-					intersectionOnBody1, intersectionOnBody2);
+			contactInfo.set(vectorBetweenCenters.getUnit(), penetrationDepth, intersectionOnBody1, intersectionOnBody2);
 			return true;
 		}
 		return false;

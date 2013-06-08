@@ -38,12 +38,12 @@ public class CollisionBody extends Body {
 	protected CollisionShape mCollisionShape;
 	protected final Transform mTransform = new Transform();
 	protected final Transform mOldTransform = new Transform();
-	protected float mInterpolationFactor;
-	protected boolean mIsActive;
-	protected boolean mIsMotionEnabled;
-	protected boolean mIsCollisionEnabled;
+	protected float mInterpolationFactor = 0;
+	protected boolean mIsActive = true;
+	protected boolean mIsMotionEnabled = true;
+	protected boolean mIsCollisionEnabled = true;
 	protected AABB mAabb;
-	protected boolean mHasMoved;
+	protected boolean mHasMoved = false;
 
 	/**
 	 * Constructs a new collision body from it's transform, collision shape, and ID.
@@ -59,11 +59,6 @@ public class CollisionBody extends Body {
 		}
 		mTransform.set(transform);
 		mCollisionShape = collisionShape;
-		mIsActive = true;
-		mHasMoved = false;
-		mIsMotionEnabled = true;
-		mIsCollisionEnabled = true;
-		mInterpolationFactor = 0;
 		mOldTransform.set(transform);
 		mAabb = new AABB();
 		mCollisionShape.updateAABB(mAabb, transform);

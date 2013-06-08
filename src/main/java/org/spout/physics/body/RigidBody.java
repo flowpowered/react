@@ -26,7 +26,7 @@
  */
 package org.spout.physics.body;
 
-import org.spout.physics.Configuration;
+import org.spout.physics.ReactDefaults;
 import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Transform;
@@ -38,16 +38,16 @@ import org.spout.physics.math.Vector3;
  */
 public class RigidBody extends CollisionBody {
 	// TODO : Remove the mass variable (duplicate with inverseMass)
-	protected float mMass;
-	protected final Vector3 mLinearVelocity = new Vector3();
-	protected final Vector3 mAngularVelocity = new Vector3();
-	protected final Vector3 mExternalForce = new Vector3();
-	protected final Vector3 mExternalTorque = new Vector3();
-	protected final Matrix3x3 mInertiaTensorLocal = new Matrix3x3();
-	protected final Matrix3x3 mInertiaTensorLocalInverse = new Matrix3x3();
-	protected float mMassInverse;
-	protected float mRestitution;
-	protected float mFrictionCoefficient;
+	private float mMass;
+	private final Vector3 mLinearVelocity = new Vector3();
+	private final Vector3 mAngularVelocity = new Vector3();
+	private final Vector3 mExternalForce = new Vector3();
+	private final Vector3 mExternalTorque = new Vector3();
+	private final Matrix3x3 mInertiaTensorLocal = new Matrix3x3();
+	private final Matrix3x3 mInertiaTensorLocalInverse = new Matrix3x3();
+	private float mMassInverse;
+	private float mRestitution = 1;
+	private float mFrictionCoefficient = ReactDefaults.DEFAULT_FRICTION_COEFFICIENT;
 
 	/**
 	 * Constructs a new rigid body from it's transform, mass, local inertia tensor, collision shape and
@@ -68,8 +68,6 @@ public class RigidBody extends CollisionBody {
 		mMass = mass;
 		mInertiaTensorLocalInverse.set(inertiaTensorLocal.getInverse());
 		mMassInverse = 1 / mass;
-		mFrictionCoefficient = Configuration.DEFAULT_FRICTION_COEFFICIENT;
-		mRestitution = 1;
 	}
 
 	/**
