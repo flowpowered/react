@@ -31,7 +31,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.Vector;
+
+import gnu.trove.list.TIntList;
+import gnu.trove.list.array.TIntArrayList;
 
 import org.spout.physics.Utilities.IntPair;
 import org.spout.physics.body.CollisionBody;
@@ -50,7 +52,7 @@ public abstract class CollisionWorld {
 	protected final Set<CollisionBody> mBodies = new HashSet<CollisionBody>();
 	protected final Map<IntPair, OverlappingPair> mOverlappingPairs = new HashMap<IntPair, OverlappingPair>();
 	private int mCurrentBodyID;
-	protected final Vector<Integer> mFreeBodiesIDs = new Vector<Integer>();
+	protected final TIntList mFreeBodiesIDs = new TIntArrayList();
 
 	/**
 	 * Constructs a new empty collision world.
@@ -135,8 +137,8 @@ public abstract class CollisionWorld {
 	protected int computeNextAvailableBodyID() {
 		final int bodyID;
 		if (!mFreeBodiesIDs.isEmpty()) {
-			bodyID = mFreeBodiesIDs.lastElement();
-			mFreeBodiesIDs.removeElementAt(mFreeBodiesIDs.size() - 1);
+			bodyID = mFreeBodiesIDs.get(mFreeBodiesIDs.size() - 1);
+			mFreeBodiesIDs.remove(mFreeBodiesIDs.size() - 1);
 		} else {
 			bodyID = mCurrentBodyID;
 			mCurrentBodyID++;

@@ -28,9 +28,10 @@ package org.spout.physics.engine;
 
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+
+import gnu.trove.map.TObjectIntMap;
 
 import org.spout.physics.Configuration;
 import org.spout.physics.body.RigidBody;
@@ -117,7 +118,7 @@ public class ContactSolver {
 	private final Set<RigidBody> mConstraintBodies = new HashSet<RigidBody>();
 	private final Vector<Vector3> mConstrainedLinearVelocities;
 	private final Vector<Vector3> mConstrainedAngularVelocities;
-	private final Map<RigidBody, Integer> mMapBodyToConstrainedVelocityIndex;
+	private final TObjectIntMap<RigidBody> mMapBodyToConstrainedVelocityIndex;
 	private final boolean mIsWarmStartingActive;
 	private boolean mIsSplitImpulseActive;
 	private boolean mIsSolveFrictionAtContactManifoldCenterActive;
@@ -132,7 +133,7 @@ public class ContactSolver {
 	 * @param mapBodyToVelocityIndex The body to velocity index map
 	 */
 	public ContactSolver(DynamicsWorld world, Vector<Vector3> constrainedLinearVelocities,
-						 Vector<Vector3> constrainedAngularVelocities, Map<RigidBody, Integer> mapBodyToVelocityIndex) {
+						 Vector<Vector3> constrainedAngularVelocities, TObjectIntMap<RigidBody> mapBodyToVelocityIndex) {
 		mWorld = world;
 		mNbIterations = Configuration.DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS;
 		mSplitLinearVelocities = null;

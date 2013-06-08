@@ -26,7 +26,8 @@
  */
 package org.spout.physics.constraint;
 
-import java.util.Vector;
+import gnu.trove.list.TFloatList;
+import gnu.trove.list.array.TFloatArrayList;
 
 import org.spout.physics.body.RigidBody;
 
@@ -41,7 +42,7 @@ public class Constraint {
 	protected final boolean mActive;
 	protected final int mNbConstraints;
 	protected final ConstraintType mType;
-	protected final Vector<Float> mCachedLambdas = new Vector<Float>();
+	protected final TFloatList mCachedLambdas = new TFloatArrayList();
 
 	/**
 	 * Constructs a new constraint from the two bodies, the number of auxiliary constraints, the

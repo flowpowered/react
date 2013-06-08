@@ -26,12 +26,13 @@
  */
 package org.spout.physics.engine;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
+
+import gnu.trove.map.TObjectIntMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 
 import org.spout.physics.Configuration;
 import org.spout.physics.Utilities.IntPair;
@@ -61,7 +62,7 @@ public class DynamicsWorld extends CollisionWorld {
 	private boolean mIsGravityOn;
 	private final Vector<Vector3> mConstrainedLinearVelocities = new Vector<Vector3>();
 	private final Vector<Vector3> mConstrainedAngularVelocities = new Vector<Vector3>();
-	private final Map<RigidBody, Integer> mMapBodyToConstrainedVelocityIndex = new HashMap<RigidBody, Integer>();
+	private final TObjectIntMap<RigidBody> mMapBodyToConstrainedVelocityIndex = new TObjectIntHashMap<RigidBody>();
 
 	/**
 	 * Constructs a new dynamics world from the gravity and the default time step.

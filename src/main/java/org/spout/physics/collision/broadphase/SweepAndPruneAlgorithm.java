@@ -26,11 +26,11 @@
  */
 package org.spout.physics.collision.broadphase;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Vector;
+import gnu.trove.list.TIntList;
+import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.map.TObjectIntMap;
+import gnu.trove.map.hash.TObjectIntHashMap;
 
-import org.spout.physics.Utilities;
 import org.spout.physics.body.CollisionBody;
 import org.spout.physics.collision.CollisionDetection;
 import org.spout.physics.collision.shape.AABB;
@@ -47,8 +47,8 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 	protected final EndPoint[][] mEndPoints = new EndPoint[3][];
 	protected int mNbBoxes;
 	protected int mNbMaxBoxes;
-	protected final Vector<Integer> mFreeBoxIndices = new Vector<Integer>();
-	protected final Map<CollisionBody, Integer> mMapBodyToBoxIndex = new HashMap<CollisionBody, Integer>();
+	protected final TIntList mFreeBoxIndices = new TIntArrayList();
+	protected final TObjectIntMap<CollisionBody> mMapBodyToBoxIndex = new TObjectIntHashMap<CollisionBody>();
 
 	/**
 	 * Constructs a new sweep and prune algorithm from the collision detection it's associated to.
@@ -78,8 +78,8 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 	public void addObject(CollisionBody body, AABB aabb) {
 		final int boxIndex;
 		if (!mFreeBoxIndices.isEmpty()) {
-			boxIndex = mFreeBoxIndices.lastElement();
-			mFreeBoxIndices.removeElementAt(mFreeBoxIndices.size() - 1);
+			boxIndex = mFreeBoxIndices.get(mFreeBoxIndices.size() - 1);
+			mFreeBoxIndices.remove(mFreeBoxIndices.size() - 1);
 		} else {
 			if (mNbBoxes == mNbMaxBoxes) {
 				resizeArrays();
@@ -135,7 +135,6 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 		final AABB aabb = new AABB(maxVector, maxVector);
 		updateObject(body, aabb);
 		final int boxIndex = mMapBodyToBoxIndex.get(body);
-		final BoxAABB box = mBoxes[boxIndex];
 		mFreeBoxIndices.add(boxIndex);
 		mMapBodyToBoxIndex.remove(body);
 		mNbBoxes--;
@@ -159,7 +158,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 			long limit = aabbInt.getMin()[axis];
 			if (limit < currentMinEndPoint.getValue()) {
 				final EndPoint savedEndPoint = currentMinEndPoint;
-				int indexEndPoint = Utilities.indexOf(startEndPointsCurrentAxis, currentMinEndPoint);
+				int indexEndPoint = currentMinEndPointIndex;
 				final int savedEndPointIndex = indexEndPoint;
 				currentMinEndPoint.setValue(limit);
 				while ((currentMinEndPoint = startEndPointsCurrentAxis[--currentMinEndPointIndex]).getValue() > limit) {
@@ -188,7 +187,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 				}
 			} else if (limit > currentMinEndPoint.getValue()) {
 				final EndPoint savedEndPoint = currentMinEndPoint;
-				int indexEndPoint = Utilities.indexOf(startEndPointsCurrentAxis, currentMinEndPoint);
+				int indexEndPoint = currentMinEndPointIndex;
 				final int savedEndPointIndex = indexEndPoint;
 				currentMinEndPoint.setValue(limit);
 				while ((currentMinEndPoint = startEndPointsCurrentAxis[++currentMinEndPointIndex]).getValue() < limit) {
@@ -224,7 +223,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 			limit = aabbInt.getMax()[axis];
 			if (limit > currentMaxEndPoint.getValue()) {
 				final EndPoint savedEndPoint = currentMaxEndPoint;
-				int indexEndPoint = Utilities.indexOf(startEndPointsCurrentAxis, currentMaxEndPoint);
+				int indexEndPoint = currentMaxEndPointIndex;
 				final int savedEndPointIndex = indexEndPoint;
 				currentMaxEndPoint.setValue(limit);
 				while ((currentMaxEndPoint = startEndPointsCurrentAxis[++currentMaxEndPointIndex]).getValue() < limit) {
@@ -253,7 +252,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 				}
 			} else if (limit < currentMaxEndPoint.getValue()) {
 				final EndPoint savedEndPoint = currentMaxEndPoint;
-				int indexEndPoint = Utilities.indexOf(startEndPointsCurrentAxis, currentMaxEndPoint);
+				int indexEndPoint = currentMaxEndPointIndex;
 				final int savedEndPointIndex = indexEndPoint;
 				currentMaxEndPoint.setValue(limit);
 				while ((currentMaxEndPoint = startEndPointsCurrentAxis[--currentMaxEndPointIndex]).getValue() > limit) {
