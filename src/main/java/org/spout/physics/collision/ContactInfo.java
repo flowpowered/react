@@ -76,39 +76,39 @@ public class ContactInfo {
 	}
 
 	/**
-	 * Gets the contact point of the first body in local space of the first body.
+	 * Gets the contact point of the first body in the local space of the first body.
 	 *
 	 * @return The local point of contact for the first body
 	 */
-	public Vector3 getLocalPoint1() {
+	public Vector3 getFirstLocalPoint() {
 		return localPoint1;
 	}
 
 	/**
-	 * Sets the contact point of the first body in local space of the first body.
+	 * Sets the contact point of the first body in the local space of the first body.
 	 *
-	 * @param localPoint1 The contact point to set for the first body
+	 * @param firstLocalPoint The contact point to set for the first body
 	 */
-	public void setLocalPoint1(Vector3 localPoint1) {
-		this.localPoint1.set(localPoint1);
+	public void setFirstLocalPoint(Vector3 firstLocalPoint) {
+		localPoint1.set(firstLocalPoint);
 	}
 
 	/**
-	 * Gets the contact point of second body body in local space of second body body.
+	 * Gets the contact point of second body body in the local space of second body body.
 	 *
 	 * @return The local point of contact for second body body
 	 */
-	public Vector3 getLocalPoint2() {
+	public Vector3 getSecondLocalPoint() {
 		return localPoint2;
 	}
 
 	/**
-	 * Sets the contact point of the second body in local space of the second body.
+	 * Sets the contact point of the second body in the local space of the second body.
 	 *
-	 * @param localPoint2 The contact point to set for second body body
+	 * @param secondLocalPoint The contact point to set for second body body
 	 */
-	public void setLocalPoint2(Vector3 localPoint2) {
-		this.localPoint2.set(localPoint2);
+	public void setSecondLocalPoint(Vector3 secondLocalPoint) {
+		localPoint2.set(secondLocalPoint);
 	}
 
 	/**
@@ -122,7 +122,7 @@ public class ContactInfo {
 	public void set(Vector3 normal, float penetrationDepth, Vector3 localPoint1, Vector3 localPoint2) {
 		setNormal(normal);
 		setPenetrationDepth(penetrationDepth);
-		setLocalPoint1(localPoint1);
-		setLocalPoint2(localPoint2);
+		setFirstLocalPoint(localPoint1);
+		setSecondLocalPoint(localPoint2);
 	}
 }

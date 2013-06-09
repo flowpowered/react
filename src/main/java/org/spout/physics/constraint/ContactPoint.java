@@ -60,10 +60,10 @@ public class ContactPoint extends Constraint {
 		}
 		mNormal.set(contactInfo.getNormal());
 		mPenetrationDepth = contactInfo.getPenetrationDepth();
-		mLocalPointOnBody1.set(contactInfo.getLocalPoint1());
-		mLocalPointOnBody2.set(contactInfo.getLocalPoint2());
-		mWorldPointOnBody1.set(Transform.multiply(body1.getTransform(), contactInfo.getLocalPoint1()));
-		mWorldPointOnBody2.set(Transform.multiply(body2.getTransform(), contactInfo.getLocalPoint2()));
+		mLocalPointOnBody1.set(contactInfo.getFirstLocalPoint());
+		mLocalPointOnBody2.set(contactInfo.getSecondLocalPoint());
+		mWorldPointOnBody1.set(Transform.multiply(body1.getTransform(), contactInfo.getFirstLocalPoint()));
+		mWorldPointOnBody2.set(Transform.multiply(body2.getTransform(), contactInfo.getSecondLocalPoint()));
 	}
 
 	/**

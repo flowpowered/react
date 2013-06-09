@@ -53,6 +53,7 @@ public class CollisionDetection {
 	private final BroadPhaseAlgorithm mBroadPhaseAlgorithm;
 	private final GJKAlgorithm mNarrowPhaseGJKAlgorithm = new GJKAlgorithm();
 	private final SphereVsSphereAlgorithm mNarrowPhaseSphereVsSphereAlgorithm = new SphereVsSphereAlgorithm();
+	private CollisionListener mCallBacks = null;
 
 	/**
 	 * Constructs a new collision detection from the collision world.
@@ -62,6 +63,24 @@ public class CollisionDetection {
 	public CollisionDetection(CollisionWorld world) {
 		mWorld = world;
 		mBroadPhaseAlgorithm = new SweepAndPruneAlgorithm(this);
+	}
+
+	/**
+	 * Gets the collision listener for the collision detection, or null if none has been set.
+	 *
+	 * @return The collision listener, or null is absent
+	 */
+	public CollisionListener getCollisionListener() {
+		return mCallBacks;
+	}
+
+	/**
+	 * Sets the collision listener for the collision detection.
+	 *
+	 * @param listener The listener to use
+	 */
+	public void setCollisionListener(CollisionListener listener) {
+		mCallBacks = listener;
 	}
 
 	/**
@@ -110,13 +129,21 @@ public class CollisionDetection {
 			final CollisionBody body1 = pair.getFirstBody();
 			final CollisionBody body2 = pair.getSecondBody();
 			mWorld.updateOverlappingPair(pair);
-			final NarrowPhaseAlgorithm narrowPhaseAlgorithm = SelectNarrowPhaseAlgorithm(body1.getCollisionShape(), body2.getCollisionShape());
+			final NarrowPhaseAlgorithm narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(body1.getCollisionShape(), body2.getCollisionShape());
 			narrowPhaseAlgorithm.setCurrentOverlappingPair(pair);
 			if (narrowPhaseAlgorithm.testCollision(
 					body1.getCollisionShape(), body1.getTransform(),
 					body2.getCollisionShape(), body2.getTransform(),
 					contactInfo)) {
-				mWorld.notifyNewContact(pair, contactInfo);
+				final boolean cancel;
+				if (mCallBacks != null) {
+					cancel = mCallBacks.onCollide(body1, body2, contactInfo);
+				} else {
+					cancel = false;
+				}
+				if (!cancel) {
+					mWorld.notifyNewContact(pair, contactInfo);
+				}
 			}
 		}
 	}
@@ -153,7 +180,7 @@ public class CollisionDetection {
 	}
 
 	// Selects the narrow-phase collision algorithm to use given two collision shapes.
-	private NarrowPhaseAlgorithm SelectNarrowPhaseAlgorithm(CollisionShape collisionShape1, CollisionShape collisionShape2) {
+	private NarrowPhaseAlgorithm selectNarrowPhaseAlgorithm(CollisionShape collisionShape1, CollisionShape collisionShape2) {
 		if (collisionShape1.getType() == CollisionShapeType.SPHERE
 				&& collisionShape2.getType() == CollisionShapeType.SPHERE) {
 			return mNarrowPhaseSphereVsSphereAlgorithm;
