@@ -400,6 +400,21 @@ public class DynamicsWorld extends CollisionWorld {
 	}
 
 	/**
+	 * Creates a rigid body and adds it to the physics world. The inertia tensor will be computed from
+	 * the shape and mass.
+	 *
+	 * @param transform The transform (position and orientation) of the body
+	 * @param mass The mass of the body
+	 * @param collisionShape The collision shape
+	 * @return The new rigid body
+	 */
+	public RigidBody createRigidBody(Transform transform, float mass, CollisionShape collisionShape) {
+		final Matrix3x3 inertiaTensor = new Matrix3x3();
+		collisionShape.computeLocalInertiaTensor(inertiaTensor, mass);
+		return createRigidBody(transform, mass, inertiaTensor, collisionShape);
+	}
+
+	/**
 	 * Creates a rigid body and adds it to the physics world.
 	 *
 	 * @param transform The transform (position and orientation) of the body
