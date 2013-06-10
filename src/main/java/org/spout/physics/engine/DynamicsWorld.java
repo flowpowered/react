@@ -306,7 +306,7 @@ public class DynamicsWorld extends CollisionWorld {
 			if (rigidBody == null) {
 				throw new IllegalStateException("rigid body cannot be null");
 			}
-			if (rigidBody.getIsMotionEnabled()) {
+			if (rigidBody.isMotionEnabled()) {
 				rigidBody.updateOldTransform();
 				final int indexArray = mMapBodyToConstrainedVelocityIndex.get(rigidBody);
 				final Vector3 newLinVelocity = mConstrainedLinearVelocities.get(indexArray);

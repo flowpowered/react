@@ -266,8 +266,8 @@ public class ContactSolver {
 			internalManifold.indexBody2 = mMapBodyToConstrainedVelocityIndex.get(body2);
 			internalManifold.inverseInertiaTensorBody1.set(body1.getInertiaTensorInverseWorld());
 			internalManifold.inverseInertiaTensorBody2.set(body2.getInertiaTensorInverseWorld());
-			internalManifold.isBody1Moving = body1.getIsMotionEnabled();
-			internalManifold.isBody2Moving = body2.getIsMotionEnabled();
+			internalManifold.isBody1Moving = body1.isMotionEnabled();
+			internalManifold.isBody2Moving = body2.isMotionEnabled();
 			internalManifold.massInverseBody1 = body1.getMassInverse();
 			internalManifold.massInverseBody2 = body2.getMassInverse();
 			internalManifold.nbContacts = externalManifold.getNbContactPoints();

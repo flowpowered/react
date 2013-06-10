@@ -137,7 +137,7 @@ public class Transform {
 	public Transform inverse() {
 		final Quaternion invQuaternion = mOrientation.getInverse();
 		final Matrix3x3 invMatrix = invQuaternion.getMatrix();
-		return new Transform(Matrix3x3.multiply(invMatrix, (Vector3.negate(mPosition))), invQuaternion);
+		return new Transform(Matrix3x3.multiply(invMatrix, Vector3.negate(mPosition)), invQuaternion);
 	}
 
 	@Override

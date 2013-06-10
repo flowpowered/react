@@ -39,8 +39,8 @@ public class BoxShape extends CollisionShape {
 	private final Vector3 mExtent = new Vector3();
 
 	/**
-	 * Constructs a box shape from its extents which is half the vector between the two opposing corners
-	 * that are the furthest away.
+	 * Constructs a box shape from its extents which is half the vector between the two opposing
+	 * corners that are the furthest away.
 	 *
 	 * @param extent The extent vector
 	 */
@@ -91,7 +91,7 @@ public class BoxShape extends CollisionShape {
 
 	@Override
 	public Vector3 getLocalExtents(float margin) {
-		return Vector3.add(mExtent, new Vector3(getMargin(), getMargin(), getMargin()));
+		return Vector3.add(mExtent, new Vector3(margin, margin, margin));
 	}
 
 	@Override

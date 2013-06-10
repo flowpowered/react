@@ -228,7 +228,7 @@ public class RigidBody extends CollisionBody {
 	 * Set the linear velocity for this body, but only if it can move.
 	 *
 	 * @param linearVelocity The linear velocity to set
-	 * @see CollisionBody#setIsMotionEnabled(boolean)
+	 * @see CollisionBody#setMotionEnabled(boolean)
 	 */
 	public void setLinearVelocity(Vector3 linearVelocity) {
 		if (mIsMotionEnabled) {

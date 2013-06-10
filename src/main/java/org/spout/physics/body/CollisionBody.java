@@ -105,7 +105,7 @@ public class CollisionBody extends Body {
 	 *
 	 * @return Whether or not the body is active
 	 */
-	public boolean getIsActive() {
+	public boolean isActive() {
 		return mIsActive;
 	}
 
@@ -114,7 +114,7 @@ public class CollisionBody extends Body {
 	 *
 	 * @param mIsActive True if this body is active, false if not
 	 */
-	public void setIsActive(boolean mIsActive) {
+	public void setActive(boolean mIsActive) {
 		this.mIsActive = mIsActive;
 	}
 
@@ -143,7 +143,7 @@ public class CollisionBody extends Body {
 	 *
 	 * @return Whether or not the body can move
 	 */
-	public boolean getIsMotionEnabled() {
+	public boolean isMotionEnabled() {
 		return mIsMotionEnabled;
 	}
 
@@ -152,7 +152,7 @@ public class CollisionBody extends Body {
 	 *
 	 * @param isMotionEnabled True if the body should move, false if not
 	 */
-	public void setIsMotionEnabled(boolean isMotionEnabled) {
+	public void setMotionEnabled(boolean isMotionEnabled) {
 		mIsMotionEnabled = isMotionEnabled;
 	}
 
@@ -191,7 +191,7 @@ public class CollisionBody extends Body {
 	 *
 	 * @return Whether or not this body can collide with others
 	 */
-	public boolean getIsCollisionEnabled() {
+	public boolean isCollisionEnabled() {
 		return mIsCollisionEnabled;
 	}
 
@@ -200,7 +200,7 @@ public class CollisionBody extends Body {
 	 *
 	 * @param isCollisionEnabled True if the body should collide, false if not
 	 */
-	public void setIsCollisionEnabled(boolean isCollisionEnabled) {
+	public void setCollisionEnabled(boolean isCollisionEnabled) {
 		mIsCollisionEnabled = isCollisionEnabled;
 	}
 
