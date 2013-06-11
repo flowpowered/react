@@ -41,6 +41,7 @@ import org.spout.physics.collision.CollisionDetection;
 import org.spout.physics.collision.CollisionListener;
 import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.RayCaster;
+import org.spout.physics.collision.RayCaster.IntersectedBody;
 import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
@@ -149,38 +150,40 @@ public abstract class CollisionWorld {
 	}
 
 	/**
-	 * Finds the closest of the bodies intersecting with the ray to the ray start. The ray is defined
-	 * by a starting point and a direction.
+	 * Finds the closest of the bodies in the world intersecting with the ray to the ray start. The ray
+	 * is defined by a starting point and a direction. This method returns an {@link IntersectedBody}
+	 * object containing the body and the intersection point.
 	 *
 	 * @param rayStart The ray starting point
 	 * @param rayDir The ray direction
-	 * @return The closest body to the ray start
+	 * @return The closest body to the ray start and its intersection point
 	 */
-	public CollisionBody findClosestIntersectingBody(Vector3 rayStart, Vector3 rayDir) {
+	public IntersectedBody findClosestIntersectingBody(Vector3 rayStart, Vector3 rayDir) {
 		return RayCaster.findClosestIntersectingBody(rayStart, rayDir, mBodies);
 	}
 
 	/**
-	 * Finds the furthest of the bodies intersecting with the ray from the ray start. The ray is
-	 * defined by a starting point and a direction.
+	 * Finds the furthest of the bodies in the world intersecting with the ray from the ray start. The
+	 * ray is defined by a starting point and a direction. This method returns an {@link
+	 * IntersectedBody} object containing the body and the intersection point.
 	 *
 	 * @param rayStart The ray starting point
 	 * @param rayDir The ray direction
-	 * @return The furthest body from the ray start
+	 * @return The furthest body from the ray start and its intersection point
 	 */
-	public CollisionBody findFurthestIntersectingBody(Vector3 rayStart, Vector3 rayDir) {
+	public IntersectedBody findFurthestIntersectingBody(Vector3 rayStart, Vector3 rayDir) {
 		return RayCaster.findFurthestIntersectingBody(rayStart, rayDir, mBodies);
 	}
 
 	/**
-	 * Finds all of the bodies intersecting with the ray. The ray is defined by a starting point and a
-	 * direction.
+	 * Finds all of the bodies in the world intersecting with the ray. The ray is defined by a starting
+	 * point and a direction. The bodies are returned mapped with the closest intersection point.
 	 *
 	 * @param rayStart The ray starting point
 	 * @param rayDir The ray direction
-	 * @return All of the intersection bodies, in no particular order
+	 * @return All of the intersection bodies, in no particular order, mapped to the distance vector
 	 */
-	public Set<CollisionBody> findIntersectingBodies(Vector3 rayStart, Vector3 rayDir) {
+	public Map<CollisionBody, Vector3> findIntersectingBodies(Vector3 rayStart, Vector3 rayDir) {
 		return RayCaster.findIntersectingBodies(rayStart, rayDir, mBodies);
 	}
 
