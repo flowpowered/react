@@ -122,7 +122,7 @@ public class EdgeEPA {
 	 *         this one
 	 */
 	public boolean computeSilhouette(Vector3[] vertices, int indexNewVertex, TrianglesStore triangleStore) {
-		if (!mOwnerTriangle.getIsObsolete()) {
+		if (!mOwnerTriangle.isObsolete()) {
 			if (!mOwnerTriangle.isVisibleFromVertex(vertices, indexNewVertex)) {
 				TriangleEPA triangle = triangleStore.newTriangle(
 						vertices,
@@ -135,11 +135,11 @@ public class EdgeEPA {
 				}
 				return false;
 			} else {
-				mOwnerTriangle.setIsObsolete(true);
+				mOwnerTriangle.setObsolete(true);
 				int backup = triangleStore.getNbTriangles();
 				if (!mOwnerTriangle.getAdjacentEdge(indexOfNextCounterClockwiseEdge(this.mIndex))
 						.computeSilhouette(vertices, indexNewVertex, triangleStore)) {
-					mOwnerTriangle.setIsObsolete(false);
+					mOwnerTriangle.setObsolete(false);
 					TriangleEPA triangle = triangleStore.newTriangle(
 							vertices,
 							indexNewVertex,
@@ -152,7 +152,7 @@ public class EdgeEPA {
 					return false;
 				} else if (!mOwnerTriangle.getAdjacentEdge(indexOfPreviousCounterClockwiseEdge(this.mIndex))
 						.computeSilhouette(vertices, indexNewVertex, triangleStore)) {
-					mOwnerTriangle.setIsObsolete(false);
+					mOwnerTriangle.setObsolete(false);
 					triangleStore.setNbTriangles(backup);
 					TriangleEPA triangle = triangleStore.newTriangle(
 							vertices,

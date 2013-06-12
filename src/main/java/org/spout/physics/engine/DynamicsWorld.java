@@ -115,7 +115,7 @@ public class DynamicsWorld extends CollisionWorld {
 	 *
 	 * @param isActive True if the split impulses are active, false if not
 	 */
-	public void setIsSplitImpulseActive(boolean isActive) {
+	public void setSplitImpulseActive(boolean isActive) {
 		mContactSolver.setSplitImpulseActive(isActive);
 	}
 
@@ -125,7 +125,7 @@ public class DynamicsWorld extends CollisionWorld {
 	 *
 	 * @param isActive Whether or not to solve the friction constraint at the center of the manifold
 	 */
-	public void setIsSolveFrictionAtContactManifoldCenterActive(boolean isActive) {
+	public void setSolveFrictionAtContactManifoldCenterActive(boolean isActive) {
 		mContactSolver.setSolveFrictionAtContactManifoldCenterActive(isActive);
 	}
 
@@ -254,6 +254,7 @@ public class DynamicsWorld extends CollisionWorld {
 	 * @param dt The time delta to step the simulation with
 	 */
 	public void forceUpdate(float dt) {
+		mTimer.forceUpdate(dt);
 		mContactManifolds.clear();
 		mCollisionDetection.computeCollisionDetection();
 		initConstrainedVelocitiesArray(dt);
@@ -274,7 +275,7 @@ public class DynamicsWorld extends CollisionWorld {
 	 * step, multiple steps will be taken, to catch up.
 	 */
 	public void update() {
-		if (!mTimer.getIsRunning()) {
+		if (!mTimer.isRunning()) {
 			throw new IllegalStateException("time must be running");
 		}
 		mTimer.update();

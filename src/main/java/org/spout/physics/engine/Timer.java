@@ -34,12 +34,11 @@ public class Timer {
 	private double mTimeStep;
 	private double mTime;
 	private double mLastUpdateTime;
-	private double mDeltaTime;
 	private double mAccumulator;
 	private boolean mIsRunning = false;
 
 	/**
-	 * Constructs a new time from the time step.
+	 * Constructs a new timer from the time step.
 	 *
 	 * @param timeStep The time step
 	 */
@@ -85,7 +84,7 @@ public class Timer {
 	 *
 	 * @return Whether or not the timer is running
 	 */
-	public boolean getIsRunning() {
+	public boolean isRunning() {
 		return mIsRunning;
 	}
 
@@ -93,6 +92,7 @@ public class Timer {
 	 * Start the timer.
 	 */
 	public void start() {
+		mTime = 0;
 		mLastUpdateTime = System.nanoTime() / 1000000000d;
 		mAccumulator = 0;
 		mIsRunning = true;
@@ -139,8 +139,18 @@ public class Timer {
 	 */
 	public void update() {
 		final double currentTime = System.nanoTime() / 1000000000d;
-		mDeltaTime = currentTime - mLastUpdateTime;
+		final double mDeltaTime = currentTime - mLastUpdateTime;
 		mLastUpdateTime = currentTime;
 		mAccumulator += mDeltaTime;
+	}
+
+	/**
+	 * Forces the time to update by the specified time delta, whatever the real elapsed time may be.
+	 *
+	 * @param dt The update time delta
+	 */
+	public void forceUpdate(double dt) {
+		mLastUpdateTime += dt;
+		mTime += dt;
 	}
 }

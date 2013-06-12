@@ -105,7 +105,7 @@ public class TriangleEPA {
 	 *
 	 * @param isObsolete True if the triangle is obsolete, false if not
 	 */
-	public void setIsObsolete(boolean isObsolete) {
+	public void setObsolete(boolean isObsolete) {
 		mIsObsolete = isObsolete;
 	}
 
@@ -114,7 +114,7 @@ public class TriangleEPA {
 	 *
 	 * @return True if the triangle is obsolete, false if not
 	 */
-	public boolean getIsObsolete() {
+	public boolean isObsolete() {
 		return mIsObsolete;
 	}
 
@@ -224,7 +224,7 @@ public class TriangleEPA {
 	 */
 	public boolean computeSilhouette(Vector3[] vertices, int indexNewVertex, TrianglesStore triangleStore) {
 		final int first = triangleStore.getNbTriangles();
-		setIsObsolete(true);
+		setObsolete(true);
 		final boolean result = mAdjacentEdges[0].computeSilhouette(vertices, indexNewVertex, triangleStore)
 				&& mAdjacentEdges[1].computeSilhouette(vertices, indexNewVertex, triangleStore)
 				&& mAdjacentEdges[2].computeSilhouette(vertices, indexNewVertex, triangleStore);

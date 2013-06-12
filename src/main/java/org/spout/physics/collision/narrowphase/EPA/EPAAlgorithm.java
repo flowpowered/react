@@ -211,7 +211,7 @@ public class EPAAlgorithm {
 		do {
 			triangle = triangleHeap.remove();
 			nbTriangles--;
-			if (!triangle.getIsObsolete()) {
+			if (!triangle.isObsolete()) {
 				if (nbVertices == MAX_SUPPORT_POINTS) {
 					break;
 				}
