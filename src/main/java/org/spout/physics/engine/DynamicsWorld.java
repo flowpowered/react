@@ -254,7 +254,6 @@ public class DynamicsWorld extends CollisionWorld {
 	 * @param dt The time delta to step the simulation with
 	 */
 	public void forceUpdate(float dt) {
-		applyGravity();
 		mContactManifolds.clear();
 		mCollisionDetection.computeCollisionDetection();
 		initConstrainedVelocitiesArray(dt);
@@ -265,6 +264,7 @@ public class DynamicsWorld extends CollisionWorld {
 		updateRigidBodiesPositionAndOrientation(dt);
 		mContactSolver.cleanup();
 		cleanupConstrainedVelocitiesArray();
+		applyGravity();
 		setInterpolationFactorToAllBodies(0);
 	}
 
@@ -278,7 +278,6 @@ public class DynamicsWorld extends CollisionWorld {
 			throw new IllegalStateException("time must be running");
 		}
 		mTimer.update();
-		applyGravity();
 		while (mTimer.isPossibleToTakeStep()) {
 			mContactManifolds.clear();
 			mCollisionDetection.computeCollisionDetection();
@@ -292,6 +291,7 @@ public class DynamicsWorld extends CollisionWorld {
 			mContactSolver.cleanup();
 			cleanupConstrainedVelocitiesArray();
 		}
+		applyGravity();
 		setInterpolationFactorToAllBodies();
 	}
 
