@@ -42,8 +42,6 @@ import org.spout.physics.collision.CollisionListener;
 import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.RayCaster;
 import org.spout.physics.collision.RayCaster.IntersectedBody;
-import org.spout.physics.collision.shape.CollisionShape;
-import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
 
 /**
@@ -121,35 +119,6 @@ public abstract class CollisionWorld {
 	}
 
 	/**
-	 * Creates a collision body and adds it to the world.
-	 *
-	 * @param transform The transform (position and orientation) of the body
-	 * @param collisionShape The shape of the body
-	 * @return The new collision body
-	 */
-	public CollisionBody createCollisionBody(Transform transform, CollisionShape collisionShape) {
-		final int bodyID = computeNextAvailableBodyID();
-		if (bodyID >= Integer.MAX_VALUE) {
-			throw new IllegalStateException("body id must be smaller than the integer max value");
-		}
-		final CollisionBody collisionBody = new CollisionBody(transform, collisionShape, bodyID);
-		mBodies.add(collisionBody);
-		mCollisionDetection.addBody(collisionBody);
-		return collisionBody;
-	}
-
-	/**
-	 * Destroys a collision body.
-	 *
-	 * @param collisionBody The collision body to destroy
-	 */
-	public void destroyCollisionBody(CollisionBody collisionBody) {
-		mCollisionDetection.removeBody(collisionBody);
-		mFreeBodiesIDs.add(collisionBody.getID());
-		mBodies.remove(collisionBody);
-	}
-
-	/**
 	 * Finds the closest of the bodies in the world intersecting with the ray to the ray start. The ray
 	 * is defined by a starting point and a direction. This method returns an {@link IntersectedBody}
 	 * object containing the body and the intersection point.
@@ -200,6 +169,9 @@ public abstract class CollisionWorld {
 		} else {
 			bodyID = mCurrentBodyID;
 			mCurrentBodyID++;
+		}
+		if (bodyID >= Integer.MAX_VALUE) {
+			throw new IllegalStateException("body id cannot be larger or equal to the largest interger");
 		}
 		return bodyID;
 	}

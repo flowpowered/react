@@ -35,6 +35,8 @@ import gnu.trove.map.hash.TObjectIntHashMap;
 
 import org.spout.physics.ReactDefaults;
 import org.spout.physics.Utilities.IntPair;
+import org.spout.physics.body.ImmobileRigidBody;
+import org.spout.physics.body.MobileRigidBody;
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.BroadPhasePair;
 import org.spout.physics.collision.ContactInfo;
@@ -127,20 +129,6 @@ public class DynamicsWorld extends CollisionWorld {
 	 */
 	public void setSolveFrictionAtContactManifoldCenterActive(boolean isActive) {
 		mContactSolver.setSolveFrictionAtContactManifoldCenterActive(isActive);
-	}
-
-	// Resets the boolean movement variable for each body.
-	private void resetBodiesMovementVariable() {
-		for (RigidBody rigidBody : getRigidBodies()) {
-			rigidBody.setHasMoved(false);
-		}
-	}
-
-	@Override
-	public void updateOverlappingPair(BroadPhasePair pair) {
-		final IntPair indexPair = pair.getBodiesIndexPair();
-		final OverlappingPair overlappingPair = mOverlappingPairs.get(indexPair);
-		overlappingPair.update();
 	}
 
 	/**
@@ -296,6 +284,13 @@ public class DynamicsWorld extends CollisionWorld {
 		setInterpolationFactorToAllBodies();
 	}
 
+	// Resets the boolean movement variable for each body.
+	private void resetBodiesMovementVariable() {
+		for (RigidBody rigidBody : getRigidBodies()) {
+			rigidBody.setHasMoved(false);
+		}
+	}
+
 	// Updates the position and orientation of the rigid bodies using the timer's time step.
 	private void updateRigidBodiesPositionAndOrientation() {
 		updateRigidBodiesPositionAndOrientation((float) mTimer.getTimeStep());
@@ -304,22 +299,23 @@ public class DynamicsWorld extends CollisionWorld {
 	// Updates the position and orientation of the rigid bodies using the provided time delta.
 	private void updateRigidBodiesPositionAndOrientation(float dt) {
 		for (RigidBody rigidBody : getRigidBodies()) {
-			if (rigidBody == null) {
-				throw new IllegalStateException("rigid body cannot be null");
+			if (!(rigidBody instanceof MobileRigidBody)) {
+				continue;
 			}
-			if (rigidBody.isMotionEnabled()) {
-				rigidBody.updateOldTransform();
-				final int indexArray = mMapBodyToConstrainedVelocityIndex.get(rigidBody);
+			final MobileRigidBody mobileBody = (MobileRigidBody) rigidBody;
+			if (mobileBody.isMotionEnabled()) {
+				mobileBody.updateOldTransform();
+				final int indexArray = mMapBodyToConstrainedVelocityIndex.get(mobileBody);
 				final Vector3 newLinVelocity = mConstrainedLinearVelocities.get(indexArray);
 				final Vector3 newAngVelocity = mConstrainedAngularVelocities.get(indexArray);
-				rigidBody.setLinearVelocity(newLinVelocity);
-				rigidBody.setAngularVelocity(newAngVelocity);
-				if (mContactSolver.isConstrainedBody(rigidBody)) {
-					newLinVelocity.add(mContactSolver.getSplitLinearVelocityOfBody(rigidBody));
-					newAngVelocity.add(mContactSolver.getSplitAngularVelocityOfBody(rigidBody));
+				mobileBody.setLinearVelocity(newLinVelocity);
+				mobileBody.setAngularVelocity(newAngVelocity);
+				if (mContactSolver.isConstrainedBody(mobileBody)) {
+					newLinVelocity.add(mContactSolver.getSplitLinearVelocityOfBody(mobileBody));
+					newAngVelocity.add(mContactSolver.getSplitAngularVelocityOfBody(mobileBody));
 				}
-				final Vector3 currentPosition = rigidBody.getTransform().getPosition();
-				final Quaternion currentOrientation = rigidBody.getTransform().getOrientation();
+				final Vector3 currentPosition = mobileBody.getTransform().getPosition();
+				final Quaternion currentOrientation = mobileBody.getTransform().getOrientation();
 				final Vector3 newPosition = Vector3.add(currentPosition, Vector3.multiply(newLinVelocity, dt));
 				final Quaternion newOrientation = Quaternion.add(
 						currentOrientation,
@@ -329,8 +325,8 @@ public class DynamicsWorld extends CollisionWorld {
 										currentOrientation),
 								0.5f * dt));
 				final Transform newTransform = new Transform(newPosition, newOrientation.getUnit());
-				rigidBody.setTransform(newTransform);
-				rigidBody.updateAABB();
+				mobileBody.setTransform(newTransform);
+				mobileBody.updateAABB();
 			}
 		}
 	}
@@ -390,33 +386,33 @@ public class DynamicsWorld extends CollisionWorld {
 
 	// Applies the gravity force to all bodies of the physics world.
 	private void applyGravity() {
-		for (RigidBody rigidBody : getRigidBodies()) {
-			if (rigidBody == null) {
-				throw new IllegalStateException("rigid body cannot be null");
-			}
-			if (mIsGravityOn) {
+		if (mIsGravityOn) {
+			for (RigidBody rigidBody : getRigidBodies()) {
+				if (rigidBody == null) {
+					throw new IllegalStateException("rigid body cannot be null");
+				}
 				rigidBody.setExternalForce(Vector3.multiply(rigidBody.getMass(), mGravity));
 			}
 		}
 	}
 
 	/**
-	 * Creates a rigid body and adds it to the physics world. The inertia tensor will be computed from
-	 * the shape and mass.
+	 * Creates an immobile rigid body and adds it to the physics world. The inertia tensor will be
+	 * computed from the shape and mass.
 	 *
 	 * @param transform The transform (position and orientation) of the body
 	 * @param mass The mass of the body
 	 * @param collisionShape The collision shape
 	 * @return The new rigid body
 	 */
-	public RigidBody createRigidBody(Transform transform, float mass, CollisionShape collisionShape) {
+	public ImmobileRigidBody createImmobileRigidBody(Transform transform, float mass, CollisionShape collisionShape) {
 		final Matrix3x3 inertiaTensor = new Matrix3x3();
 		collisionShape.computeLocalInertiaTensor(inertiaTensor, mass);
-		return createRigidBody(transform, mass, inertiaTensor, collisionShape);
+		return createImmobileRigidBody(transform, mass, inertiaTensor, collisionShape);
 	}
 
 	/**
-	 * Creates a rigid body and adds it to the physics world.
+	 * Creates an immobile rigid body and adds it to the physics world.
 	 *
 	 * @param transform The transform (position and orientation) of the body
 	 * @param mass The mass of the body
@@ -424,17 +420,51 @@ public class DynamicsWorld extends CollisionWorld {
 	 * @param collisionShape The collision shape
 	 * @return The new rigid body
 	 */
-	public RigidBody createRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal,
-									 CollisionShape collisionShape) {
-		final int bodyID = computeNextAvailableBodyID();
-		if (bodyID >= Integer.MAX_VALUE) {
-			throw new IllegalStateException("body id cannot be larger or equal to the largest interger");
-		}
-		final RigidBody rigidBody = new RigidBody(transform, mass, inertiaTensorLocal, collisionShape, bodyID);
-		mBodies.add(rigidBody);
-		mRigidBodies.add(rigidBody);
-		mCollisionDetection.addBody(rigidBody);
-		return rigidBody;
+	public ImmobileRigidBody createImmobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal,
+													 CollisionShape collisionShape) {
+		final ImmobileRigidBody immobileBody = new ImmobileRigidBody(transform, mass, inertiaTensorLocal,
+				collisionShape, computeNextAvailableBodyID());
+		addRigidBody(immobileBody);
+		return immobileBody;
+	}
+
+	/**
+	 * Creates a mobile rigid body and adds it to the physics world. The inertia tensor will be
+	 * computed from the shape and mass.
+	 *
+	 * @param transform The transform (position and orientation) of the body
+	 * @param mass The mass of the body
+	 * @param collisionShape The collision shape
+	 * @return The new rigid body
+	 */
+	public MobileRigidBody createMobileRigidBody(Transform transform, float mass, CollisionShape collisionShape) {
+		final Matrix3x3 inertiaTensor = new Matrix3x3();
+		collisionShape.computeLocalInertiaTensor(inertiaTensor, mass);
+		return createMobileRigidBody(transform, mass, inertiaTensor, collisionShape);
+	}
+
+	/**
+	 * Creates a mobile rigid body and adds it to the physics world.
+	 *
+	 * @param transform The transform (position and orientation) of the body
+	 * @param mass The mass of the body
+	 * @param inertiaTensorLocal The local inertia tensor
+	 * @param collisionShape The collision shape
+	 * @return The new rigid body
+	 */
+	public MobileRigidBody createMobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal,
+												 CollisionShape collisionShape) {
+		final MobileRigidBody mobileBody = new MobileRigidBody(transform, mass, inertiaTensorLocal,
+				collisionShape, computeNextAvailableBodyID());
+		addRigidBody(mobileBody);
+		return mobileBody;
+	}
+
+	// Adds a rigid body to the body collections and the collision detection.
+	private void addRigidBody(RigidBody body) {
+		mBodies.add(body);
+		mRigidBodies.add(body);
+		mCollisionDetection.addBody(body);
 	}
 
 	/**
@@ -464,6 +494,13 @@ public class DynamicsWorld extends CollisionWorld {
 		if (oldPair != null) {
 			throw new IllegalStateException("overlapping pair was already in the overlapping pairs map");
 		}
+	}
+
+	@Override
+	public void updateOverlappingPair(BroadPhasePair pair) {
+		final IntPair indexPair = pair.getBodiesIndexPair();
+		final OverlappingPair overlappingPair = mOverlappingPairs.get(indexPair);
+		overlappingPair.update();
 	}
 
 	@Override

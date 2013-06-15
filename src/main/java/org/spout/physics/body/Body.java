@@ -27,9 +27,9 @@
 package org.spout.physics.body;
 
 /**
- * This is the base class for a body for the physics engine.
+ * This is the base class for a body in the physics engine.
  */
-public class Body {
+public abstract class Body {
 	protected final int mID;
 
 	/**
@@ -37,7 +37,7 @@ public class Body {
 	 *
 	 * @param id The body's ID
 	 */
-	public Body(int id) {
+	protected Body(int id) {
 		mID = id;
 	}
 

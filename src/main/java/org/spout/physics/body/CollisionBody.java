@@ -34,25 +34,24 @@ import org.spout.physics.math.Transform;
  * Represents a body that is able to collide with others bodies. This class inherits from the Body
  * class.
  */
-public class CollisionBody extends Body {
+public abstract class CollisionBody extends Body {
 	protected CollisionShape mCollisionShape;
 	protected final Transform mTransform = new Transform();
 	protected final Transform mOldTransform = new Transform();
 	protected float mInterpolationFactor = 0;
 	protected boolean mIsActive = true;
-	protected boolean mIsMotionEnabled = true;
 	protected boolean mIsCollisionEnabled = true;
-	protected AABB mAabb;
+	protected final AABB mAabb;
 	protected boolean mHasMoved = false;
 
 	/**
-	 * Constructs a new collision body from it's transform, collision shape, and ID.
+	 * Constructs a new collision body from its transform, collision shape, and ID.
 	 *
 	 * @param transform The transform
 	 * @param collisionShape The collision shape
 	 * @param id The ID
 	 */
-	public CollisionBody(Transform transform, CollisionShape collisionShape, int id) {
+	protected CollisionBody(Transform transform, CollisionShape collisionShape, int id) {
 		super(id);
 		if (collisionShape == null) {
 			throw new IllegalArgumentException("collisionShape cannot be null");
@@ -139,24 +138,6 @@ public class CollisionBody extends Body {
 	}
 
 	/**
-	 * Returns true if the body can move, false if not.
-	 *
-	 * @return Whether or not the body can move
-	 */
-	public boolean isMotionEnabled() {
-		return mIsMotionEnabled;
-	}
-
-	/**
-	 * Sets whether or not this body can move. True to allow movement, false to disallow.
-	 *
-	 * @param isMotionEnabled True if the body should move, false if not
-	 */
-	public void setMotionEnabled(boolean isMotionEnabled) {
-		mIsMotionEnabled = isMotionEnabled;
-	}
-
-	/**
 	 * Gets this body's current position and orientation as a transform.
 	 *
 	 * @return The body's transform
@@ -185,6 +166,13 @@ public class CollisionBody extends Body {
 	public AABB getAABB() {
 		return mAabb;
 	}
+
+	/**
+	 * Returns true if the body can move, false if not.
+	 *
+	 * @return Whether or not the body can move
+	 */
+	public abstract boolean isMotionEnabled();
 
 	/**
 	 * Return true if the body can collide with others bodies.

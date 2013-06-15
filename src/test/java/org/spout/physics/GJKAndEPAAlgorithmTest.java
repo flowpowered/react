@@ -32,6 +32,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import org.spout.physics.body.CollisionBody;
+import org.spout.physics.body.MobileRigidBody;
 import org.spout.physics.collision.BroadPhasePair;
 import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.narrowphase.GJK.GJKAlgorithm;
@@ -263,8 +264,8 @@ public class GJKAndEPAAlgorithmTest {
 	}
 
 	private static BroadPhasePair pair(CollisionShape s1, Transform t1, CollisionShape s2, Transform t2) {
-		final CollisionBody b1 = new CollisionBody(t1, s1, ID++);
-		final CollisionBody b2 = new CollisionBody(t2, s2, ID++);
+		final CollisionBody b1 = new MobileRigidBody(t1, 0, Matrix3x3.identity(), s1, ID++);
+		final CollisionBody b2 = new MobileRigidBody(t2, 0, Matrix3x3.identity(), s2, ID++);
 		b1.updateAABB();
 		b2.updateAABB();
 		return new BroadPhasePair(b1, b2);

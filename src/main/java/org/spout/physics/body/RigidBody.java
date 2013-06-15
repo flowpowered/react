@@ -36,38 +36,19 @@ import org.spout.physics.math.Vector3;
  * Represents a rigid body for the physics engine. A rigid body is a non-deformable body that has a
  * constant mass. This class inherits from the CollisionBody class.
  */
-public class RigidBody extends CollisionBody {
-	// TODO : Remove the mass variable (duplicate with inverseMass)
-	private float mMass;
-	private final Vector3 mLinearVelocity = new Vector3();
-	private final Vector3 mAngularVelocity = new Vector3();
-	private final Vector3 mExternalForce = new Vector3();
-	private final Vector3 mExternalTorque = new Vector3();
-	private final Matrix3x3 mInertiaTensorLocal = new Matrix3x3();
-	private final Matrix3x3 mInertiaTensorLocalInverse = new Matrix3x3();
-	private float mMassInverse;
-	private float mRestitution = 1;
-	private float mFrictionCoefficient = ReactDefaults.DEFAULT_FRICTION_COEFFICIENT;
+public abstract class RigidBody extends CollisionBody {
+	protected float mRestitution = 1;
+	protected float mFrictionCoefficient = ReactDefaults.DEFAULT_FRICTION_COEFFICIENT;
 
 	/**
-	 * Constructs a new rigid body from it's transform, mass, local inertia tensor, collision shape and
-	 * tensor.
+	 * Constructs a new rigid body from its transform, collision shape and ID.
 	 *
 	 * @param transform The transform (position and orientation)
-	 * @param mass The mass
-	 * @param inertiaTensorLocal The local inertial tensor
 	 * @param collisionShape The collision shape
 	 * @param id The ID
 	 */
-	public RigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape, int id) {
+	protected RigidBody(Transform transform, CollisionShape collisionShape, int id) {
 		super(transform, collisionShape, id);
-		if (collisionShape == null) {
-			throw new IllegalArgumentException("collisionShape cannot be null");
-		}
-		mInertiaTensorLocal.set(inertiaTensorLocal);
-		mMass = mass;
-		mInertiaTensorLocalInverse.set(inertiaTensorLocal.getInverse());
-		mMassInverse = 1 / mass;
 	}
 
 	/**
@@ -75,140 +56,56 @@ public class RigidBody extends CollisionBody {
 	 *
 	 * @return The body's mass
 	 */
-	public float getMass() {
-		return mMass;
-	}
-
-	/**
-	 * Sets the mass of the body.
-	 *
-	 * @param mass The mass to set
-	 */
-	public void setMass(float mass) {
-		mMass = mass;
-	}
-
-	/**
-	 * Gets the linear velocity of the body.
-	 *
-	 * @return The linear velocity
-	 */
-	public Vector3 getLinearVelocity() {
-		return mLinearVelocity;
-	}
-
-	/**
-	 * Gets the angular velocity of the body.
-	 *
-	 * @return The angular velocity
-	 */
-	public Vector3 getAngularVelocity() {
-		return mAngularVelocity;
-	}
-
-	/**
-	 * Sets the angular velocity of the body.
-	 *
-	 * @param angularVelocity The angular velocity to set
-	 */
-	public void setAngularVelocity(Vector3 angularVelocity) {
-		mAngularVelocity.set(angularVelocity);
-	}
-
-	/**
-	 * Sets the inverse of the mass
-	 *
-	 * @param massInverse The inverse of the mass
-	 */
-	public void setMassInverse(float massInverse) {
-		mMassInverse = massInverse;
-	}
-
-	/**
-	 * Gets the inverse of the inertia tensor.
-	 *
-	 * @return The inverse of the inertia tensor
-	 */
-	public Matrix3x3 getInertiaTensorLocalInverse() {
-		return mInertiaTensorLocalInverse;
-	}
-
-	/**
-	 * Gets the current external force on the body.
-	 *
-	 * @return The current external force
-	 */
-	public Vector3 getExternalForce() {
-		return mExternalForce;
-	}
-
-	/**
-	 * Sets the current external force on the body.
-	 *
-	 * @param force The external force to set
-	 */
-	public void setExternalForce(Vector3 force) {
-		mExternalForce.set(force);
-	}
-
-	/**
-	 * Gets the current external torque on the body.
-	 *
-	 * @return The current external torque
-	 */
-	public Vector3 getExternalTorque() {
-		return mExternalTorque;
-	}
-
-	/**
-	 * Sets the current external torque on the body.
-	 *
-	 * @param torque The external torque to set
-	 */
-	public void setExternalTorque(Vector3 torque) {
-		mExternalTorque.set(torque);
-	}
+	public abstract float getMass();
 
 	/**
 	 * Gets the inverse of the mass of the body.
 	 *
 	 * @return The inverse of the mass
 	 */
-	public float getMassInverse() {
-		return mMassInverse;
-	}
+	public abstract float getMassInverse();
 
 	/**
-	 * Gets the local inertia tensor of the body (in body coordinates).
+	 * Gets the linear velocity of the body.
 	 *
-	 * @return The local inertia tensor
+	 * @return The linear velocity
 	 */
-	public Matrix3x3 getInertiaTensorLocal() {
-		return mInertiaTensorLocal;
-	}
+	public abstract Vector3 getLinearVelocity();
 
 	/**
-	 * Sets the local inertia tensor of the body (in body coordinates).
+	 * Gets the angular velocity of the body.
 	 *
-	 * @param inertiaTensorLocal The local inertia tensor to set
+	 * @return The angular velocity
 	 */
-	public void setInertiaTensorLocal(Matrix3x3 inertiaTensorLocal) {
-		mInertiaTensorLocal.set(inertiaTensorLocal);
-	}
+	public abstract Vector3 getAngularVelocity();
 
 	/**
-	 * Gets the inertia tensor in world coordinates. The inertia tensor I_w in world coordinates is
-	 * computed with the local inertia tensor I_b in body coordinates by I_w = R * I_b * R^T, where R
-	 * is the rotation matrix (and R^T its transpose) of the current orientation quaternion of the
-	 * body.
+	 * Gets the current external force on the body.
 	 *
-	 * @return The world inertia tensor
+	 * @return The current external force
 	 */
-	public Matrix3x3 getInertiaTensorWorld() {
-		return Matrix3x3.multiply(
-				Matrix3x3.multiply(mTransform.getOrientation().getMatrix(), mInertiaTensorLocal),
-				mTransform.getOrientation().getMatrix().getTranspose());
-	}
+	public abstract Vector3 getExternalForce();
+
+	/**
+	 * Sets the current external force on the body.
+	 *
+	 * @param force The external force to set
+	 */
+	public abstract void setExternalForce(Vector3 force);
+
+	/**
+	 * Gets the current external torque on the body.
+	 *
+	 * @return The current external torque
+	 */
+	public abstract Vector3 getExternalTorque();
+
+	/**
+	 * Sets the current external torque on the body.
+	 *
+	 * @param torque The external torque to set
+	 */
+	public abstract void setExternalTorque(Vector3 torque);
 
 	/**
 	 * Gets the inverse of the inertia tensor in world coordinates. The inertia tensor I_w in world
@@ -218,23 +115,7 @@ public class RigidBody extends CollisionBody {
 	 *
 	 * @return The world inverse inertia tensor
 	 */
-	public Matrix3x3 getInertiaTensorInverseWorld() {
-		return Matrix3x3.multiply(
-				Matrix3x3.multiply(mTransform.getOrientation().getMatrix(), mInertiaTensorLocalInverse),
-				mTransform.getOrientation().getMatrix().getTranspose());
-	}
-
-	/**
-	 * Set the linear velocity for this body, but only if it can move.
-	 *
-	 * @param linearVelocity The linear velocity to set
-	 * @see CollisionBody#setMotionEnabled(boolean)
-	 */
-	public void setLinearVelocity(Vector3 linearVelocity) {
-		if (mIsMotionEnabled) {
-			mLinearVelocity.set(linearVelocity);
-		}
-	}
+	public abstract Matrix3x3 getInertiaTensorInverseWorld();
 
 	/**
 	 * Gets the restitution coefficient for this body.
