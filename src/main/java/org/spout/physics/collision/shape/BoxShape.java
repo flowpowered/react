@@ -31,9 +31,9 @@ import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Vector3;
 
 /**
- * Represents a 3D box shape. Those axis are unit length. The three extents are half-widths of the
- * box along the three axis x, y, z local axis. The "transform" of the corresponding rigid body
- * gives an orientation and a position to the box.
+ * Represents a 3D box shape. Those axis are unit length. The three extents are half-lengths of the
+ * box along the three x, y, z local axes. The "transform" of the corresponding rigid body gives an
+ * orientation and a position to the box.
  */
 public class BoxShape extends CollisionShape {
 	private final Vector3 mExtent = new Vector3();

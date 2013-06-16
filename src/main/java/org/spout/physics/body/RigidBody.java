@@ -26,7 +26,6 @@
  */
 package org.spout.physics.body;
 
-import org.spout.physics.ReactDefaults;
 import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Transform;
@@ -37,8 +36,8 @@ import org.spout.physics.math.Vector3;
  * constant mass. This class inherits from the CollisionBody class.
  */
 public abstract class RigidBody extends CollisionBody {
-	protected float mRestitution = 1;
-	protected float mFrictionCoefficient = ReactDefaults.DEFAULT_FRICTION_COEFFICIENT;
+	private static final RigidBodyMaterial DEFAULT_MATERIAL = RigidBodyMaterial.asUnmodifiableMaterial(new RigidBodyMaterial());
+	protected RigidBodyMaterial mMaterial = DEFAULT_MATERIAL;
 
 	/**
 	 * Constructs a new rigid body from its transform, collision shape and ID.
@@ -118,22 +117,30 @@ public abstract class RigidBody extends CollisionBody {
 	public abstract Matrix3x3 getInertiaTensorInverseWorld();
 
 	/**
+	 * Sets the rigid body's material.
+	 *
+	 * @param material The material to set
+	 */
+	public void setMaterial(RigidBodyMaterial material) {
+		mMaterial = material;
+	}
+
+	/**
+	 * Gets the rigid body's material.
+	 *
+	 * @return The material
+	 */
+	public RigidBodyMaterial getMaterial() {
+		return mMaterial;
+	}
+
+	/**
 	 * Gets the restitution coefficient for this body.
 	 *
 	 * @return The restitution coefficient
 	 */
 	public float getRestitution() {
-		return mRestitution;
-	}
-
-	/**
-	 * Sets the restitution coefficient.
-	 *
-	 * @param restitution The restitution coefficient to set
-	 */
-	public void setRestitution(float restitution) {
-		assert (restitution >= 0 && restitution <= 1);
-		mRestitution = restitution;
+		return mMaterial.getRestitution();
 	}
 
 	/**
@@ -142,15 +149,6 @@ public abstract class RigidBody extends CollisionBody {
 	 * @return The friction coefficient
 	 */
 	public float getFrictionCoefficient() {
-		return mFrictionCoefficient;
-	}
-
-	/**
-	 * Sets the friction coefficient for this body.
-	 *
-	 * @param frictionCoefficient The friction coefficient to set
-	 */
-	public void setFrictionCoefficient(float frictionCoefficient) {
-		mFrictionCoefficient = frictionCoefficient;
+		return mMaterial.getFriction();
 	}
 }

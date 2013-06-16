@@ -51,7 +51,6 @@ public class DynamicsWorldTest {
 			final float floorMass = 100;
 			floorShape.computeLocalInertiaTensor(floorInertia, floorMass);
 			final ImmobileRigidBody floor = world.createImmobileRigidBody(floorTransform, floorMass, floorInertia, floorShape);
-			floor.setRestitution(0.5f);
 			final BoxShape boxShape = new BoxShape(new Vector3(1, 1, 1));
 			final Transform boxTransform = new Transform(new Vector3(0, 5, 0), Quaternion.identity());
 			final Matrix3x3 boxInertia = new Matrix3x3();
@@ -59,7 +58,6 @@ public class DynamicsWorldTest {
 			boxShape.computeLocalInertiaTensor(boxInertia, boxMass);
 			final MobileRigidBody box = world.createMobileRigidBody(boxTransform, boxMass, boxInertia, boxShape);
 			box.setMotionEnabled(true);
-			box.setRestitution(0.5f);
 			world.start();
 			final int stepCount = Math.round((1 / timeStep) * RUN_TIME);
 			final int sleepTime = Math.round(timeStep * 1000);
