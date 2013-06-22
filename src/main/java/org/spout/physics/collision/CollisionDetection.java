@@ -26,7 +26,9 @@
  */
 package org.spout.physics.collision;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -53,7 +55,7 @@ public class CollisionDetection {
 	private final BroadPhaseAlgorithm mBroadPhaseAlgorithm;
 	private final GJKAlgorithm mNarrowPhaseGJKAlgorithm = new GJKAlgorithm();
 	private final SphereVsSphereAlgorithm mNarrowPhaseSphereVsSphereAlgorithm = new SphereVsSphereAlgorithm();
-	private CollisionListener mCallBacks = null;
+	private final List<CollisionListener> mCallBacks = new ArrayList<CollisionListener>();
 
 	/**
 	 * Constructs a new collision detection from the collision world.
@@ -66,21 +68,21 @@ public class CollisionDetection {
 	}
 
 	/**
-	 * Gets the collision listener for the collision detection, or null if none has been set.
+	 * Gets the collision listeners for collision detection.
 	 *
-	 * @return The collision listener, or null is absent
+	 * @return The collision listeners
 	 */
-	public CollisionListener getCollisionListener() {
+	public List<CollisionListener> getListeners() {
 		return mCallBacks;
 	}
 
 	/**
-	 * Sets the collision listener for the collision detection.
+	 * Adds a collision listener for the collision detection.
 	 *
-	 * @param listener The listener to use
+	 * @param listener The listener to add
 	 */
-	public void setCollisionListener(CollisionListener listener) {
-		mCallBacks = listener;
+	public void addListener(CollisionListener listener) {
+		mCallBacks.add(listener);
 	}
 
 	/**
@@ -131,18 +133,16 @@ public class CollisionDetection {
 			mWorld.updateOverlappingPair(pair);
 			final NarrowPhaseAlgorithm narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(body1.getCollisionShape(), body2.getCollisionShape());
 			narrowPhaseAlgorithm.setCurrentOverlappingPair(pair);
-			if (narrowPhaseAlgorithm.testCollision(
-					body1.getCollisionShape(), body1.getTransform(),
-					body2.getCollisionShape(), body2.getTransform(),
-					contactInfo)) {
-				final boolean cancel;
-				if (mCallBacks != null) {
-					cancel = mCallBacks.onCollide(body1, body2, contactInfo);
-				} else {
-					cancel = false;
-				}
-				if (!cancel) {
+			if (narrowPhaseAlgorithm.testCollision(body1.getCollisionShape(), body1.getTransform(), body2.getCollisionShape(), body2.getTransform(), contactInfo)) {
+				if (mCallBacks.isEmpty()) {
 					mWorld.notifyNewContact(pair, contactInfo);
+				} else {
+					for (final CollisionListener listener : mCallBacks) {
+						//TODO DDoS Need you to make sure this is correct
+						if (!listener.onCollide(body1, body2, contactInfo)) {
+							mWorld.notifyNewContact(pair, contactInfo);
+						}
+					}
 				}
 			}
 		}

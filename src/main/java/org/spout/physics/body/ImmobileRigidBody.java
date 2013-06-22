@@ -39,7 +39,6 @@ public class ImmobileRigidBody extends RigidBody {
 	private static final Vector3 ZERO = new Vector3(0, 0, 0);
 	// TODO: Remove the mass variable (duplicate with inverseMass)
 	protected float mMass;
-	protected float mMassInverse;
 	protected final Matrix3x3 mInertiaTensorLocal = new Matrix3x3();
 	protected final Matrix3x3 mInertiaTensorLocalInverse = new Matrix3x3();
 	protected final Vector3 mExternalForce = new Vector3();
@@ -58,7 +57,6 @@ public class ImmobileRigidBody extends RigidBody {
 	public ImmobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape, int id) {
 		super(transform, collisionShape, id);
 		mMass = mass;
-		mMassInverse = 1 / mass;
 		mInertiaTensorLocal.set(inertiaTensorLocal);
 		mInertiaTensorLocalInverse.set(inertiaTensorLocal.getInverse());
 	}
@@ -80,7 +78,7 @@ public class ImmobileRigidBody extends RigidBody {
 	 */
 	@Override
 	public float getMassInverse() {
-		return mMassInverse;
+		return (1/mMass);
 	}
 
 	/**
@@ -90,7 +88,6 @@ public class ImmobileRigidBody extends RigidBody {
 	 */
 	public void setMass(float mass) {
 		mMass = mass;
-		mMassInverse = 1 / mass;
 	}
 
 	/**
@@ -121,13 +118,13 @@ public class ImmobileRigidBody extends RigidBody {
 	 * @return The world inertia tensor
 	 */
 	public Matrix3x3 getInertiaTensorWorld() {
-		final Matrix3x3 orientation = mTransform.getOrientation().getMatrix();
+		final Matrix3x3 orientation = mliveTransform.getOrientation().getMatrix();
 		return Matrix3x3.multiply(Matrix3x3.multiply(orientation, mInertiaTensorLocal), orientation.getTranspose());
 	}
 
 	@Override
 	public Matrix3x3 getInertiaTensorInverseWorld() {
-		final Matrix3x3 orientation = mTransform.getOrientation().getMatrix();
+		final Matrix3x3 orientation = mliveTransform.getOrientation().getMatrix();
 		return Matrix3x3.multiply(Matrix3x3.multiply(orientation, mInertiaTensorLocalInverse), orientation.getTranspose());
 	}
 

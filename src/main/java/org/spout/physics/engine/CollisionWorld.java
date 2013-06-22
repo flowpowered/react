@@ -92,21 +92,12 @@ public abstract class CollisionWorld {
 	public abstract void updateOverlappingPair(BroadPhasePair pair);
 
 	/**
-	 * Gets the collision listener for the collision detection, or null if none has been set.
-	 *
-	 * @return The collision listener, or null is absent
-	 */
-	public CollisionListener getCollisionListener() {
-		return mCollisionDetection.getCollisionListener();
-	}
-
-	/**
-	 * Sets the collision listener for the collision detection.
+	 * Adds a collision listener for the collision detection.
 	 *
 	 * @param listener The listener to use
 	 */
-	public void setCollisionListener(CollisionListener listener) {
-		mCollisionDetection.setCollisionListener(listener);
+	public void addListener(CollisionListener listener) {
+		mCollisionDetection.addListener(listener);
 	}
 
 	/**

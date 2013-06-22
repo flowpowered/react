@@ -32,16 +32,18 @@ import org.spout.physics.body.CollisionBody;
  * Reports the collisions between two bodies as they are occurring during the narrow-phase and
  * allows for cancellation of the collision. Each collision will result in a call of {@link
  * #onCollide(org.spout.physics.body.CollisionBody, org.spout.physics.body.CollisionBody,
- * ContactInfo)}. Implement this interface to listen to them. Use {@link
- * org.spout.physics.engine.CollisionWorld#setCollisionListener(CollisionListener)} to set the
- * listener to use.
+ * ContactInfo)}. Implement this interface to listen to them. Use {@link org.spout.physics.engine.CollisionWorld#addListener(CollisionListener)}
+ * to add a listener.
  */
 public interface CollisionListener {
 	/**
-	 * This method is called when two bodies collide in a collision detection. Both bodies are
+	 * This method is called when two bodies are about to collide in a collision detection. Both bodies are
 	 * provided, including the contact information, which includes the contact points on each body, the
 	 * penetration depth, and the normal. The method returns a boolean. If it is true, the collision
-	 * will be canceled. If it is false it will occur as it should.
+	 * will be canceled.
+	 *
+	 * Keep in mind that this method is ONLY for determining if a collision should occur, any updates made
+	 * to the objects provided will be ignored. You should use onCollided instead for that.
 	 *
 	 * @param body1 The first body
 	 * @param body2 The second body

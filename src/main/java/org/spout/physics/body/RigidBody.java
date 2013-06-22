@@ -135,20 +135,20 @@ public abstract class RigidBody extends CollisionBody {
 	}
 
 	/**
-	 * Gets the restitution coefficient for this body.
+	 * Gets the restitution for this body.
 	 *
-	 * @return The restitution coefficient
+	 * @return The restitution
 	 */
 	public float getRestitution() {
 		return mMaterial.getRestitution();
 	}
 
 	/**
-	 * Gets the friction coefficient for this body.
+	 * Gets the friction for this body.
 	 *
-	 * @return The friction coefficient
+	 * @return The friction
 	 */
-	public float getFrictionCoefficient() {
+	public float getFriction() {
 		return mMaterial.getFriction();
 	}
 }

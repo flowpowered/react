@@ -304,7 +304,7 @@ public class DynamicsWorld extends CollisionWorld {
 			}
 			final MobileRigidBody mobileBody = (MobileRigidBody) rigidBody;
 			if (mobileBody.isMotionEnabled()) {
-				mobileBody.updateOldTransform();
+				mobileBody.snapshotTransform();
 				final int indexArray = mMapBodyToConstrainedVelocityIndex.get(mobileBody);
 				final Vector3 newLinVelocity = mConstrainedLinearVelocities.get(indexArray);
 				final Vector3 newAngVelocity = mConstrainedAngularVelocities.get(indexArray);

@@ -36,8 +36,8 @@ import org.spout.physics.math.Transform;
  */
 public abstract class CollisionBody extends Body {
 	protected CollisionShape mCollisionShape;
-	protected final Transform mTransform = new Transform();
-	protected final Transform mOldTransform = new Transform();
+	protected final Transform mliveTransform = new Transform();
+	protected final Transform msnapshotTransform = new Transform();
 	protected float mInterpolationFactor = 0;
 	protected boolean mIsActive = true;
 	protected boolean mIsCollisionEnabled = true;
@@ -56,9 +56,9 @@ public abstract class CollisionBody extends Body {
 		if (collisionShape == null) {
 			throw new IllegalArgumentException("collisionShape cannot be null");
 		}
-		mTransform.set(transform);
+		mliveTransform.set(transform);
+		snapshotTransform();
 		mCollisionShape = collisionShape;
-		mOldTransform.set(transform);
 		mAabb = new AABB();
 		mCollisionShape.updateAABB(mAabb, transform);
 	}
@@ -125,7 +125,7 @@ public abstract class CollisionBody extends Body {
 	 *         interpolation factor
 	 */
 	public Transform getInterpolatedTransform() {
-		return Transform.interpolateTransforms(mOldTransform, mTransform, mInterpolationFactor);
+		return Transform.interpolateTransforms(msnapshotTransform, mliveTransform, mInterpolationFactor);
 	}
 
 	/**
@@ -143,7 +143,7 @@ public abstract class CollisionBody extends Body {
 	 * @return The body's transform
 	 */
 	public Transform getTransform() {
-		return mTransform;
+		return mliveTransform;
 	}
 
 	/**
@@ -152,10 +152,10 @@ public abstract class CollisionBody extends Body {
 	 * @param transform The transform to set for this body
 	 */
 	public void setTransform(Transform transform) {
-		if (!mTransform.equals(transform)) {
+		if (!mliveTransform.equals(transform)) {
 			mHasMoved = true;
 		}
-		mTransform.set(transform);
+		mliveTransform.set(transform);
 	}
 
 	/**
@@ -196,15 +196,16 @@ public abstract class CollisionBody extends Body {
 	 * Update the old transform with the current one. This is used to compute the interpolated position
 	 * and orientation of the body.
 	 */
-	public void updateOldTransform() {
-		mOldTransform.set(mTransform);
+	public void snapshotTransform() {
+		msnapshotTransform.set(mliveTransform);
 	}
 
 	/**
 	 * Update the rigid body in order to reflect a change in the body state.
 	 */
 	public void updateAABB() {
-		// TODO : An AABB should not be updated every frame but only if the body has moved
-		mCollisionShape.updateAABB(mAabb, mTransform);
+		if (mHasMoved) {
+			mCollisionShape.updateAABB(mAabb, mliveTransform);
+		}
 	}
 }

@@ -214,7 +214,7 @@ public class ContactSolver {
 
 	// Computes the mixed friction coefficient from the friction coefficient of each body.
 	private float computeMixedFrictionCoefficient(RigidBody body1, RigidBody body2) {
-		return (float) Math.sqrt(body1.getFrictionCoefficient() * body2.getFrictionCoefficient());
+		return (float) Math.sqrt(body1.getFriction() * body2.getFriction());
 	}
 
 	// Computes a penetration constraint impulse.
