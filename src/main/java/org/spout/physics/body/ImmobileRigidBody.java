@@ -37,7 +37,6 @@ import org.spout.physics.math.Vector3;
  */
 public class ImmobileRigidBody extends RigidBody {
 	private static final Vector3 ZERO = new Vector3(0, 0, 0);
-	// TODO: Remove the mass variable (duplicate with inverseMass)
 	protected float mMass;
 	protected final Matrix3x3 mInertiaTensorLocal = new Matrix3x3();
 	protected final Matrix3x3 mInertiaTensorLocalInverse = new Matrix3x3();
@@ -149,23 +148,23 @@ public class ImmobileRigidBody extends RigidBody {
 	}
 
 	/**
-	 * Always returns the zero vector. Please do not modify the returned vector!
+	 * Always returns the zero vector.
 	 *
 	 * @return The zero vector
 	 */
 	@Override
 	public Vector3 getLinearVelocity() {
-		return ZERO;
+		return new Vector3(ZERO);
 	}
 
 	/**
-	 * Always returns the zero vector. Please do not modify the returned vector!
+	 * Always returns the zero vector.
 	 *
 	 * @return The zero vector
 	 */
 	@Override
 	public Vector3 getAngularVelocity() {
-		return ZERO;
+		return new Vector3(ZERO);
 	}
 
 	/**
