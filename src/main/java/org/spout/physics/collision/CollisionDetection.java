@@ -28,21 +28,28 @@ package org.spout.physics.collision;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.spout.physics.Utilities.IntPair;
 import org.spout.physics.body.CollisionBody;
+import org.spout.physics.body.ImmobileRigidBody;
+import org.spout.physics.body.MobileRigidBody;
+import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.broadphase.BroadPhaseAlgorithm;
 import org.spout.physics.collision.broadphase.PairManager.BodyPair;
 import org.spout.physics.collision.broadphase.SweepAndPruneAlgorithm;
+import org.spout.physics.collision.dynamicphase.DynamicPhase;
 import org.spout.physics.collision.narrowphase.GJK.GJKAlgorithm;
 import org.spout.physics.collision.narrowphase.NarrowPhaseAlgorithm;
 import org.spout.physics.collision.narrowphase.SphereVsSphereAlgorithm;
 import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.collision.shape.CollisionShape.CollisionShapeType;
 import org.spout.physics.engine.CollisionWorld;
+import org.spout.physics.engine.DynamicDynamicsWorld;
 
 /**
  * This class computes the collision detection algorithms. We first perform a broad-phase algorithm
@@ -57,6 +64,8 @@ public class CollisionDetection {
 	private final SphereVsSphereAlgorithm mNarrowPhaseSphereVsSphereAlgorithm = new SphereVsSphereAlgorithm();
 	private final List<CollisionListener> mCallBacks = new ArrayList<CollisionListener>();
 
+	private DynamicPhase mDynamicPhase;
+
 	/**
 	 * Constructs a new collision detection from the collision world.
 	 *
@@ -65,6 +74,9 @@ public class CollisionDetection {
 	public CollisionDetection(CollisionWorld world) {
 		mWorld = world;
 		mBroadPhaseAlgorithm = new SweepAndPruneAlgorithm(this);
+		if (world instanceof DynamicDynamicsWorld) {
+			mDynamicPhase = new DynamicPhase((DynamicDynamicsWorld) mWorld);
+		}
 	}
 
 	/**
@@ -107,8 +119,25 @@ public class CollisionDetection {
 	 * Computes the collision detection.
 	 */
 	public void computeCollisionDetection() {
+		if (mDynamicPhase != null) {
+			computeDynamicPhase();
+		}
 		computeBroadPhase();
 		computeNarrowPhase();
+	}
+
+	private void computeDynamicPhase() {
+		final Iterator<CollisionBody> bodies = mWorld.getBodies().iterator();
+		while (bodies.hasNext()) {
+			final CollisionBody body = bodies.next();
+			if (!(body instanceof MobileRigidBody)) {
+				continue;
+			}
+			final Iterator<ImmobileRigidBody> foundBodiesIterator = mDynamicPhase.getBodiesInRange((MobileRigidBody) body).iterator();
+			while (foundBodiesIterator.hasNext()) {
+				addBody(foundBodiesIterator.next());
+			}
+		}
 	}
 
 	// Computes the broad-phase collision detection.
