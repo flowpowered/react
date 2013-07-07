@@ -133,10 +133,12 @@ public class CollisionDetection {
 			if (!(body instanceof MobileRigidBody)) {
 				continue;
 			}
-			final Iterator<ImmobileRigidBody> foundBodiesIterator = mDynamicPhase.getBodiesInRange((MobileRigidBody) body).iterator();
+			final Set<ImmobileRigidBody> foundBodies = mDynamicPhase.getBodiesInRange((MobileRigidBody) body);
+			final Iterator<ImmobileRigidBody> foundBodiesIterator = foundBodies.iterator();
 			while (foundBodiesIterator.hasNext()) {
 				addBody(foundBodiesIterator.next());
 			}
+			((DynamicDynamicsWorld) mWorld).addBodies(foundBodies);
 		}
 	}
 
