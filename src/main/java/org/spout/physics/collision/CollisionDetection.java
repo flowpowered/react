@@ -26,13 +26,8 @@
  */
 package org.spout.physics.collision;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.spout.physics.Utilities.IntPair;
 import org.spout.physics.body.CollisionBody;
@@ -128,18 +123,20 @@ public class CollisionDetection {
 
 	private void computeDynamicPhase() {
 		final Iterator<CollisionBody> bodies = mWorld.getBodies().iterator();
+        final Set<ImmobileRigidBody> foundBodies = new HashSet<ImmobileRigidBody>();
 		while (bodies.hasNext()) {
 			final CollisionBody body = bodies.next();
 			if (!(body instanceof MobileRigidBody)) {
 				continue;
 			}
-			final Set<ImmobileRigidBody> foundBodies = mDynamicPhase.getBodiesInRange((MobileRigidBody) body);
-			final Iterator<ImmobileRigidBody> foundBodiesIterator = foundBodies.iterator();
-			while (foundBodiesIterator.hasNext()) {
-				addBody(foundBodiesIterator.next());
+            final Set<ImmobileRigidBody> bodiesInRange = mDynamicPhase.getBodiesInRange((MobileRigidBody) body);
+			final Iterator<ImmobileRigidBody> bodiesInRangeIterator = bodiesInRange.iterator();
+			while (bodiesInRangeIterator.hasNext()) {
+				addBody(bodiesInRangeIterator.next());
 			}
-			((DynamicDynamicsWorld) mWorld).addBodies(foundBodies);
+            foundBodies.addAll(bodiesInRange);
 		}
+        ((DynamicDynamicsWorld) mWorld).addBodies(foundBodies);
 	}
 
 	// Computes the broad-phase collision detection.
