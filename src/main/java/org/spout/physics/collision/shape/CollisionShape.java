@@ -119,6 +119,6 @@ public abstract class CollisionShape {
 	 * An enumeration of the possible collision shape (box, sphere, cone and cylinder).
 	 */
 	public static enum CollisionShapeType {
-		BOX, SPHERE, CONE, CYLINDER, VOXEL;
+		BOX, SPHERE, CONE, CYLINDER;
 	}
 }

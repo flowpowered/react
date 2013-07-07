@@ -1,19 +1,14 @@
-package org.spout.physics.collision.shape;
+package org.spout.physics.engine.dynamic;
 
 import org.spout.physics.body.ImmobileRigidBody;
 
 /**
- * Represents an abstract shape designed for Voxel games.
+ * A simple class made for implementations with dynamic world planes (ex. Voxel generation) where no assumptions
+ * can be made about the world.
  *
- * The use of this shape is for when a simulation has a completely dynamic ground (instead of a typical plane.
- * The only method, {@link #getBody(int, int, int)} , is implemented to be able to generate the necessary body to
- * be used instead of the "fake" simulation body and shape.
+ * It is left up to the implementation of this class to provide the body to be used at the x, y, z provided
  */
-public abstract class VoxelWorldShape extends CollisionShape {
-	public VoxelWorldShape() {
-		super(CollisionShapeType.VOXEL);
-	}
-
+public abstract class DynamicWorldInfo {
 	/**
 	 * Fetches the {@link ImmobileRigidBody} at the x, y, z in world space.
 	 * <p>
