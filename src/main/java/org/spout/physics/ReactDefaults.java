@@ -66,4 +66,8 @@ public class ReactDefaults {
 	 * Number of iterations when solving a LCP problem. Default: 15
 	 */
 	public static final int DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS = 15;
+	/**
+	 * The scale factor on AABBs
+	 */
+	public static final float AABB_SCALAR = 1.0f;
 }
