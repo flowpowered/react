@@ -181,8 +181,7 @@ public class CollisionDetection {
 
 	// Selects the narrow-phase collision algorithm to use given two collision shapes.
 	private NarrowPhaseAlgorithm selectNarrowPhaseAlgorithm(CollisionShape collisionShape1, CollisionShape collisionShape2) {
-		if (collisionShape1.getType() == CollisionShapeType.SPHERE
-				&& collisionShape2.getType() == CollisionShapeType.SPHERE) {
+		if (collisionShape1.getType() == CollisionShapeType.SPHERE && collisionShape2.getType() == CollisionShapeType.SPHERE) {
 			return mNarrowPhaseSphereVsSphereAlgorithm;
 		} else {
 			return mNarrowPhaseGJKAlgorithm;
