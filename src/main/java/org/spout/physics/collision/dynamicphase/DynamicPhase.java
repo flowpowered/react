@@ -58,9 +58,8 @@ public class DynamicPhase {
 	public Set<ImmobileRigidBody> getBodiesInRange(final MobileRigidBody body) {
 		final AABB aabb = body.getAABB();
 		//Grab object coords
-		final Vector3 extents = Vector3.subtract(aabb.getMax(), aabb.getMin()).divide(2);
-		final Vector3 max = extents;
-		final Vector3 min = Vector3.negate(max);
+		final Vector3 max = Vector3.subtract(aabb.getMax(), aabb.getCenter());
+		final Vector3 min = Vector3.subtract(aabb.getMin(), aabb.getCenter());
 		//Scale coords
 		max.multiply(ReactDefaults.AABB_SCALAR);
 		min.multiply(ReactDefaults.AABB_SCALAR);
@@ -68,13 +67,13 @@ public class DynamicPhase {
 		max.add(aabb.getCenter());
 		min.add(aabb.getCenter());
 
-		final int startx = (int) Math.ceil(min.getX());
-		final int starty = (int) Math.ceil(min.getY());
-		final int startz = (int) Math.ceil(min.getZ());
+		final int startx = (int) Math.floor(min.getX());
+		final int starty = (int) Math.floor(min.getY());
+		final int startz = (int) Math.floor(min.getZ());
 
-		final int endx = (int) Math.floor(max.getX());
-		final int endy = (int) Math.floor(max.getY());
-		final int endz = (int) Math.floor(max.getZ());
+		final int endx = (int) Math.ceil(max.getX());
+		final int endy = (int) Math.ceil(max.getY());
+		final int endz = (int) Math.ceil(max.getZ());
 
 		final Set<ImmobileRigidBody> foundBodies = new HashSet<ImmobileRigidBody>();
 
