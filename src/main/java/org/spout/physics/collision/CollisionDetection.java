@@ -125,7 +125,7 @@ public class CollisionDetection {
 				continue;
 			}
 			for (final ImmobileRigidBody immobileBody : mLinkedPhase.getBodiesInRange((MobileRigidBody) body)) {
-				addBody(immobileBody);
+				((LinkedDynamicsWorld) mWorld).addRigidBody(immobileBody);
 				foundBodies.add(immobileBody);
 			}
 		}

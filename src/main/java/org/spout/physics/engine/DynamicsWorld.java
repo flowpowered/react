@@ -461,7 +461,7 @@ public class DynamicsWorld extends CollisionWorld {
 	}
 
 	// Adds a rigid body to the body collections and the collision detection.
-	private void addRigidBody(RigidBody body) {
+	public void addRigidBody(RigidBody body) {
 		mBodies.add(body);
 		mRigidBodies.add(body);
 		mCollisionDetection.addBody(body);

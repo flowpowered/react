@@ -152,7 +152,7 @@ public abstract class CollisionWorld {
 	 *
 	 * @return An available boy ID
 	 */
-	protected int computeNextAvailableBodyID() {
+	public int computeNextAvailableBodyID() {
 		final int bodyID;
 		if (!mFreeBodiesIDs.isEmpty()) {
 			bodyID = mFreeBodiesIDs.get(mFreeBodiesIDs.size() - 1);
