@@ -24,7 +24,7 @@
  * License and see <http://spout.in/licensev1> for the full license, including
  * the MIT license.
  */
-package org.spout.physics.collision.dynamicphase;
+package org.spout.physics.collision.linkedphase;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -33,17 +33,17 @@ import org.spout.physics.ReactDefaults;
 import org.spout.physics.body.ImmobileRigidBody;
 import org.spout.physics.body.MobileRigidBody;
 import org.spout.physics.collision.shape.AABB;
-import org.spout.physics.engine.DynamicDynamicsWorld;
+import org.spout.physics.engine.LinkedDynamicsWorld;
 import org.spout.physics.math.Vector3;
 
 /**
- * A phase of the physics tick where bodies is dynamically added via the {@link org.spout.physics.engine.DynamicDynamicsWorld}'s {@link org.spout.physics.engine.dynamic.DynamicWorldInfo}.
+ * A phase of the physics tick where bodies are added via the {@link org.spout.physics.engine.LinkedDynamicsWorld}'s {@link org.spout.physics.engine.linked.LinkedWorldInfo}.
  */
-public class DynamicPhase {
-	private final DynamicDynamicsWorld dynamicWorld;
+public class LinkedPhase {
+	private final LinkedDynamicsWorld linkedDynamicsWorld;
 
-	public DynamicPhase(final DynamicDynamicsWorld dynamicWorld) {
-		this.dynamicWorld = dynamicWorld;
+	public LinkedPhase(final LinkedDynamicsWorld linkedDynamicsWorld) {
+		this.linkedDynamicsWorld = linkedDynamicsWorld;
 	}
 
 	/**
@@ -80,7 +80,7 @@ public class DynamicPhase {
 		for (int xx = startx; xx <= endx; xx++) {
 			for (int yy = starty; yy <= endy; yy++) {
 				for (int zz = startz; zz <= endz; zz++) {
-					final ImmobileRigidBody immobile = dynamicWorld.getDynamicInfo().getBody(xx, yy, zz);
+					final ImmobileRigidBody immobile = linkedDynamicsWorld.getLinkedInfo().getBody(xx, yy, zz);
 					if (immobile == null) {
 						continue;
 					}

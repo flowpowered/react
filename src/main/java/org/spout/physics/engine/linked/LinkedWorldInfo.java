@@ -24,7 +24,7 @@
  * License and see <http://spout.in/licensev1> for the full license, including
  * the MIT license.
  */
-package org.spout.physics.engine.dynamic;
+package org.spout.physics.engine.linked;
 
 import org.spout.physics.body.ImmobileRigidBody;
 
@@ -34,7 +34,7 @@ import org.spout.physics.body.ImmobileRigidBody;
  *
  * It is left up to the implementation of this class to provide the body to be used at the x, y, z provided
  */
-public abstract class DynamicWorldInfo {
+public abstract class LinkedWorldInfo {
 	/**
 	 * Fetches the {@link ImmobileRigidBody} at the x, y, z in world space.
 	 * <p>

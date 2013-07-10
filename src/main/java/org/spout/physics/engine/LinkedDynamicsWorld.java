@@ -32,17 +32,17 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.spout.physics.body.ImmobileRigidBody;
-import org.spout.physics.engine.dynamic.DynamicWorldInfo;
+import org.spout.physics.engine.linked.LinkedWorldInfo;
 import org.spout.physics.math.Vector3;
 
-public class DynamicDynamicsWorld extends DynamicsWorld {
+public class LinkedDynamicsWorld extends DynamicsWorld {
 	/* The info for this world */
-	private final DynamicWorldInfo info;
+	private final LinkedWorldInfo info;
 
-	/* The bodies dynamically added each physics tick in the DynamicPhase */
-	private final Set<ImmobileRigidBody> dynamicBodies = new HashSet<ImmobileRigidBody>();
+	/* The bodies dynamically added each physics tick in the LinkedPhase */
+	private final Set<ImmobileRigidBody> linkedBodies = new HashSet<ImmobileRigidBody>();
 
-	public DynamicDynamicsWorld(Vector3 gravity, final DynamicWorldInfo info) {
+	public LinkedDynamicsWorld(Vector3 gravity, final LinkedWorldInfo info) {
 		super(gravity);
 		this.info = info;
 	}
@@ -66,10 +66,10 @@ public class DynamicDynamicsWorld extends DynamicsWorld {
 	}
 
 	/**
-	 * Returns the {@link org.spout.physics.engine.dynamic.DynamicWorldInfo} of this world
-	 * @return the dynamic info
+	 * Returns the {@link org.spout.physics.engine.linked.LinkedWorldInfo} of this world
+	 * @return the linked info
 	 */
-	public DynamicWorldInfo getDynamicInfo() {
+	public LinkedWorldInfo getLinkedInfo() {
 		return info;
 	}
 
@@ -78,17 +78,17 @@ public class DynamicDynamicsWorld extends DynamicsWorld {
 	 * @param bodies bodies to add
 	 */
 	public void addBodies(final Collection<ImmobileRigidBody> bodies) {
-		dynamicBodies.addAll(bodies);
+		linkedBodies.addAll(bodies);
 	}
 
 	/**
 	 * Clears all bodies tracked in the world
 	 */
 	public void destroyAndClear() {
-		final Iterator<ImmobileRigidBody> bodiesIterator = dynamicBodies.iterator();
+		final Iterator<ImmobileRigidBody> bodiesIterator = linkedBodies.iterator();
 		while (bodiesIterator.hasNext()) {
 			destroyRigidBody(bodiesIterator.next());
 		}
-		dynamicBodies.clear();
+		linkedBodies.clear();
 	}
 }

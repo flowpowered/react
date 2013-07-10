@@ -28,12 +28,9 @@ package org.spout.physics.collision;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.spout.physics.Utilities.IntPair;
 import org.spout.physics.body.CollisionBody;
@@ -42,14 +39,14 @@ import org.spout.physics.body.MobileRigidBody;
 import org.spout.physics.collision.broadphase.BroadPhaseAlgorithm;
 import org.spout.physics.collision.broadphase.PairManager.BodyPair;
 import org.spout.physics.collision.broadphase.SweepAndPruneAlgorithm;
-import org.spout.physics.collision.dynamicphase.DynamicPhase;
+import org.spout.physics.collision.linkedphase.LinkedPhase;
 import org.spout.physics.collision.narrowphase.GJK.GJKAlgorithm;
 import org.spout.physics.collision.narrowphase.NarrowPhaseAlgorithm;
 import org.spout.physics.collision.narrowphase.SphereVsSphereAlgorithm;
 import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.collision.shape.CollisionShape.CollisionShapeType;
 import org.spout.physics.engine.CollisionWorld;
-import org.spout.physics.engine.DynamicDynamicsWorld;
+import org.spout.physics.engine.LinkedDynamicsWorld;
 
 /**
  * This class computes the collision detection algorithms. We first perform a broad-phase algorithm
@@ -63,7 +60,7 @@ public class CollisionDetection {
 	private final GJKAlgorithm mNarrowPhaseGJKAlgorithm = new GJKAlgorithm();
 	private final SphereVsSphereAlgorithm mNarrowPhaseSphereVsSphereAlgorithm = new SphereVsSphereAlgorithm();
 	private final List<CollisionListener> mCallBacks = new ArrayList<CollisionListener>();
-	private DynamicPhase mDynamicPhase;
+	private LinkedPhase mLinkedPhase;
 
 	/**
 	 * Constructs a new collision detection from the collision world.
@@ -72,8 +69,8 @@ public class CollisionDetection {
 	public CollisionDetection(CollisionWorld world) {
 		mWorld = world;
 		mBroadPhaseAlgorithm = new SweepAndPruneAlgorithm(this);
-		if (world instanceof DynamicDynamicsWorld) {
-			mDynamicPhase = new DynamicPhase((DynamicDynamicsWorld) mWorld);
+		if (world instanceof LinkedDynamicsWorld) {
+			mLinkedPhase = new LinkedPhase((LinkedDynamicsWorld) mWorld);
 		}
 	}
 
@@ -113,30 +110,26 @@ public class CollisionDetection {
 	 * Computes the collision detection.
 	 */
 	public void computeCollisionDetection() {
-		if (mDynamicPhase != null) {
-			computeDynamicPhase();
+		if (mLinkedPhase != null) {
+			computeLinkedPhase();
 		}
 		computeBroadPhase();
 		computeNarrowPhase();
 	}
 
-	private void computeDynamicPhase() {
-		final Set<CollisionBody> bodies = mWorld.getBodies();
-		final Iterator<CollisionBody> bodiesIterator = bodies.iterator();
-		final Set<ImmobileRigidBody> foundBodies = new HashSet<ImmobileRigidBody>();
-		while (bodiesIterator.hasNext()) {
-			final CollisionBody body = bodiesIterator.next();
+	private void computeLinkedPhase() {
+		final List<CollisionBody> bodies = new ArrayList<CollisionBody>(mWorld.getBodies());
+		final List<ImmobileRigidBody> foundBodies = new ArrayList<ImmobileRigidBody>();
+		for (final CollisionBody body : bodies) {
 			if (!(body instanceof MobileRigidBody)) {
 				continue;
 			}
-			final Set<ImmobileRigidBody> bodiesInRange = mDynamicPhase.getBodiesInRange((MobileRigidBody) body);
-			final Iterator<ImmobileRigidBody> bodiesInRangeIterator = bodiesInRange.iterator();
-			while (bodiesInRangeIterator.hasNext()) {
-				addBody(bodiesInRangeIterator.next());
+			for (final ImmobileRigidBody immobileBody : mLinkedPhase.getBodiesInRange((MobileRigidBody) body)) {
+				addBody(immobileBody);
+				foundBodies.add(immobileBody);
 			}
-			foundBodies.addAll(bodiesInRange);
 		}
-		((DynamicDynamicsWorld) mWorld).addBodies(foundBodies);
+		((LinkedDynamicsWorld) mWorld).addBodies(foundBodies);
 	}
 
 	// Computes the broad-phase collision detection.
