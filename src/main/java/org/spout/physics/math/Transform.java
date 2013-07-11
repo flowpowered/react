@@ -163,6 +163,11 @@ public class Transform {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "Transform{position= " + mPosition + ", orientation= " + mOrientation + "}";
+	}
+
 	/**
 	 * Returns a new identity transform. That is, a transform with the position as the zero vector
 	 * and the orientation as the identity quaternion.

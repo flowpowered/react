@@ -177,4 +177,9 @@ public class ImmobileRigidBody extends RigidBody {
 	public boolean isMotionEnabled() {
 		return false;
 	}
+
+	@Override
+	public String toString() {
+		return "ImmobileRigidBody{id= " + getID() + ", transform= " + getTransform() + ", mass=" + getMass() + ", aabb= " + getAABB() + "}";
+	}
 }

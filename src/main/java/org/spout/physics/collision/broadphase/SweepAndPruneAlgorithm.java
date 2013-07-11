@@ -70,6 +70,17 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 
 	@Override
 	public void addObject(CollisionBody body, AABB aabb) {
+		if (body == null) {
+			throw new IllegalArgumentException("Attempting to add a null collision body");
+		}
+		if (aabb == null) {
+			throw new IllegalArgumentException("Attempting to add a null AABB");
+		}
+		final Vector3 extend = Vector3.subtract(aabb.getMax(), aabb.getMin());
+		if (extend.getX() < 0 || extend.getY() < 0 || extend.getZ() < 0) {
+			throw new IllegalStateException("AABB for body: " + body + " is invalid! AABB is " + aabb);
+		}
+		System.out.println("Body added to Broadphase: " + body);
 		final int boxIndex;
 		if (!mFreeBoxIndices.isEmpty()) {
 			boxIndex = mFreeBoxIndices.get(mFreeBoxIndices.size() - 1);
@@ -186,6 +197,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 				currentMinEndPoint.setValue(limit);
 				while ((currentMinEndPoint = startEndPointsCurrentAxis[++currentMinEndPointIndex]).getValue() < limit) {
 					final BoxAABB id1 = mBoxes[currentMinEndPoint.getBoxID()];
+					System.out.println("BoxAABB id1: " + id1);
 					final boolean isMin = currentMinEndPoint.isMin();
 					if (!isMin) {
 						if (!box.equals(id1) && (box.getBody().isMotionEnabled() || id1.getBody().isMotionEnabled())) {
@@ -197,6 +209,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 					} else {
 						id1.getMin()[axis] = indexEndPoint++;
 					}
+					System.out.println("startEndPointsCurrentAxis[currentMinEndPointIndex - 1] = " + startEndPointsCurrentAxis[currentMinEndPointIndex - 1]);
 					startEndPointsCurrentAxis[currentMinEndPointIndex - 1] = currentMinEndPoint;
 				}
 				if (savedEndPointIndex != indexEndPoint) {
@@ -393,6 +406,11 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 
 		private void setBody(CollisionBody body) {
 			this.body = body;
+		}
+
+		@Override
+		public String toString() {
+			return "AABB{body= " + body.toString() + ", min= " + min + ", max= " + max + "}";
 		}
 	}
 

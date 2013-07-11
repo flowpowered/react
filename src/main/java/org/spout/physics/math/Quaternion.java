@@ -398,6 +398,10 @@ public class Quaternion {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return "(" + w + ", " + x + ", " + y + ", " + z + ")";
+	}
 	/**
 	 * Returns a new identity quaternion.
 	 *

@@ -120,4 +120,9 @@ public class AABB {
 		}
 		return true;
 	}
+
+	@Override
+	public String toString() {
+		return "AABB{min= " + mMinCoordinates + ", max= " + mMaxCoordinates + "}";
+	}
 }
