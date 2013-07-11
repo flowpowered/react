@@ -423,7 +423,7 @@ public class DynamicsWorld extends CollisionWorld {
 	public ImmobileRigidBody createImmobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal,
 													 CollisionShape collisionShape) {
 		final ImmobileRigidBody immobileBody = new ImmobileRigidBody(transform, mass, inertiaTensorLocal,
-				collisionShape, computeNextAvailableBodyID());
+				collisionShape, getNextFreeID());
 		addRigidBody(immobileBody);
 		return immobileBody;
 	}
@@ -455,7 +455,7 @@ public class DynamicsWorld extends CollisionWorld {
 	public MobileRigidBody createMobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal,
 												 CollisionShape collisionShape) {
 		final MobileRigidBody mobileBody = new MobileRigidBody(transform, mass, inertiaTensorLocal,
-				collisionShape, computeNextAvailableBodyID());
+				collisionShape, getNextFreeID());
 		addRigidBody(mobileBody);
 		return mobileBody;
 	}

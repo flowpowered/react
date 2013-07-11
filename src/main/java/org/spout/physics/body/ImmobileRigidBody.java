@@ -45,20 +45,6 @@ public class ImmobileRigidBody extends RigidBody {
 	protected final Vector3 mExternalTorque = new Vector3();
 
 	/**
-	 * Constructs a new rigid body with a default mass of 1 and using the next available ID.
-	 * @param transform The transform (position and orientation)
-	 * @param shape The collision shape
-	 */
-	public ImmobileRigidBody(LinkedDynamicsWorld world, Transform transform, CollisionShape shape) {
-		super(transform, shape, world.computeNextAvailableBodyID());
-		mMass = 1f;
-		final Matrix3x3 inertiaTensorLocal = new Matrix3x3();
-		shape.computeLocalInertiaTensor(inertiaTensorLocal, mMass);
-		mInertiaTensorLocal.set(inertiaTensorLocal);
-		mInertiaTensorLocalInverse.set(inertiaTensorLocal.getInverse());
-	}
-
-	/**
 	 * Constructs a new rigid body from its transform, mass, local inertia tensor, collision shape and
 	 * ID.
 	 *

@@ -148,11 +148,11 @@ public abstract class CollisionWorld {
 	}
 
 	/**
-	 * Returns the next available body ID.
-	 *
-	 * @return An available boy ID
+	 * Returns the next available body ID for this world.
+	 * @throws IllegalStateException If the id for the body is greater than Integer.MAX_VALUE
+	 * @return The next available id
 	 */
-	public int computeNextAvailableBodyID() {
+	public int getNextFreeID() {
 		final int bodyID;
 		if (!mFreeBodiesIDs.isEmpty()) {
 			bodyID = mFreeBodiesIDs.get(mFreeBodiesIDs.size() - 1);
@@ -162,7 +162,7 @@ public abstract class CollisionWorld {
 			mCurrentBodyID++;
 		}
 		if (bodyID >= Integer.MAX_VALUE) {
-			throw new IllegalStateException("body id cannot be larger or equal to the largest interger");
+			throw new IllegalStateException("body id cannot be larger or equal to the largest integer");
 		}
 		return bodyID;
 	}
