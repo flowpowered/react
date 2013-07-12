@@ -28,7 +28,6 @@ package org.spout.physics.engine;
 
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.spout.physics.body.ImmobileRigidBody;
@@ -38,7 +37,6 @@ import org.spout.physics.math.Vector3;
 public class LinkedDynamicsWorld extends DynamicsWorld {
 	/* The info for this world */
 	private final LinkedWorldInfo info;
-
 	/* The bodies dynamically added each physics tick in the LinkedPhase */
 	private final Set<ImmobileRigidBody> linkedBodies = new HashSet<ImmobileRigidBody>();
 
@@ -67,6 +65,7 @@ public class LinkedDynamicsWorld extends DynamicsWorld {
 
 	/**
 	 * Returns the {@link org.spout.physics.engine.linked.LinkedWorldInfo} of this world
+	 *
 	 * @return the linked info
 	 */
 	public LinkedWorldInfo getLinkedInfo() {
@@ -74,20 +73,24 @@ public class LinkedDynamicsWorld extends DynamicsWorld {
 	}
 
 	/**
-	 * Adds {@link ImmobileRigidBody}s to this world. These will be cleared at the end of the physics tick
+	 * Adds {@link ImmobileRigidBody}s to this world. These will be cleared at the end of the physics
+	 * tick
+	 *
 	 * @param bodies bodies to add
 	 */
-	public void addBodies(final Collection<ImmobileRigidBody> bodies) {
+	public void addLinkedBodies(final Collection<ImmobileRigidBody> bodies) {
 		linkedBodies.addAll(bodies);
+		for (ImmobileRigidBody body : bodies) {
+			addRigidBody(body);
+		}
 	}
 
 	/**
 	 * Clears all bodies tracked in the world
 	 */
-	public void destroyAndClear() {
-		final Iterator<ImmobileRigidBody> bodiesIterator = linkedBodies.iterator();
-		while (bodiesIterator.hasNext()) {
-			destroyRigidBody(bodiesIterator.next());
+	private void destroyAndClear() {
+		for (ImmobileRigidBody linkedBody : linkedBodies) {
+			destroyRigidBody(linkedBody);
 		}
 		linkedBodies.clear();
 	}

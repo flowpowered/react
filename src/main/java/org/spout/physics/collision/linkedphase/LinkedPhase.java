@@ -33,25 +33,24 @@ import org.spout.physics.ReactDefaults;
 import org.spout.physics.body.ImmobileRigidBody;
 import org.spout.physics.body.MobileRigidBody;
 import org.spout.physics.collision.shape.AABB;
-import org.spout.physics.engine.LinkedDynamicsWorld;
+import org.spout.physics.engine.linked.LinkedWorldInfo;
 import org.spout.physics.math.Vector3;
 
 /**
- * A phase of the physics tick where bodies are added via the {@link org.spout.physics.engine.LinkedDynamicsWorld}'s {@link org.spout.physics.engine.linked.LinkedWorldInfo}.
+ * A phase of the physics tick where bodies are added via the {@link
+ * org.spout.physics.engine.LinkedDynamicsWorld}'s {@link org.spout.physics.engine.linked.LinkedWorldInfo}.
  */
 public class LinkedPhase {
-	private final LinkedDynamicsWorld linkedDynamicsWorld;
+	private final LinkedWorldInfo linkedWorld;
 
-	public LinkedPhase(final LinkedDynamicsWorld linkedDynamicsWorld) {
-		this.linkedDynamicsWorld = linkedDynamicsWorld;
+	public LinkedPhase(final LinkedWorldInfo linkedWorld) {
+		this.linkedWorld = linkedWorld;
 	}
 
 	/**
-	 * Sweeps for {@link ImmobileRigidBody}s around the body provided.
-	 * <p>
-	 *     The algorithm will ask for all bodies within the bounds of the
-	 *     bodies' AABB bounds + a scaling factor.
-	 * </p>
+	 * Sweeps for {@link ImmobileRigidBody}s around the body provided. <p> The algorithm will ask for
+	 * all bodies within the bounds of the bodies' AABB bounds + a scaling factor. </p>
+	 *
 	 * @param body mobile body to scan around
 	 * @return A set of all bodies in range
 	 */
@@ -66,21 +65,17 @@ public class LinkedPhase {
 		//Grab world coords
 		max.add(aabb.getCenter());
 		min.add(aabb.getCenter());
-
-		final int startx = (int) Math.floor(min.getX());
-		final int starty = (int) Math.floor(min.getY());
-		final int startz = (int) Math.floor(min.getZ());
-
-		final int endx = (int) Math.ceil(max.getX());
-		final int endy = (int) Math.ceil(max.getY());
-		final int endz = (int) Math.ceil(max.getZ());
-
+		final int startX = (int) Math.floor(min.getX());
+		final int startY = (int) Math.floor(min.getY());
+		final int startZ = (int) Math.floor(min.getZ());
+		final int endX = (int) Math.ceil(max.getX());
+		final int endY = (int) Math.ceil(max.getY());
+		final int endZ = (int) Math.ceil(max.getZ());
 		final Set<ImmobileRigidBody> foundBodies = new HashSet<ImmobileRigidBody>();
-
-		for (int xx = startx; xx <= endx; xx++) {
-			for (int yy = starty; yy <= endy; yy++) {
-				for (int zz = startz; zz <= endz; zz++) {
-					final ImmobileRigidBody immobile = linkedDynamicsWorld.getLinkedInfo().getBody(xx, yy, zz);
+		for (int xx = startX; xx <= endX; xx++) {
+			for (int yy = startY; yy <= endY; yy++) {
+				for (int zz = startZ; zz <= endZ; zz++) {
+					final ImmobileRigidBody immobile = linkedWorld.getBody(xx, yy, zz);
 					if (immobile == null) {
 						continue;
 					}

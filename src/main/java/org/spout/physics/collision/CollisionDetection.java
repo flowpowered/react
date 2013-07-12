@@ -60,22 +60,26 @@ public class CollisionDetection {
 	private final GJKAlgorithm mNarrowPhaseGJKAlgorithm = new GJKAlgorithm();
 	private final SphereVsSphereAlgorithm mNarrowPhaseSphereVsSphereAlgorithm = new SphereVsSphereAlgorithm();
 	private final List<CollisionListener> mCallBacks = new ArrayList<CollisionListener>();
-	private LinkedPhase mLinkedPhase;
+	private final LinkedPhase mLinkedPhase;
 
 	/**
 	 * Constructs a new collision detection from the collision world.
+	 *
 	 * @param world The world
 	 */
 	public CollisionDetection(CollisionWorld world) {
 		mWorld = world;
 		mBroadPhaseAlgorithm = new SweepAndPruneAlgorithm(this);
 		if (world instanceof LinkedDynamicsWorld) {
-			mLinkedPhase = new LinkedPhase((LinkedDynamicsWorld) mWorld);
+			mLinkedPhase = new LinkedPhase(((LinkedDynamicsWorld) mWorld).getLinkedInfo());
+		} else {
+			mLinkedPhase = null;
 		}
 	}
 
 	/**
 	 * Gets the collision listeners for collision detection.
+	 *
 	 * @return The collision listeners
 	 */
 	public List<CollisionListener> getListeners() {
@@ -84,6 +88,7 @@ public class CollisionDetection {
 
 	/**
 	 * Adds a collision listener for the collision detection.
+	 *
 	 * @param listener The listener to add
 	 */
 	public void addListener(CollisionListener listener) {
@@ -92,6 +97,7 @@ public class CollisionDetection {
 
 	/**
 	 * Adds a body to the collision detection.
+	 *
 	 * @param body The body to add
 	 */
 	public void addBody(CollisionBody body) {
@@ -100,6 +106,7 @@ public class CollisionDetection {
 
 	/**
 	 * Removes a body from the collision detection.
+	 *
 	 * @param body The body to remove
 	 */
 	public void removeBody(CollisionBody body) {
@@ -125,11 +132,10 @@ public class CollisionDetection {
 				continue;
 			}
 			for (final ImmobileRigidBody immobileBody : mLinkedPhase.getBodiesInRange((MobileRigidBody) body)) {
-				((LinkedDynamicsWorld) mWorld).addRigidBody(immobileBody);
 				foundBodies.add(immobileBody);
 			}
 		}
-		((LinkedDynamicsWorld) mWorld).addBodies(foundBodies);
+		((LinkedDynamicsWorld) mWorld).addLinkedBodies(foundBodies);
 	}
 
 	// Computes the broad-phase collision detection.
@@ -172,6 +178,7 @@ public class CollisionDetection {
 	/**
 	 * Allows the broad phase to notify the collision detection about an overlapping pair. This method
 	 * is called by a broad-phase collision detection algorithm.
+	 *
 	 * @param addedPair The pair that was added
 	 */
 	public void broadPhaseNotifyAddedOverlappingPair(BodyPair addedPair) {
@@ -186,6 +193,7 @@ public class CollisionDetection {
 
 	/**
 	 * Allows the broad phase to notify the collision detection about a removed overlapping pair.
+	 *
 	 * @param removedPair The pair that was removed
 	 */
 	public void broadPhaseNotifyRemovedOverlappingPair(BodyPair removedPair) {
