@@ -42,7 +42,7 @@ import org.spout.physics.math.Vector3;
  * Represents the contact solver that is used to solve rigid bodies contacts. The constraint solver
  * is based on the "Sequential Impulse" technique described by Erin Catto in his GDC slides
  * (http://code.google.com/p/box2d/downloads/list).
- * <p/>
+ * <p>
  * A constraint between two bodies is represented by a function C(x) which is equal to zero when the
  * constraint is satisfied. The condition C(x)=0 describes a valid position and the condition
  * dC(x)/dt=0 describes a valid velocity. We have dC(x)/dt = Jv + b = 0 where J is the Jacobian
@@ -51,22 +51,22 @@ import org.spout.physics.math.Vector3;
  * constraint satisfied. Note that from the virtual work principle, we have F_c = J^t * lambda where
  * J^t is the transpose of the Jacobian matrix and lambda is a Lagrange multiplier. Therefore,
  * finding the force F_c is equivalent to finding the Lagrange multiplier lambda.
- * <p/>
+ * <p>
  * An impulse P = F * dt where F is a force and dt is the timestep. We can apply impulses to a body
  * to change its velocity. The idea of the Sequential Impulse technique is to apply impulses to the
  * bodies of each constraints in order to keep the constraint satisfied.
- * <p/>
+ * <p>
  * --- Step 1 ---
- * <p/>
+ * <p>
  * First, we integrate the applied force F_a acting on each rigid body (like gravity, ...) and we
  * obtain some new velocities v2' that tends to violate the constraints.
- * <p/>
+ * <p>
  * v2' = v1 + dt * M^-1 * F_a
- * <p/>
+ * <p>
  * where M is a matrix that contains mass and inertia tensor information.
- * <p/>
+ * <p>
  * --- Step 2 ---
- * <p/>
+ * <p>
  * During the second step, we iterate over all the constraints for a certain number of iterations
  * and for each constraint we compute the impulse to apply to the bodies needed so that the new
  * velocity of the bodies satisfy Jv + b = 0. From the Newton law, we know that M * deltaV = P_c
@@ -75,27 +75,27 @@ import org.spout.physics.math.Vector3;
  * can compute the Lagrange multiplier lambda using: lambda = -m_c (Jv2' + b) where m_c = 1 / (J *
  * M^-1 * J^t). Now that we have the Lagrange multiplier lambda, we can compute the impulse P_c =
  * J^t * lambda * dt to apply to the bodies to satisfy the constraint.
- * <p/>
+ * <p>
  * --- Step 3 ---
- * <p/>
+ * <p>
  * In the third step, we integrate the new position x2 of the bodies using the new velocities v2
  * computed in the second step with: x2 = x1 + dt * v2.
- * <p/>
+ * <p>
  * Note that in the following code (as it is also explained in the slides from Erin Catto), the
  * value lambda is not only the lagrange multiplier but is the multiplication of the Lagrange
  * multiplier with the timestep dt. Therefore, in the following code, when we use lambda, we mean
  * (lambda * dt).
- * <p/>
+ * <p>
  * This implementation uses the accumulated impulse technique that is also described in the slides
  * from Erin Catto.
- * <p/>
+ * <p>
  * This implementation also uses warm starting. The idea is to warm start the solver at the
  * beginning of each step by applying the last impulses for the constraints from the previous step.
  * This allows the iterative solver to converge faster towards the solution.
- * <p/>
+ * <p>
  * For contact constraints, this implementation also uses split impulses so that the position
  * correction, which uses Baumgarte stabilization, does not change the momentum of the bodies.
- * <p/>
+ * <p>
  * There are two ways to apply the friction constraints. Either the friction constraints are applied
  * at each contact point, or they are applied only at the center of the contact manifold between two
  * bodies. If we solve the friction constraints at each contact point, we need two constraints (two
