@@ -24,22 +24,30 @@
  * License and see <http://spout.in/licensev1> for the full license, including
  * the MIT license.
  */
-package org.spout.physics.engine;
+package org.spout.physics.engine.linked;
 
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.spout.physics.body.ImmobileRigidBody;
-import org.spout.physics.engine.linked.LinkedWorldInfo;
+import org.spout.physics.engine.DynamicsWorld;
 import org.spout.physics.math.Vector3;
 
+/**
+ * Represents a dynamics world linked to another world. Information is shared between them through
+ * an instance of {@link LinkedWorldInfo}.
+ */
 public class LinkedDynamicsWorld extends DynamicsWorld {
-	/* The info for this world */
 	private final LinkedWorldInfo info;
-	/* The bodies dynamically added each physics tick in the LinkedPhase */
 	private final Set<ImmobileRigidBody> linkedBodies = new HashSet<ImmobileRigidBody>();
 
+	/**
+	 * Constructs a new linked dynamics world from the gravity and the linked world information.
+	 *
+	 * @param gravity The gravity
+	 * @param info The linked world information
+	 */
 	public LinkedDynamicsWorld(Vector3 gravity, final LinkedWorldInfo info) {
 		super(gravity);
 		this.info = info;
@@ -48,19 +56,19 @@ public class LinkedDynamicsWorld extends DynamicsWorld {
 	@Override
 	public void update() {
 		super.update();
-		destroyAndClear();
+		clearLinkedBodies();
 	}
 
 	@Override
 	public void forceUpdate(float dt) {
 		super.forceUpdate(dt);
-		destroyAndClear();
+		clearLinkedBodies();
 	}
 
 	@Override
 	public void forceUpdate() {
 		super.forceUpdate();
-		destroyAndClear();
+		clearLinkedBodies();
 	}
 
 	/**
@@ -85,10 +93,8 @@ public class LinkedDynamicsWorld extends DynamicsWorld {
 		}
 	}
 
-	/**
-	 * Clears all bodies tracked in the world
-	 */
-	private void destroyAndClear() {
+	// Clears all bodies tracked in the world.
+	private void clearLinkedBodies() {
 		for (ImmobileRigidBody linkedBody : linkedBodies) {
 			destroyRigidBody(linkedBody);
 		}

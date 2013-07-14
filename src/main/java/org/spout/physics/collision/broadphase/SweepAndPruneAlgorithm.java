@@ -26,10 +26,10 @@
  */
 package org.spout.physics.collision.broadphase;
 
-import gnu.trove.list.TIntList;
-import gnu.trove.list.array.TIntArrayList;
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
+import gnu.trove.stack.TIntStack;
+import gnu.trove.stack.array.TIntArrayStack;
 
 import org.spout.physics.body.CollisionBody;
 import org.spout.physics.collision.CollisionDetection;
@@ -42,12 +42,13 @@ import org.spout.physics.math.Vector3;
  * here: www.codercorner.com/SAP.pdf.
  */
 public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
+	private static final int NB_SENTINELS = 2;
 	private static final int INVALID_INDEX = Integer.MAX_VALUE;
 	private BoxAABB[] mBoxes = null;
 	private final EndPoint[][] mEndPoints = {null, null, null};
 	private int mNbBoxes = 0;
 	private int mNbMaxBoxes = 0;
-	private final TIntList mFreeBoxIndices = new TIntArrayList();
+	private final TIntStack mFreeBoxIndices = new TIntArrayStack();
 	private final TObjectIntMap<CollisionBody> mMapBodyToBoxIndex = new TObjectIntHashMap<CollisionBody>();
 
 	/**
@@ -80,19 +81,16 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 		if (extend.getX() < 0 || extend.getY() < 0 || extend.getZ() < 0) {
 			throw new IllegalStateException("AABB for body: " + body + " is invalid! AABB is " + aabb);
 		}
-		System.out.println("Body added to Broadphase: " + body);
 		final int boxIndex;
-		if (!mFreeBoxIndices.isEmpty()) {
-			boxIndex = mFreeBoxIndices.get(mFreeBoxIndices.size() - 1);
-			mFreeBoxIndices.remove(mFreeBoxIndices.size() - 1);
+		if (mFreeBoxIndices.size() != 0) {
+			boxIndex = mFreeBoxIndices.pop();
 		} else {
 			if (mNbBoxes == mNbMaxBoxes) {
 				resizeArrays();
 			}
 			boxIndex = mNbBoxes;
 		}
-		final int nbSentinels = 2;
-		final int indexLimitEndPoint = 2 * mNbBoxes + nbSentinels - 1;
+		final int indexLimitEndPoint = 2 * mNbBoxes + NB_SENTINELS - 1;
 		for (int axis = 0; axis < 3; axis++) {
 			final EndPoint maxLimitEndPoint = mEndPoints[axis][indexLimitEndPoint];
 			if (mEndPoints[axis][0].getBoxID() != INVALID_INDEX || !mEndPoints[axis][0].isMin()) {
@@ -115,18 +113,18 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 		}
 		final BoxAABB box = mBoxes[boxIndex];
 		box.setBody(body);
-		final long minEndPointValue = encodeFloatIntoInteger(Float.MAX_VALUE - 2);
-		final long maxEndPointValue = encodeFloatIntoInteger(Float.MAX_VALUE - 1);
+		final long minEndPointValue = encodeFloatIntoInteger(Float.MAX_VALUE) - 2;
+		final long maxEndPointValue = encodeFloatIntoInteger(Float.MAX_VALUE) - 1;
 		for (int axis = 0; axis < 3; axis++) {
 			box.getMin()[axis] = indexLimitEndPoint;
 			box.getMax()[axis] = indexLimitEndPoint + 1;
 			final EndPoint minimumEndPoint = mEndPoints[axis][box.getMin()[axis]];
-			minimumEndPoint.setValues(body.getID(), true, minEndPointValue);
+			minimumEndPoint.setValues(boxIndex, true, minEndPointValue);
 			if (mEndPoints[axis][box.getMax()[axis]] == null) {
 				mEndPoints[axis][box.getMax()[axis]] = new EndPoint();
 			}
 			final EndPoint maximumEndPoint = mEndPoints[axis][box.getMax()[axis]];
-			maximumEndPoint.setValues(body.getID(), false, maxEndPointValue);
+			maximumEndPoint.setValues(boxIndex, false, maxEndPointValue);
 		}
 		mMapBodyToBoxIndex.put(body, boxIndex);
 		mNbBoxes++;
@@ -139,8 +137,14 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 		final Vector3 maxVector = new Vector3(max, max, max);
 		final AABB aabb = new AABB(maxVector, maxVector);
 		updateObject(body, aabb);
+		final int indexLimitEndPoint = 2 * mNbBoxes + NB_SENTINELS - 1;
+		for (int axis = 0; axis < 3; axis++) {
+			mEndPoints[axis][indexLimitEndPoint - 2] = mEndPoints[axis][indexLimitEndPoint];
+			mEndPoints[axis][indexLimitEndPoint - 1] = null;
+			mEndPoints[axis][indexLimitEndPoint] = null;
+		}
 		final int boxIndex = mMapBodyToBoxIndex.get(body);
-		mFreeBoxIndices.add(boxIndex);
+		mFreeBoxIndices.push(boxIndex);
 		mMapBodyToBoxIndex.remove(body);
 		mNbBoxes--;
 	}
@@ -197,7 +201,6 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 				currentMinEndPoint.setValue(limit);
 				while ((currentMinEndPoint = startEndPointsCurrentAxis[++currentMinEndPointIndex]).getValue() < limit) {
 					final BoxAABB id1 = mBoxes[currentMinEndPoint.getBoxID()];
-					System.out.println("BoxAABB id1: " + id1);
 					final boolean isMin = currentMinEndPoint.isMin();
 					if (!isMin) {
 						if (!box.equals(id1) && (box.getBody().isMotionEnabled() || id1.getBody().isMotionEnabled())) {
@@ -209,7 +212,6 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 					} else {
 						id1.getMin()[axis] = indexEndPoint++;
 					}
-					System.out.println("startEndPointsCurrentAxis[currentMinEndPointIndex - 1] = " + startEndPointsCurrentAxis[currentMinEndPointIndex - 1]);
 					startEndPointsCurrentAxis[currentMinEndPointIndex - 1] = currentMinEndPoint;
 				}
 				if (savedEndPointIndex != indexEndPoint) {
@@ -291,10 +293,9 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 
 	// Re-sizes the boxes and end-points arrays when they are full.
 	private void resizeArrays() {
-		final int nbSentinels = 2;
 		final int newNbMaxBoxes = mNbMaxBoxes != 0 ? 2 * mNbMaxBoxes : 100;
-		final int nbEndPoints = mNbBoxes * 2 + nbSentinels;
-		final int newNbEndPoints = newNbMaxBoxes * 2 + nbSentinels;
+		final int nbEndPoints = mNbBoxes * 2 + NB_SENTINELS;
+		final int newNbEndPoints = newNbMaxBoxes * 2 + NB_SENTINELS;
 		final BoxAABB[] newBoxesArray = new BoxAABB[newNbMaxBoxes];
 		final EndPoint[] newEndPointsXArray = new EndPoint[newNbEndPoints];
 		final EndPoint[] newEndPointsYArray = new EndPoint[newNbEndPoints];
@@ -384,6 +385,11 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 			this.isMin = isMin;
 			this.value = value;
 		}
+
+		@Override
+		public String toString() {
+			return "(" + value + "|" + isMin + "@" + boxID + ")";
+		}
 	}
 
 	// Represents an AABB in the Sweep-And-Prune algorithm
@@ -409,8 +415,25 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 		}
 
 		@Override
+		public boolean equals(Object o) {
+			if (this == o) {
+				return true;
+			}
+			if (!(o instanceof BoxAABB)) {
+				return false;
+			}
+			final BoxAABB boxAABB = (BoxAABB) o;
+			return !(body != null ? !body.equals(boxAABB.getBody()) : boxAABB.getBody() != null);
+		}
+
+		@Override
+		public int hashCode() {
+			return body != null ? body.hashCode() : 0;
+		}
+
+		@Override
 		public String toString() {
-			return "AABB{body= " + body.toString() + ", min= " + min + ", max= " + max + "}";
+			return "(" + body.getID() + "@" + body.getTransform().getPosition() + ")";
 		}
 	}
 

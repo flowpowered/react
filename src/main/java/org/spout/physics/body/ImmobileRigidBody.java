@@ -27,7 +27,6 @@
 package org.spout.physics.body;
 
 import org.spout.physics.collision.shape.CollisionShape;
-import org.spout.physics.engine.LinkedDynamicsWorld;
 import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;

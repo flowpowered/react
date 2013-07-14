@@ -33,17 +33,22 @@ import org.spout.physics.ReactDefaults;
 import org.spout.physics.body.ImmobileRigidBody;
 import org.spout.physics.body.MobileRigidBody;
 import org.spout.physics.collision.shape.AABB;
-import org.spout.physics.engine.linked.LinkedWorldInfo;
+import org.spout.physics.engine.linked.LinkedDynamicsWorld;
 import org.spout.physics.math.Vector3;
 
 /**
  * A phase of the physics tick where bodies are added via the {@link
- * org.spout.physics.engine.LinkedDynamicsWorld}'s {@link org.spout.physics.engine.linked.LinkedWorldInfo}.
+ * org.spout.physics.engine.linked.LinkedDynamicsWorld}'s {@link org.spout.physics.engine.linked.LinkedWorldInfo}.
  */
 public class LinkedPhase {
-	private final LinkedWorldInfo linkedWorld;
+	private final LinkedDynamicsWorld linkedWorld;
 
-	public LinkedPhase(final LinkedWorldInfo linkedWorld) {
+	/**
+	 * Constructs a new linked phase from the linked dynamics world.
+	 *
+	 * @param linkedWorld The linked dynamics world this phase is associate to
+	 */
+	public LinkedPhase(final LinkedDynamicsWorld linkedWorld) {
 		this.linkedWorld = linkedWorld;
 	}
 
@@ -60,8 +65,8 @@ public class LinkedPhase {
 		final Vector3 max = Vector3.subtract(aabb.getMax(), aabb.getCenter());
 		final Vector3 min = Vector3.subtract(aabb.getMin(), aabb.getCenter());
 		//Scale coords
-		max.multiply(ReactDefaults.AABB_SCALAR);
-		min.multiply(ReactDefaults.AABB_SCALAR);
+		max.multiply(ReactDefaults.LINKED_PHASE_AABB_SCALING);
+		min.multiply(ReactDefaults.LINKED_PHASE_AABB_SCALING);
 		//Grab world coords
 		max.add(aabb.getCenter());
 		min.add(aabb.getCenter());
@@ -75,7 +80,7 @@ public class LinkedPhase {
 		for (int xx = startX; xx <= endX; xx++) {
 			for (int yy = startY; yy <= endY; yy++) {
 				for (int zz = startZ; zz <= endZ; zz++) {
-					final ImmobileRigidBody immobile = linkedWorld.getBody(xx, yy, zz);
+					final ImmobileRigidBody immobile = linkedWorld.getLinkedInfo().getBody(xx, yy, zz);
 					if (immobile == null) {
 						continue;
 					}

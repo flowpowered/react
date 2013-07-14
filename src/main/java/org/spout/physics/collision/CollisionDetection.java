@@ -46,7 +46,7 @@ import org.spout.physics.collision.narrowphase.SphereVsSphereAlgorithm;
 import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.collision.shape.CollisionShape.CollisionShapeType;
 import org.spout.physics.engine.CollisionWorld;
-import org.spout.physics.engine.LinkedDynamicsWorld;
+import org.spout.physics.engine.linked.LinkedDynamicsWorld;
 
 /**
  * This class computes the collision detection algorithms. We first perform a broad-phase algorithm
@@ -71,7 +71,7 @@ public class CollisionDetection {
 		mWorld = world;
 		mBroadPhaseAlgorithm = new SweepAndPruneAlgorithm(this);
 		if (world instanceof LinkedDynamicsWorld) {
-			mLinkedPhase = new LinkedPhase(((LinkedDynamicsWorld) mWorld).getLinkedInfo());
+			mLinkedPhase = new LinkedPhase((LinkedDynamicsWorld) mWorld);
 		} else {
 			mLinkedPhase = null;
 		}
@@ -124,6 +124,7 @@ public class CollisionDetection {
 		computeNarrowPhase();
 	}
 
+	// Computes the linked-phase collision detection.
 	private void computeLinkedPhase() {
 		final List<CollisionBody> bodies = new ArrayList<CollisionBody>(mWorld.getBodies());
 		final List<ImmobileRigidBody> foundBodies = new ArrayList<ImmobileRigidBody>();

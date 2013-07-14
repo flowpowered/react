@@ -67,7 +67,7 @@ public class ReactDefaults {
 	 */
 	public static final int DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS = 15;
 	/**
-	 * The scale factor on AABBs
+	 * The linked phase AABB scaling factor
 	 */
-	public static final float AABB_SCALAR = 1.0f;
+	public static final float LINKED_PHASE_AABB_SCALING = 1;
 }

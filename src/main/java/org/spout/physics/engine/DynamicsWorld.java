@@ -474,7 +474,7 @@ public class DynamicsWorld extends CollisionWorld {
 	 */
 	public void destroyRigidBody(RigidBody rigidBody) {
 		mCollisionDetection.removeBody(rigidBody);
-		mFreeBodiesIDs.add(rigidBody.getID());
+		mFreeBodiesIDs.push(rigidBody.getID());
 		mBodies.remove(rigidBody);
 		mRigidBodies.remove(rigidBody);
 	}

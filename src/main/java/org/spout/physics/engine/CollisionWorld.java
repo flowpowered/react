@@ -31,8 +31,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import gnu.trove.list.TIntList;
-import gnu.trove.list.array.TIntArrayList;
+import gnu.trove.stack.TIntStack;
+import gnu.trove.stack.array.TIntArrayStack;
 
 import org.spout.physics.Utilities.IntPair;
 import org.spout.physics.body.CollisionBody;
@@ -53,7 +53,7 @@ public abstract class CollisionWorld {
 	protected final Set<CollisionBody> mBodies = new HashSet<CollisionBody>();
 	protected final Map<IntPair, OverlappingPair> mOverlappingPairs = new HashMap<IntPair, OverlappingPair>();
 	protected int mCurrentBodyID = 0;
-	protected final TIntList mFreeBodiesIDs = new TIntArrayList();
+	protected final TIntStack mFreeBodiesIDs = new TIntArrayStack();
 
 	/**
 	 * Constructs a new empty collision world.
@@ -149,14 +149,14 @@ public abstract class CollisionWorld {
 
 	/**
 	 * Returns the next available body ID for this world.
-	 * @throws IllegalStateException If the id for the body is greater than Integer.MAX_VALUE
+	 *
 	 * @return The next available id
+	 * @throws IllegalStateException If the id for the body is greater than Integer.MAX_VALUE
 	 */
 	public int getNextFreeID() {
 		final int bodyID;
-		if (!mFreeBodiesIDs.isEmpty()) {
-			bodyID = mFreeBodiesIDs.get(mFreeBodiesIDs.size() - 1);
-			mFreeBodiesIDs.remove(mFreeBodiesIDs.size() - 1);
+		if (mFreeBodiesIDs.size() != 0) {
+			bodyID = mFreeBodiesIDs.pop();
 		} else {
 			bodyID = mCurrentBodyID;
 			mCurrentBodyID++;

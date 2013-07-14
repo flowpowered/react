@@ -31,9 +31,8 @@ package org.spout.physics.body;
  */
 public abstract class Body {
 	protected final int mID;
-
-    /* A pointer to the owner of the body (if any) */
-    private Object userPointer;
+	/* A pointer to the owner of the body (if any) */
+	private Object userPointer;
 
 	/**
 	 * Construct a new body from its ID.
@@ -53,13 +52,13 @@ public abstract class Body {
 		return mID;
 	}
 
-    public Object getUserPointer() {
-        return userPointer;
-    }
+	public Object getUserPointer() {
+		return userPointer;
+	}
 
-    public void setUserPointer(final Object userPointer) {
-        this.userPointer = userPointer;
-    }
+	public void setUserPointer(final Object userPointer) {
+		this.userPointer = userPointer;
+	}
 
 	/**
 	 * Returns true this body's ID is smaller than the other body's ID, false if not.
@@ -99,5 +98,22 @@ public abstract class Body {
 	 */
 	public boolean isNotEqualTo(Body other) {
 		return mID != other.getID();
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) {
+			return true;
+		}
+		if (!(o instanceof Body)) {
+			return false;
+		}
+		final Body body = (Body) o;
+		return mID == body.mID;
+	}
+
+	@Override
+	public int hashCode() {
+		return mID;
 	}
 }
