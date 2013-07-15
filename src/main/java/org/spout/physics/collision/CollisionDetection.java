@@ -128,11 +128,11 @@ public class CollisionDetection {
 	private void computeLinkedPhase() {
 		final List<CollisionBody> bodies = new ArrayList<CollisionBody>(mWorld.getBodies());
 		final List<ImmobileRigidBody> foundBodies = new ArrayList<ImmobileRigidBody>();
-		for (final CollisionBody body : bodies) {
+		for (CollisionBody body : bodies) {
 			if (!(body instanceof MobileRigidBody)) {
 				continue;
 			}
-			for (final ImmobileRigidBody immobileBody : mLinkedPhase.getBodiesInRange((MobileRigidBody) body)) {
+			for (ImmobileRigidBody immobileBody : mLinkedPhase.getBodiesInRange((MobileRigidBody) body)) {
 				foundBodies.add(immobileBody);
 			}
 		}
@@ -165,8 +165,7 @@ public class CollisionDetection {
 				if (mCallBacks.isEmpty()) {
 					mWorld.notifyNewContact(pair, contactInfo);
 				} else {
-					for (final CollisionListener listener : mCallBacks) {
-						//TODO DDoS Need you to make sure this is correct
+					for (CollisionListener listener : mCallBacks) {
 						if (!listener.onCollide(body1, body2, contactInfo)) {
 							mWorld.notifyNewContact(pair, contactInfo);
 						}

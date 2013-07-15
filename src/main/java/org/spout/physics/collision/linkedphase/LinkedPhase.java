@@ -54,20 +54,21 @@ public class LinkedPhase {
 
 	/**
 	 * Sweeps for {@link ImmobileRigidBody}s around the body provided. <p> The algorithm will ask for
-	 * all bodies within the bounds of the bodies' AABB bounds + a scaling factor. </p>
+	 * all bodies within the bounds of the bodies' AABB scaled by a {@link
+	 * ReactDefaults#LINKED_PHASE_AABB_SCALING}. </p>
 	 *
-	 * @param body mobile body to scan around
+	 * @param body The mobile body to scan around
 	 * @return A set of all bodies in range
 	 */
 	public Set<ImmobileRigidBody> getBodiesInRange(final MobileRigidBody body) {
 		final AABB aabb = body.getAABB();
-		//Grab object coords
+		// To object coords
 		final Vector3 max = Vector3.subtract(aabb.getMax(), aabb.getCenter());
 		final Vector3 min = Vector3.subtract(aabb.getMin(), aabb.getCenter());
-		//Scale coords
+		// Scale the coords
 		max.multiply(ReactDefaults.LINKED_PHASE_AABB_SCALING);
 		min.multiply(ReactDefaults.LINKED_PHASE_AABB_SCALING);
-		//Grab world coords
+		// Back to world coords
 		max.add(aabb.getCenter());
 		min.add(aabb.getCenter());
 		final int startX = (int) Math.floor(min.getX());

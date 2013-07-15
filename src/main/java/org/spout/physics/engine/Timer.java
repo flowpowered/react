@@ -143,14 +143,4 @@ public class Timer {
 		mLastUpdateTime = currentTime;
 		mAccumulator += mDeltaTime;
 	}
-
-	/**
-	 * Forces the time to update by the specified time delta, whatever the real elapsed time may be.
-	 *
-	 * @param dt The update time delta
-	 */
-	public void forceUpdate(double dt) {
-		mLastUpdateTime += dt;
-		mTime += dt;
-	}
 }

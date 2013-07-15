@@ -43,38 +43,40 @@ public class LinkedDynamicsWorld extends DynamicsWorld {
 	private final Set<ImmobileRigidBody> linkedBodies = new HashSet<ImmobileRigidBody>();
 
 	/**
-	 * Constructs a new linked dynamics world from the gravity and the linked world information.
+	 * Constructs a new linked dynamics world from the gravity, the time step and the linked world
+	 * information.
+	 *
+	 * @param gravity The gravity
+	 * @param timeStep The simulation time step
+	 * @param info The linked world information
+	 */
+	public LinkedDynamicsWorld(Vector3 gravity, float timeStep, LinkedWorldInfo info) {
+		super(gravity, timeStep);
+		this.info = info;
+	}
+
+	/**
+	 * Constructs a new linked dynamics world from the gravity, the default time step and the linked
+	 * world information.
 	 *
 	 * @param gravity The gravity
 	 * @param info The linked world information
 	 */
-	public LinkedDynamicsWorld(Vector3 gravity, final LinkedWorldInfo info) {
+	public LinkedDynamicsWorld(Vector3 gravity, LinkedWorldInfo info) {
 		super(gravity);
 		this.info = info;
 	}
 
 	@Override
-	public void update() {
-		super.update();
-		clearLinkedBodies();
-	}
-
-	@Override
-	public void forceUpdate(float dt) {
-		super.forceUpdate(dt);
-		clearLinkedBodies();
-	}
-
-	@Override
-	public void forceUpdate() {
-		super.forceUpdate();
+	protected void tick(float dt) {
+		super.tick(dt);
 		clearLinkedBodies();
 	}
 
 	/**
-	 * Returns the {@link org.spout.physics.engine.linked.LinkedWorldInfo} of this world
+	 * Returns the {@link org.spout.physics.engine.linked.LinkedWorldInfo} of this world.
 	 *
-	 * @return the linked info
+	 * @return The linked info
 	 */
 	public LinkedWorldInfo getLinkedInfo() {
 		return info;
@@ -82,9 +84,9 @@ public class LinkedDynamicsWorld extends DynamicsWorld {
 
 	/**
 	 * Adds {@link ImmobileRigidBody}s to this world. These will be cleared at the end of the physics
-	 * tick
+	 * tick.
 	 *
-	 * @param bodies bodies to add
+	 * @param bodies The bodies to add
 	 */
 	public void addLinkedBodies(final Collection<ImmobileRigidBody> bodies) {
 		linkedBodies.addAll(bodies);

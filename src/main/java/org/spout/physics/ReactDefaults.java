@@ -31,7 +31,7 @@ package org.spout.physics;
  */
 public class ReactDefaults {
 	/**
-	 * The machine epsilon. Default: 1.1920929E-7f
+	 * The machine epsilon. Default: 1.1920929E-7
 	 */
 	public static final float MACHINE_EPSILON = 1.1920929E-7f;
 	/**
@@ -51,11 +51,11 @@ public class ReactDefaults {
 	 */
 	public static final boolean DEACTIVATION_ENABLED = true;
 	/**
-	 * Object margin for collision detection in cm. Default: 0.04f
+	 * Object margin for collision detection in cm. Default: 0.04
 	 */
 	public static final float OBJECT_MARGIN = 0.04f;
 	/**
-	 * Distance threshold for two contact points for a valid persistent contact. Default: 0.02f
+	 * Distance threshold for two contact points for a valid persistent contact. Default: 0.02
 	 */
 	public static final float PERSISTENT_CONTACT_DIST_THRESHOLD = 0.02f;
 	/**
@@ -67,7 +67,7 @@ public class ReactDefaults {
 	 */
 	public static final int DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS = 15;
 	/**
-	 * The linked phase AABB scaling factor
+	 * The linked phase AABB scaling factor. Default: 2
 	 */
-	public static final float LINKED_PHASE_AABB_SCALING = 1;
+	public static final float LINKED_PHASE_AABB_SCALING = 2;
 }

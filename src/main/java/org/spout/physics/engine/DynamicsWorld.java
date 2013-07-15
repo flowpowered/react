@@ -228,60 +228,43 @@ public class DynamicsWorld extends CollisionWorld {
 	}
 
 	/**
-	 * Updates the simulation, ignoring the actual elapsed time, assuming it to be equal to the time
-	 * step.
-	 */
-	public void forceUpdate() {
-		forceUpdate((float) mTimer.getTimeStep());
-	}
-
-	/**
-	 * Updates the simulation, ignoring the actual elapsed time, assuming it to be equal to the
-	 * provided time delta.
-	 *
-	 * @param dt The time delta to step the simulation with
-	 */
-	public void forceUpdate(float dt) {
-		mTimer.forceUpdate(dt);
-		mContactManifolds.clear();
-		mCollisionDetection.computeCollisionDetection();
-		initConstrainedVelocitiesArray(dt);
-		if (!mContactManifolds.isEmpty()) {
-			mContactSolver.solve(dt);
-		}
-		resetBodiesMovementVariable();
-		updateRigidBodiesPositionAndOrientation(dt);
-		mContactSolver.cleanup();
-		cleanupConstrainedVelocitiesArray();
-		applyGravity();
-		setInterpolationFactorToAllBodies(0);
-	}
-
-	/**
 	 * Updates the physics simulation. The elapsed time is determined by the timer. A step is only
 	 * actually taken if enough time has passed. If a lot of time has passed, more than twice the time
 	 * step, multiple steps will be taken, to catch up.
 	 */
 	public void update() {
 		if (!mTimer.isRunning()) {
-			throw new IllegalStateException("time must be running");
+			throw new IllegalStateException("timer must be running");
 		}
 		mTimer.update();
+		final float dt = (float) mTimer.getTimeStep();
 		while (mTimer.isPossibleToTakeStep()) {
-			mContactManifolds.clear();
-			mCollisionDetection.computeCollisionDetection();
-			initConstrainedVelocitiesArray();
-			if (!mContactManifolds.isEmpty()) {
-				mContactSolver.solve((float) mTimer.getTimeStep());
-			}
-			mTimer.nextStep();
-			resetBodiesMovementVariable();
-			updateRigidBodiesPositionAndOrientation();
-			mContactSolver.cleanup();
-			cleanupConstrainedVelocitiesArray();
+			tick(dt);
 		}
 		applyGravity();
 		setInterpolationFactorToAllBodies();
+	}
+
+	/**
+	 * Ticks the simulation by the provided time delta. Note that this method should only be called
+	 * externally if the simulation is stopped; to prevent issues with the timer and the {@link
+	 * #update()} method. This method doesn't reapply gravity to bodies or set their interpolation
+	 * factor. This is accomplished by the {@link #update()} method at the end of the update.
+	 *
+	 * @param dt The time delta
+	 */
+	protected void tick(float dt) {
+		mContactManifolds.clear();
+		mCollisionDetection.computeCollisionDetection();
+		initConstrainedVelocitiesArray(dt);
+		if (!mContactManifolds.isEmpty()) {
+			mContactSolver.solve(dt);
+		}
+		mTimer.nextStep();
+		resetBodiesMovementVariable();
+		updateRigidBodiesPositionAndOrientation(dt);
+		mContactSolver.cleanup();
+		cleanupConstrainedVelocitiesArray();
 	}
 
 	// Resets the boolean movement variable for each body.
@@ -289,11 +272,6 @@ public class DynamicsWorld extends CollisionWorld {
 		for (RigidBody rigidBody : getRigidBodies()) {
 			rigidBody.setHasMoved(false);
 		}
-	}
-
-	// Updates the position and orientation of the rigid bodies using the timer's time step.
-	private void updateRigidBodiesPositionAndOrientation() {
-		updateRigidBodiesPositionAndOrientation((float) mTimer.getTimeStep());
 	}
 
 	// Updates the position and orientation of the rigid bodies using the provided time delta.
@@ -349,11 +327,6 @@ public class DynamicsWorld extends CollisionWorld {
 			}
 			rigidBody.setInterpolationFactor(factor);
 		}
-	}
-
-	// Initializes the constrained velocities array using the timer's time step.
-	private void initConstrainedVelocitiesArray() {
-		initConstrainedVelocitiesArray((float) mTimer.getTimeStep());
 	}
 
 	// Initializes the constrained velocities array using the provided time delta.
