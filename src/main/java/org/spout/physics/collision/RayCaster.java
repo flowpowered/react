@@ -267,40 +267,38 @@ public class RayCaster {
 		final float b = 2 * px * vx + 2 * pz * vz - (2 * r2 * py * vy) / h2 + (2 * r2 * vy) / h;
 		final float c = px * px + pz * pz - r * r - (r2 * py * py) / h2 + (2 * r2 * py) / h;
 		final float discriminant = b * b - 4 * a * c;
+		float tc0 = Float.MAX_VALUE;
+		float tc1 = Float.MAX_VALUE;
 		if (discriminant >= 0) {
 			final float discriminantRoot = (float) Math.sqrt(discriminant);
-			float t0 = (-b + discriminantRoot) / (2 * a);
-			float t1 = (-b - discriminantRoot) / (2 * a);
-			if (t0 > t1) {
-				final float temp = t1;
-				t1 = t0;
-				t0 = temp;
+			final float t0 = (-b + discriminantRoot) / (2 * a);
+			if (t0 >= 0) {
+				final float py0 = py + vy * t0;
+				if (py0 >= -h && py0 <= h) {
+					tc0 = t0;
+				}
 			}
+			final float t1 = (-b - discriminantRoot) / (2 * a);
 			if (t1 >= 0) {
-				if (t0 >= 0) {
-					final float ry0 = py + vy * t0;
-					if (ry0 >= -h && ry0 <= h) {
-						intersectionPoint.set(Vector3.add(rayStart, Vector3.multiply(rayDir, t0)));
-						return true;
-					}
-				}
-				final float ry1 = py + vy * t1;
-				if (ry1 >= -h && ry1 <= h) {
-					intersectionPoint.set(Vector3.add(rayStart, Vector3.multiply(rayDir, t1)));
-					return true;
+				final float py1 = py + vy * t1;
+				if (py1 >= -h && py1 <= h) {
+					tc1 = t1;
 				}
 			}
 		}
-		if (vy == 0) {
-			return false;
+		float tb = Float.MAX_VALUE;
+		if (vy != 0) {
+			final float t = (-h - py) / vy;
+			if (t >= 0) {
+				final float rx = px + vx * t;
+				final float rz = pz + vz * t;
+				if (rx * rx + rz * rz <= 4 * r * r) {
+					tb = t;
+				}
+			}
 		}
-		final float t = (-h - py) / vy;
-		if (t < 0) {
-			return false;
-		}
-		final float rx1 = px + vx * t;
-		final float rz1 = pz + vz * t;
-		if (rx1 * rx1 + rz1 * rz1 <= 4 * r * r) {
+		final float t = tc0 < tc1 ? (tc0 < tb ? tc0 : tb) : (tc1 < tb ? tc1 : tb);
+		if (t != Float.MAX_VALUE) {
 			intersectionPoint.set(Vector3.add(rayStart, Vector3.multiply(rayDir, t)));
 			return true;
 		}
@@ -323,50 +321,57 @@ public class RayCaster {
 		final float b = 2 * px * vx + 2 * pz * vz;
 		final float c = px * px + pz * pz - r2;
 		final float discriminant = b * b - 4 * a * c;
+		float tc0 = Float.MAX_VALUE;
+		float tc1 = Float.MAX_VALUE;
 		if (discriminant >= 0) {
 			final float discriminantRoot = (float) Math.sqrt(discriminant);
-			float t0 = (-b + discriminantRoot) / (2 * a);
-			float t1 = (-b - discriminantRoot) / (2 * a);
-			if (t0 > t1) {
-				final float temp = t1;
-				t1 = t0;
-				t0 = temp;
-			}
-			if (t1 >= 0) {
-				if (t0 >= 0) {
-					final float ry0 = py + vy * t0;
-					if (ry0 >= -h && ry0 <= h) {
-						intersectionPoint.set(Vector3.add(rayStart, Vector3.multiply(rayDir, t0)));
-						return true;
-					}
+			final float t0 = (-b + discriminantRoot) / (2 * a);
+			if (t0 >= 0) {
+				final float ry0 = py + vy * t0;
+				if (ry0 >= -h && ry0 <= h) {
+					tc0 = t0;
 				}
+			}
+			final float t1 = (-b - discriminantRoot) / (2 * a);
+			if (t1 >= 0) {
 				final float ry1 = py + vy * t1;
 				if (ry1 >= -h && ry1 <= h) {
-					intersectionPoint.set(Vector3.add(rayStart, Vector3.multiply(rayDir, t1)));
-					return true;
+					tc1 = t1;
 				}
 			}
 		}
-		if (vy == 0) {
-			return false;
-		}
-		final float t0 = (h - py) / vy;
-		if (t0 >= 0) {
-			final float rx0 = px + vx * t0;
-			final float rz0 = pz + vz * t0;
-			if (rx0 * rx0 + rz0 * rz0 <= r2) {
-				intersectionPoint.set(Vector3.add(rayStart, Vector3.multiply(rayDir, t0)));
-				return true;
+		float tb0 = Float.MAX_VALUE;
+		float tb1 = Float.MAX_VALUE;
+		if (vy != 0) {
+			final float t0 = (h - py) / vy;
+			if (t0 >= 0) {
+				final float rx = px + vx * t0;
+				final float rz = pz + vz * t0;
+				if (rx * rx + rz * rz <= r2) {
+					tb0 = t0;
+				}
+			}
+			final float t1 = (-h - py) / vy;
+			if (t1 >= 0) {
+				final float rx = px + vx * t1;
+				final float rz = pz + vz * t1;
+				if (rx * rx + rz * rz <= r2) {
+					tb1 = t1;
+				}
 			}
 		}
-		final float t1 = (-h - py) / vy;
-		if (t1 < 0) {
-			return false;
+		float t = tc0;
+		if (tc1 < t) {
+			t = tc1;
 		}
-		final float rx1 = px + vx * t1;
-		final float rz1 = pz + vz * t1;
-		if (rx1 * rx1 + rz1 * rz1 <= r2) {
-			intersectionPoint.set(Vector3.add(rayStart, Vector3.multiply(rayDir, t1)));
+		if (tb0 < t) {
+			t = tb0;
+		}
+		if (tb1 < t) {
+			t = tb1;
+		}
+		if (t != Float.MAX_VALUE) {
+			intersectionPoint.set(Vector3.add(rayStart, Vector3.multiply(rayDir, t)));
 			return true;
 		}
 		return false;

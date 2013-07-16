@@ -209,14 +209,20 @@ public class Vector4 {
 	 * @return {@link int} axis with minimal value
 	 */
 	public int getMinAxis() {
-		final float[] axes = {x, y, z, w};
-		int min = 0;
-		for (int i = 1; i < 4; i++) {
-			if (axes[i] < axes[i - 1]) {
-				min = i;
-			}
+		float value = x;
+		int axis = 0;
+		if (y < value) {
+			value = y;
+			axis = 1;
 		}
-		return min;
+		if (z < value) {
+			value = z;
+			axis = 2;
+		}
+		if (w < value) {
+			axis = 3;
+		}
+		return axis;
 	}
 
 	/**
@@ -225,14 +231,20 @@ public class Vector4 {
 	 * @return {@link int} axis with maximum value
 	 */
 	public int getMaxAxis() {
-		final float[] axes = {x, y, z, w};
-		int max = 0;
-		for (int i = 1; i < 4; i++) {
-			if (axes[i] > axes[i - 1]) {
-				max = i;
-			}
+		float value = x;
+		int axis = 0;
+		if (y > value) {
+			value = y;
+			axis = 1;
 		}
-		return max;
+		if (z > value) {
+			value = z;
+			axis = 2;
+		}
+		if (w > value) {
+			axis = 3;
+		}
+		return axis;
 	}
 
 	/**

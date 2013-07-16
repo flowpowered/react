@@ -183,7 +183,7 @@ public class Vector3 {
 	 * @return {@link int} axis with minimal value
 	 */
 	public int getMinAxis() {
-		return (x < y ? (x < z ? X_AXIS : Z_AXIS) : (y < z ? Y_AXIS : Z_AXIS));
+		return x < y ? (x < z ? X_AXIS : Z_AXIS) : (y < z ? Y_AXIS : Z_AXIS);
 	}
 
 	/**
@@ -192,7 +192,7 @@ public class Vector3 {
 	 * @return {@link int} axis with maximum value
 	 */
 	public int getMaxAxis() {
-		return (x < y ? (y < z ? Z_AXIS : Y_AXIS) : (x < z ? Z_AXIS : X_AXIS));
+		return x < y ? (y < z ? Z_AXIS : Y_AXIS) : (x < z ? Z_AXIS : X_AXIS);
 	}
 
 	/**
