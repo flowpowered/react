@@ -41,6 +41,18 @@ public class BoxShape extends CollisionShape {
 	/**
 	 * Constructs a box shape from its extents which is half the vector between the two opposing
 	 * corners that are the furthest away.
+	 * @param x x extent
+	 * @param y y extent
+	 * @param z z extent
+	 */
+	public BoxShape(float x, float y, float z) {
+		super(CollisionShapeType.BOX);
+		mExtent.setAllValues(x, y, z);
+	}
+
+	/**
+	 * Constructs a box shape from its extents which is half the vector between the two opposing
+	 * corners that are the furthest away.
 	 *
 	 * @param extent The extent vector
 	 */
