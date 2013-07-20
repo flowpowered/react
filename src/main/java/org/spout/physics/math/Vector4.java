@@ -390,7 +390,7 @@ public class Vector4 {
 
 	/**
 	 * Gets the corresponding float value from this vector based on the requested axis.<br><br>
-	 * <p/>
+	 * <p>
 	 * Valid axis are:<br> {@link #X_AXIS}<br> {@link #Y_AXIS}<br> {@link #Z_AXIS}<br> {@link #W_AXIS}
 	 *
 	 * @param axis to set; {@link #X_AXIS} OR {@link #Y_AXIS} OR {@link #Z_AXIS} OR {@link #W_AXIS}
@@ -412,7 +412,7 @@ public class Vector4 {
 
 	/**
 	 * Sets the corresponding float value from this vector based on the requested axis.<br><br>
-	 * <p/>
+	 * <p>
 	 * Valid axis are:<br> {@link #X_AXIS}<br> {@link #Y_AXIS}<br> {@link #Z_AXIS}<br> {@link #W_AXIS}
 	 *
 	 * @param axis to set; {@link #X_AXIS} OR {@link #Y_AXIS} OR {@link #Z_AXIS} OR {@link #W_AXIS}

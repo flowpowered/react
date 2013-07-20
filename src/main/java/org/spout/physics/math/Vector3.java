@@ -365,7 +365,7 @@ public class Vector3 {
 
 	/**
 	 * Gets the corresponding float value from this vector based on the requested axis.<br><br>
-	 * <p/>
+	 * <p>
 	 * Valid axis are:<br> {@link Vector3#X_AXIS}<br> {@link Vector3#Y_AXIS}<br> {@link
 	 * Vector3#Z_AXIS}<br>
 	 *
@@ -386,7 +386,7 @@ public class Vector3 {
 
 	/**
 	 * Sets the corresponding float value from this vector based on the requested axis.<br><br>
-	 * <p/>
+	 * <p>
 	 * Valid axis are:<br> {@link Vector3#X_AXIS}<br> {@link Vector3#Y_AXIS}<br> {@link
 	 * Vector3#Z_AXIS}<br>
 	 *
