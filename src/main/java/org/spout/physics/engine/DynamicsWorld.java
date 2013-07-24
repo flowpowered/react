@@ -28,10 +28,13 @@ package org.spout.physics.engine;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Vector;
 
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
+import java.util.ArrayList;
+import org.spout.math.imaginary.Quaternion;
+import org.spout.math.matrix.Matrix3;
+import org.spout.math.vector.Vector3;
 
 import org.spout.physics.ReactDefaults;
 import org.spout.physics.Utilities.IntPair;
@@ -43,10 +46,8 @@ import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.constraint.Constraint;
 import org.spout.physics.constraint.ContactPoint;
-import org.spout.physics.math.Matrix3x3;
-import org.spout.physics.math.Quaternion;
 import org.spout.physics.math.Transform;
-import org.spout.physics.math.Vector3;
+
 
 /**
  * This class represents a dynamics world. This class inherits from the CollisionWorld class. In a
@@ -56,12 +57,12 @@ public class DynamicsWorld extends CollisionWorld {
 	private final Timer mTimer;
 	private final ContactSolver mContactSolver;
 	private final Set<RigidBody> mRigidBodies = new HashSet<RigidBody>();
-	private final Vector<ContactManifold> mContactManifolds = new Vector<ContactManifold>();
-	private final Vector<Constraint> mConstraints = new Vector<Constraint>();
+	private final ArrayList<ContactManifold> mContactManifolds = new ArrayList<ContactManifold>();
+	private final ArrayList<Constraint> mConstraints = new ArrayList<Constraint>();
 	private final Vector3 mGravity;
 	private boolean mIsGravityOn = true;
-	private final Vector<Vector3> mConstrainedLinearVelocities = new Vector<Vector3>();
-	private final Vector<Vector3> mConstrainedAngularVelocities = new Vector<Vector3>();
+	private final ArrayList<Vector3> mConstrainedLinearVelocities = new ArrayList<Vector3>();
+	private final ArrayList<Vector3> mConstrainedAngularVelocities = new ArrayList<Vector3>();
 	private final TObjectIntMap<RigidBody> mMapBodyToConstrainedVelocityIndex = new TObjectIntHashMap<RigidBody>();
 
 	/**
@@ -214,7 +215,7 @@ public class DynamicsWorld extends CollisionWorld {
 	 *
 	 * @return The constraints
 	 */
-	public Vector<Constraint> getConstraints() {
+	public ArrayList<Constraint> getConstraints() {
 		return mConstraints;
 	}
 
@@ -223,7 +224,7 @@ public class DynamicsWorld extends CollisionWorld {
 	 *
 	 * @return The contact manifolds
 	 */
-	public Vector<ContactManifold> getContactManifolds() {
+	public ArrayList<ContactManifold> getContactManifolds() {
 		return mContactManifolds;
 	}
 
@@ -294,15 +295,11 @@ public class DynamicsWorld extends CollisionWorld {
 				}
 				final Vector3 currentPosition = mobileBody.getTransform().getPosition();
 				final Quaternion currentOrientation = mobileBody.getTransform().getOrientation();
-				final Vector3 newPosition = Vector3.add(currentPosition, Vector3.multiply(newLinVelocity, dt));
-				final Quaternion newOrientation = Quaternion.add(
-						currentOrientation,
-						Quaternion.multiply(
-								Quaternion.multiply(
-										new Quaternion(newAngVelocity.getX(), newAngVelocity.getY(), newAngVelocity.getZ(), 0),
-										currentOrientation),
-								0.5f * dt));
-				final Transform newTransform = new Transform(newPosition, newOrientation.getUnit());
+				final Vector3 newPosition = currentPosition.add(newLinVelocity.mul(dt));
+
+				Quaternion newOrientation = new Quaternion(newAngVelocity.getX(), newAngVelocity.getY(), newAngVelocity.getZ(), 0)
+						.mul(currentOrientation).mul(0.5f * dt).add(currentOrientation);
+				final Transform newTransform = new Transform(newPosition, newOrientation.normalize());
 				mobileBody.setTransform(newTransform);
 				mobileBody.updateAABB();
 			}
@@ -338,14 +335,10 @@ public class DynamicsWorld extends CollisionWorld {
 		int i = 0;
 		for (RigidBody rigidBody : mRigidBodies) {
 			mMapBodyToConstrainedVelocityIndex.put(rigidBody, i);
-			mConstrainedLinearVelocities.add(i, Vector3.add(
-					rigidBody.getLinearVelocity(),
-					Vector3.multiply(dt * rigidBody.getMassInverse(), rigidBody.getExternalForce())));
-			mConstrainedAngularVelocities.add(i, Vector3.add(
-					rigidBody.getAngularVelocity(),
-					Matrix3x3.multiply(
-							Matrix3x3.multiply(dt, rigidBody.getInertiaTensorInverseWorld()),
-							rigidBody.getExternalTorque())));
+			mConstrainedLinearVelocities.add(i, rigidBody.getLinearVelocity()
+					.add(rigidBody.getExternalForce().mul(dt * rigidBody.getMassInverse())));
+			mConstrainedAngularVelocities.add(i, rigidBody.getAngularVelocity()
+					.add(rigidBody.getInertiaTensorInverseWorld().mul(dt).transform(rigidBody.getExternalTorque())));
 			i++;
 		}
 	}
@@ -364,7 +357,7 @@ public class DynamicsWorld extends CollisionWorld {
 				if (rigidBody == null) {
 					throw new IllegalStateException("rigid body cannot be null");
 				}
-				rigidBody.setExternalForce(Vector3.multiply(rigidBody.getMass(), mGravity));
+				rigidBody.setExternalForce(mGravity.mul(rigidBody.getMass()));
 			}
 		}
 	}
@@ -379,8 +372,7 @@ public class DynamicsWorld extends CollisionWorld {
 	 * @return The new rigid body
 	 */
 	public ImmobileRigidBody createImmobileRigidBody(Transform transform, float mass, CollisionShape collisionShape) {
-		final Matrix3x3 inertiaTensor = new Matrix3x3();
-		collisionShape.computeLocalInertiaTensor(inertiaTensor, mass);
+		final Matrix3 inertiaTensor = collisionShape.computeLocalInertiaTensor(mass);
 		return createImmobileRigidBody(transform, mass, inertiaTensor, collisionShape);
 	}
 
@@ -393,7 +385,7 @@ public class DynamicsWorld extends CollisionWorld {
 	 * @param collisionShape The collision shape
 	 * @return The new rigid body
 	 */
-	public ImmobileRigidBody createImmobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal,
+	public ImmobileRigidBody createImmobileRigidBody(Transform transform, float mass, Matrix3 inertiaTensorLocal,
 													 CollisionShape collisionShape) {
 		final ImmobileRigidBody immobileBody = new ImmobileRigidBody(transform, mass, inertiaTensorLocal,
 				collisionShape, getNextFreeID());
@@ -411,8 +403,7 @@ public class DynamicsWorld extends CollisionWorld {
 	 * @return The new rigid body
 	 */
 	public MobileRigidBody createMobileRigidBody(Transform transform, float mass, CollisionShape collisionShape) {
-		final Matrix3x3 inertiaTensor = new Matrix3x3();
-		collisionShape.computeLocalInertiaTensor(inertiaTensor, mass);
+		final Matrix3 inertiaTensor = collisionShape.computeLocalInertiaTensor(mass);
 		return createMobileRigidBody(transform, mass, inertiaTensor, collisionShape);
 	}
 
@@ -425,7 +416,7 @@ public class DynamicsWorld extends CollisionWorld {
 	 * @param collisionShape The collision shape
 	 * @return The new rigid body
 	 */
-	public MobileRigidBody createMobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal,
+	public MobileRigidBody createMobileRigidBody(Transform transform, float mass, Matrix3 inertiaTensorLocal,
 												 CollisionShape collisionShape) {
 		final MobileRigidBody mobileBody = new MobileRigidBody(transform, mass, inertiaTensorLocal,
 				collisionShape, getNextFreeID());

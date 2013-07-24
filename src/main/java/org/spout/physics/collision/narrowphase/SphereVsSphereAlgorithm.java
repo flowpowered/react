@@ -26,11 +26,11 @@
  */
 package org.spout.physics.collision.narrowphase;
 
+import org.spout.math.vector.Vector3;
 import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.collision.shape.SphereShape;
 import org.spout.physics.math.Transform;
-import org.spout.physics.math.Vector3;
 
 /**
  * This class is used to compute the narrow-phase collision detection between two sphere shaped
@@ -43,16 +43,17 @@ public class SphereVsSphereAlgorithm extends NarrowPhaseAlgorithm {
 								 ContactInfo contactInfo) {
 		final SphereShape sphereShape1 = (SphereShape) collisionShape1;
 		final SphereShape sphereShape2 = (SphereShape) collisionShape2;
-		final Vector3 vectorBetweenCenters = Vector3.subtract(transform2.getPosition(), transform1.getPosition());
-		final float squaredDistanceBetweenCenters = vectorBetweenCenters.lengthSquare();
+
+		final Vector3 vectorBetweenCenters = transform2.getPosition().sub(transform1.getPosition());
+		final float squaredDistanceBetweenCenters = vectorBetweenCenters.lengthSquared();
 		final float sumRadius = sphereShape1.getRadius() + sphereShape2.getRadius();
 		if (squaredDistanceBetweenCenters <= sumRadius * sumRadius) {
 			final Vector3 centerSphere2InBody1LocalSpace = Transform.multiply(transform1.inverse(), transform2.getPosition());
 			final Vector3 centerSphere1InBody2LocalSpace = Transform.multiply(transform2.inverse(), transform1.getPosition());
-			final Vector3 intersectionOnBody1 = Vector3.multiply(sphereShape1.getRadius(), centerSphere2InBody1LocalSpace.getUnit());
-			final Vector3 intersectionOnBody2 = Vector3.multiply(sphereShape2.getRadius(), centerSphere1InBody2LocalSpace.getUnit());
+			final Vector3 intersectionOnBody1 =  centerSphere2InBody1LocalSpace.normalize().mul(sphereShape2.getRadius());
+			final Vector3 intersectionOnBody2 = centerSphere1InBody2LocalSpace.normalize().mul(sphereShape2.getRadius());
 			final float penetrationDepth = sumRadius - (float) Math.sqrt(squaredDistanceBetweenCenters);
-			contactInfo.set(vectorBetweenCenters.getUnit(), penetrationDepth, intersectionOnBody1, intersectionOnBody2);
+			contactInfo.set(vectorBetweenCenters.normalize(), penetrationDepth, intersectionOnBody1, intersectionOnBody2);
 			return true;
 		}
 		return false;

@@ -26,10 +26,10 @@
  */
 package org.spout.physics.body;
 
+import org.spout.math.matrix.Matrix3;
+import org.spout.math.vector.Vector3;
 import org.spout.physics.collision.shape.CollisionShape;
-import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Transform;
-import org.spout.physics.math.Vector3;
 
 /**
  * Represents a rigid body for the physics engine. A rigid body is a non-deformable body that has a
@@ -114,7 +114,7 @@ public abstract class RigidBody extends CollisionBody {
 	 *
 	 * @return The world inverse inertia tensor
 	 */
-	public abstract Matrix3x3 getInertiaTensorInverseWorld();
+	public abstract Matrix3 getInertiaTensorInverseWorld();
 
 	/**
 	 * Sets the rigid body's material.

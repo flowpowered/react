@@ -26,10 +26,10 @@
  */
 package org.spout.physics.engine;
 
+import org.spout.math.vector.Vector3;
 import org.spout.physics.ReactDefaults;
 import org.spout.physics.constraint.ContactPoint;
 import org.spout.physics.math.Transform;
-import org.spout.physics.math.Vector3;
 
 /**
  * Represents the set of contact points between two bodies. The contact manifold is implemented in a
@@ -46,8 +46,8 @@ public class ContactManifold {
 	public static final int MAX_CONTACT_POINTS_IN_MANIFOLD = 4;
 	private final ContactPoint[] mContactPoints = new ContactPoint[MAX_CONTACT_POINTS_IN_MANIFOLD];
 	private int mNbContactPoints = 0;
-	private final Vector3 mFrictionVector1 = new Vector3();
-	private final Vector3 mFrictionVector2 = new Vector3();
+	private Vector3 mFrictionVector1 = null;
+	private Vector3 mFrictionVector2 = null;
 	private float mFrictionImpulse1 = 0;
 	private float mFrictionImpulse2 = 0;
 	private float mFrictionTwistImpulse = 0;
@@ -76,7 +76,7 @@ public class ContactManifold {
 	 * @param frictionVector1 The friction vector to set
 	 */
 	public void setFirstFrictionVector(Vector3 frictionVector1) {
-		mFrictionVector1.set(frictionVector1);
+		mFrictionVector1 = frictionVector1;
 	}
 
 	/**
@@ -94,7 +94,7 @@ public class ContactManifold {
 	 * @param frictionVector2 The friction vector to set
 	 */
 	public void setSecondFrictionVector(Vector3 frictionVector2) {
-		mFrictionVector2.set(frictionVector2);
+		mFrictionVector2 = frictionVector2;
 	}
 
 	/**
@@ -174,8 +174,7 @@ public class ContactManifold {
 	 */
 	public void addContactPoint(ContactPoint contact) {
 		for (int i = 0; i < mNbContactPoints; i++) {
-			final float distance = Vector3.subtract(mContactPoints[i].getWorldPointOnFirstBody(),
-					contact.getWorldPointOnFirstBody()).lengthSquare();
+			final float distance = mContactPoints[i].getWorldPointOnFirstBody().sub(contact.getWorldPointOnFirstBody()).lengthSquared();
 			if (distance <= ReactDefaults.PERSISTENT_CONTACT_DIST_THRESHOLD * ReactDefaults.PERSISTENT_CONTACT_DIST_THRESHOLD) {
 				return;
 			}
@@ -229,10 +228,10 @@ public class ContactManifold {
 			return;
 		}
 		for (int i = 0; i < mNbContactPoints; i++) {
+			Transform.multiply(transform1, mContactPoints[i].getLocalPointOnFirstBody());
 			mContactPoints[i].setWorldPointOnFirstBody(Transform.multiply(transform1, mContactPoints[i].getLocalPointOnFirstBody()));
 			mContactPoints[i].setWorldPointOnSecondBody(Transform.multiply(transform2, mContactPoints[i].getLocalPointOnSecondBody()));
-			mContactPoints[i].setPenetrationDepth(Vector3.subtract(mContactPoints[i].getWorldPointOnFirstBody(), mContactPoints[i]
-					.getWorldPointOnSecondBody()).dot(mContactPoints[i].getNormal()));
+			mContactPoints[i].setPenetrationDepth(mContactPoints[i].getWorldPointOnFirstBody().sub(mContactPoints[i].getWorldPointOnSecondBody()).dot(mContactPoints[i].getNormal()));
 		}
 		final float squarePersistentContactThreshold = ReactDefaults.PERSISTENT_CONTACT_DIST_THRESHOLD *
 				ReactDefaults.PERSISTENT_CONTACT_DIST_THRESHOLD;
@@ -244,11 +243,9 @@ public class ContactManifold {
 			if (distanceNormal > squarePersistentContactThreshold) {
 				removeContactPoint(i);
 			} else {
-				final Vector3 projOfPoint1 = Vector3.add(
-						mContactPoints[i].getWorldPointOnFirstBody(),
-						Vector3.multiply(mContactPoints[i].getNormal(), distanceNormal));
-				final Vector3 projDifference = Vector3.subtract(mContactPoints[i].getWorldPointOnSecondBody(), projOfPoint1);
-				if (projDifference.lengthSquare() > squarePersistentContactThreshold) {
+				final Vector3 projOfPoint1 = mContactPoints[i].getWorldPointOnFirstBody().add(mContactPoints[i].getNormal().mul(distanceNormal));
+				final Vector3 projDifference = mContactPoints[i].getWorldPointOnSecondBody().sub(projOfPoint1);
+				if (projDifference.lengthSquared() > squarePersistentContactThreshold) {
 					removeContactPoint(i);
 				}
 			}
@@ -291,34 +288,34 @@ public class ContactManifold {
 		final float area013N;
 		final float area012N;
 		if (indexMaxPenetration != 0) {
-			final Vector3 vector1 = Vector3.subtract(newPoint, mContactPoints[1].getLocalPointOnFirstBody());
-			final Vector3 vector2 = Vector3.subtract(mContactPoints[3].getLocalPointOnFirstBody(), mContactPoints[2].getLocalPointOnFirstBody());
+			final Vector3 vector1 = newPoint.sub(mContactPoints[1].getLocalPointOnFirstBody());
+			final Vector3 vector2 = mContactPoints[3].getLocalPointOnFirstBody().sub(mContactPoints[2].getLocalPointOnFirstBody());
 			final Vector3 crossProduct = vector1.cross(vector2);
-			area123N = crossProduct.lengthSquare();
+			area123N = crossProduct.lengthSquared();
 		} else {
 			area123N = 0;
 		}
 		if (indexMaxPenetration != 1) {
-			final Vector3 vector1 = Vector3.subtract(newPoint, mContactPoints[0].getLocalPointOnFirstBody());
-			final Vector3 vector2 = Vector3.subtract(mContactPoints[3].getLocalPointOnFirstBody(), mContactPoints[2].getLocalPointOnFirstBody());
+			final Vector3 vector1 = newPoint.sub(mContactPoints[0].getLocalPointOnFirstBody());
+			final Vector3 vector2 = mContactPoints[3].getLocalPointOnFirstBody().sub(mContactPoints[2].getLocalPointOnFirstBody());
 			final Vector3 crossProduct = vector1.cross(vector2);
-			area023N = crossProduct.lengthSquare();
+			area023N = crossProduct.lengthSquared();
 		} else {
 			area023N = 1;
 		}
 		if (indexMaxPenetration != 2) {
-			final Vector3 vector1 = Vector3.subtract(newPoint, mContactPoints[0].getLocalPointOnFirstBody());
-			final Vector3 vector2 = Vector3.subtract(mContactPoints[3].getLocalPointOnFirstBody(), mContactPoints[1].getLocalPointOnFirstBody());
+			final Vector3 vector1 = newPoint.sub(mContactPoints[0].getLocalPointOnFirstBody());
+			final Vector3 vector2 = mContactPoints[3].getLocalPointOnFirstBody().sub(mContactPoints[1].getLocalPointOnFirstBody());
 			final Vector3 crossProduct = vector1.cross(vector2);
-			area013N = crossProduct.lengthSquare();
+			area013N = crossProduct.lengthSquared();
 		} else {
 			area013N = 2;
 		}
 		if (indexMaxPenetration != 3) {
-			final Vector3 vector1 = Vector3.subtract(newPoint, mContactPoints[0].getLocalPointOnFirstBody());
-			final Vector3 vector2 = Vector3.subtract(mContactPoints[2].getLocalPointOnFirstBody(), mContactPoints[1].getLocalPointOnFirstBody());
+			final Vector3 vector1 = newPoint.sub(mContactPoints[0].getLocalPointOnFirstBody());
+			final Vector3 vector2 = mContactPoints[2].getLocalPointOnFirstBody().sub(mContactPoints[1].getLocalPointOnFirstBody());
 			final Vector3 crossProduct = vector1.cross(vector2);
-			area012N = crossProduct.lengthSquare();
+			area012N = crossProduct.lengthSquared();
 		} else {
 			area012N = 3;
 		}

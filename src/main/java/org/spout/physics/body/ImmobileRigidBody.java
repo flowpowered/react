@@ -26,10 +26,10 @@
  */
 package org.spout.physics.body;
 
+import org.spout.math.matrix.Matrix3;
+import org.spout.math.vector.Vector3;
 import org.spout.physics.collision.shape.CollisionShape;
-import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Transform;
-import org.spout.physics.math.Vector3;
 
 /**
  * Represents an immobile rigid body. Such a body cannot move, but has all of the properties of a
@@ -38,10 +38,10 @@ import org.spout.physics.math.Vector3;
 public class ImmobileRigidBody extends RigidBody {
 	private static final Vector3 ZERO = new Vector3(0, 0, 0);
 	protected float mMass;
-	protected final Matrix3x3 mInertiaTensorLocal = new Matrix3x3();
-	protected final Matrix3x3 mInertiaTensorLocalInverse = new Matrix3x3();
-	protected final Vector3 mExternalForce = new Vector3();
-	protected final Vector3 mExternalTorque = new Vector3();
+	protected Matrix3 mInertiaTensorLocal;
+	protected Matrix3 mInertiaTensorLocalInverse;
+	protected Vector3 mExternalForce = new Vector3();
+	protected Vector3 mExternalTorque = new Vector3();
 
 	/**
 	 * Constructs a new rigid body from its transform, mass, local inertia tensor, collision shape and
@@ -53,11 +53,11 @@ public class ImmobileRigidBody extends RigidBody {
 	 * @param collisionShape The collision shape
 	 * @param id The ID
 	 */
-	public ImmobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape, int id) {
+	public ImmobileRigidBody(Transform transform, float mass, Matrix3 inertiaTensorLocal, CollisionShape collisionShape, int id) {
 		super(transform, collisionShape, id);
 		mMass = mass;
-		mInertiaTensorLocal.set(inertiaTensorLocal);
-		mInertiaTensorLocalInverse.set(inertiaTensorLocal.getInverse());
+		mInertiaTensorLocal = new Matrix3(inertiaTensorLocal);
+		mInertiaTensorLocalInverse = new Matrix3(inertiaTensorLocal.invert());
 	}
 
 	/**
@@ -94,7 +94,7 @@ public class ImmobileRigidBody extends RigidBody {
 	 *
 	 * @return The local inertia tensor
 	 */
-	public Matrix3x3 getInertiaTensorLocal() {
+	public Matrix3 getInertiaTensorLocal() {
 		return mInertiaTensorLocal;
 	}
 
@@ -103,9 +103,9 @@ public class ImmobileRigidBody extends RigidBody {
 	 *
 	 * @param inertiaTensorLocal The local inertia tensor to set
 	 */
-	public void setInertiaTensorLocal(Matrix3x3 inertiaTensorLocal) {
-		mInertiaTensorLocal.set(inertiaTensorLocal);
-		mInertiaTensorLocalInverse.set(mInertiaTensorLocal.getInverse());
+	public void setInertiaTensorLocal(Matrix3 inertiaTensorLocal) {
+		mInertiaTensorLocal = new Matrix3(inertiaTensorLocal);
+		mInertiaTensorLocalInverse = new Matrix3(inertiaTensorLocal.invert());
 	}
 
 	/**
@@ -116,15 +116,15 @@ public class ImmobileRigidBody extends RigidBody {
 	 *
 	 * @return The world inertia tensor
 	 */
-	public Matrix3x3 getInertiaTensorWorld() {
-		final Matrix3x3 orientation = mliveTransform.getOrientation().getMatrix();
-		return Matrix3x3.multiply(Matrix3x3.multiply(orientation, mInertiaTensorLocal), orientation.getTranspose());
+	public Matrix3 getInertiaTensorWorld() {
+		final Matrix3 orientation = mliveTransform.getOrientation().toMatrix3();
+		return orientation.transpose().mul(orientation.mul(mInertiaTensorLocal));
 	}
 
 	@Override
-	public Matrix3x3 getInertiaTensorInverseWorld() {
-		final Matrix3x3 orientation = mliveTransform.getOrientation().getMatrix();
-		return Matrix3x3.multiply(Matrix3x3.multiply(orientation, mInertiaTensorLocalInverse), orientation.getTranspose());
+	public Matrix3 getInertiaTensorInverseWorld() {
+		final Matrix3 orientation = mliveTransform.getOrientation().toMatrix3();
+		return orientation.transpose().mul(orientation.mul(mInertiaTensorLocalInverse));
 	}
 
 	@Override
@@ -134,7 +134,7 @@ public class ImmobileRigidBody extends RigidBody {
 
 	@Override
 	public void setExternalForce(Vector3 force) {
-		mExternalForce.set(force);
+		mExternalForce = force;
 	}
 
 	@Override
@@ -144,7 +144,7 @@ public class ImmobileRigidBody extends RigidBody {
 
 	@Override
 	public void setExternalTorque(Vector3 torque) {
-		mExternalTorque.set(torque);
+		mExternalTorque = torque;
 	}
 
 	/**

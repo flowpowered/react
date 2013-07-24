@@ -27,15 +27,15 @@
 package org.spout.physics;
 
 import org.junit.Test;
+import org.spout.math.imaginary.Quaternion;
+import org.spout.math.matrix.Matrix3;
+import org.spout.math.vector.Vector3;
 
 import org.spout.physics.body.ImmobileRigidBody;
 import org.spout.physics.body.MobileRigidBody;
 import org.spout.physics.collision.shape.BoxShape;
 import org.spout.physics.engine.DynamicsWorld;
-import org.spout.physics.math.Matrix3x3;
-import org.spout.physics.math.Quaternion;
 import org.spout.physics.math.Transform;
-import org.spout.physics.math.Vector3;
 
 public class DynamicsWorldTest {
 	private static final float RUN_TIME = 2;
@@ -46,16 +46,14 @@ public class DynamicsWorldTest {
 			final float timeStep = ReactDefaults.DEFAULT_TIMESTEP;
 			final DynamicsWorld world = new DynamicsWorld(new Vector3(0, -9.81f, 0), timeStep);
 			final BoxShape floorShape = new BoxShape(new Vector3(10, 0.5f, 10));
-			final Transform floorTransform = new Transform(new Vector3(0, 0, 0), Quaternion.identity());
-			final Matrix3x3 floorInertia = new Matrix3x3();
+			final Transform floorTransform = new Transform(new Vector3(0, 0, 0), Quaternion.IDENTITY);
 			final float floorMass = 100;
-			floorShape.computeLocalInertiaTensor(floorInertia, floorMass);
+			final Matrix3 floorInertia = floorShape.computeLocalInertiaTensor(floorMass);
 			final ImmobileRigidBody floor = world.createImmobileRigidBody(floorTransform, floorMass, floorInertia, floorShape);
 			final BoxShape boxShape = new BoxShape(new Vector3(1, 1, 1));
-			final Transform boxTransform = new Transform(new Vector3(0, 5, 0), Quaternion.identity());
-			final Matrix3x3 boxInertia = new Matrix3x3();
+			final Transform boxTransform = new Transform(new Vector3(0, 5, 0), Quaternion.IDENTITY);
 			final float boxMass = 5;
-			boxShape.computeLocalInertiaTensor(boxInertia, boxMass);
+			final Matrix3 boxInertia = boxShape.computeLocalInertiaTensor(boxMass);
 			final MobileRigidBody box = world.createMobileRigidBody(boxTransform, boxMass, boxInertia, boxShape);
 			box.setMotionEnabled(true);
 			world.start();

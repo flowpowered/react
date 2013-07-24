@@ -26,7 +26,7 @@
  */
 package org.spout.physics.collision.narrowphase.EPA;
 
-import org.spout.physics.math.Vector3;
+import org.spout.math.vector.Vector3;
 
 /**
  * Represents an edge for the current polytope in the EPA algorithm.

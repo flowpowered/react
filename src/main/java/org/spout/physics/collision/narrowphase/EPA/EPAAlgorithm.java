@@ -29,16 +29,16 @@ package org.spout.physics.collision.narrowphase.EPA;
 import java.util.Comparator;
 import java.util.PriorityQueue;
 import java.util.Queue;
+import org.spout.math.imaginary.Quaternion;
+import org.spout.math.matrix.Matrix3;
+import org.spout.math.vector.Vector3;
 
 import org.spout.physics.ReactDefaults;
 import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.narrowphase.GJK.GJKAlgorithm;
 import org.spout.physics.collision.narrowphase.GJK.Simplex;
 import org.spout.physics.collision.shape.CollisionShape;
-import org.spout.physics.math.Matrix3x3;
-import org.spout.physics.math.Quaternion;
 import org.spout.physics.math.Transform;
-import org.spout.physics.math.Vector3;
 
 /**
  * This class is the implementation of the Expanding Polytope Algorithm (EPA). The EPA algorithm
@@ -82,7 +82,7 @@ public class EPAAlgorithm {
 		final TrianglesStore triangleStore = new TrianglesStore();
 		final Queue<TriangleEPA> triangleHeap = new PriorityQueue<TriangleEPA>(MAX_FACETS, new TriangleComparison());
 		final Transform body2Tobody1 = Transform.multiply(transform1.inverse(), transform2);
-		final Matrix3x3 rotateToBody2 = Matrix3x3.multiply(transform2.getOrientation().getMatrix().getTranspose(), transform1.getOrientation().getMatrix());
+		final Matrix3 rotateToBody2 = transform2.getOrientation().toMatrix3().transpose().mul(transform1.getOrientation().toMatrix3());
 		int nbVertices = simplex.getSimplex(suppPointsA, suppPointsB, points);
 		final float tolerance = ReactDefaults.MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint();
 		int nbTriangles = 0;
@@ -91,37 +91,37 @@ public class EPAAlgorithm {
 			case 1:
 				return false;
 			case 2: {
-				final Vector3 d = Vector3.subtract(points[1], points[0]).getUnit();
-				final int minAxis = d.getAbsoluteVector().getMinAxis();
+				final Vector3 d = points[1].sub(points[0].normalize());
+				final int minAxis = d.abs().getMinAxis();
 				final float sin60 = (float) Math.sqrt(3) * 0.5f;
 				final Quaternion rotationQuat = new Quaternion(d.getX() * sin60, d.getY() * sin60, d.getZ() * sin60, 0.5f);
-				final Matrix3x3 rotationMat = rotationQuat.getMatrix();
+				final Matrix3 rotationMat = rotationQuat.toMatrix3();
 				final Vector3 v1 = d.cross(new Vector3(minAxis == 0 ? 1 : 0, minAxis == 1 ? 1 : 0, minAxis == 2 ? 1 : 0));
-				final Vector3 v2 = Matrix3x3.multiply(rotationMat, v1);
-				final Vector3 v3 = Matrix3x3.multiply(rotationMat, v2);
+				final Vector3 v2 = rotationMat.transform(v1);
+				final Vector3 v3 = rotationMat.transform(v2);
 				suppPointsA[2] = collisionShape1.getLocalSupportPointWithMargin(v1);
 				suppPointsB[2] = Transform.multiply(
 						body2Tobody1,
-						collisionShape2.getLocalSupportPointWithMargin(Matrix3x3.multiply(rotateToBody2, Vector3.negate(v1))));
-				points[2] = Vector3.subtract(suppPointsA[2], suppPointsB[2]);
+						collisionShape2.getLocalSupportPointWithMargin(rotateToBody2.transform(v1.negate())));
+				points[2] = suppPointsA[2].sub(suppPointsB[2]);
 				suppPointsA[3] = collisionShape1.getLocalSupportPointWithMargin(v2);
 				suppPointsB[3] = Transform.multiply(
 						body2Tobody1,
-						collisionShape2.getLocalSupportPointWithMargin(Matrix3x3.multiply(rotateToBody2, Vector3.negate(v2))));
-				points[3] = Vector3.subtract(suppPointsA[3], suppPointsB[3]);
+						collisionShape2.getLocalSupportPointWithMargin(rotateToBody2.transform(v2.negate())));
+				points[3] = suppPointsA[3].sub(suppPointsB[3]);
 				suppPointsA[4] = collisionShape1.getLocalSupportPointWithMargin(v3);
 				suppPointsB[4] = Transform.multiply(
 						body2Tobody1,
-						collisionShape2.getLocalSupportPointWithMargin(Matrix3x3.multiply(rotateToBody2, Vector3.negate(v3))));
-				points[4] = Vector3.subtract(suppPointsA[4], suppPointsB[4]);
+						collisionShape2.getLocalSupportPointWithMargin(rotateToBody2.transform(v3.negate())));
+				points[4] = suppPointsA[4].sub(suppPointsB[4]);
 				if (isOriginInTetrahedron(points[0], points[2], points[3], points[4]) == 0) {
-					suppPointsA[1].set(suppPointsA[4]);
-					suppPointsB[1].set(suppPointsB[4]);
-					points[1].set(points[4]);
+					suppPointsA[1] = suppPointsA[4];
+					suppPointsB[1] = suppPointsB[4];
+					points[1] = points[4];
 				} else if (isOriginInTetrahedron(points[1], points[2], points[3], points[4]) == 0) {
-					suppPointsA[0].set(suppPointsA[4]);
-					suppPointsB[0].set(suppPointsB[4]);
-					points[0].set(points[4]);
+					suppPointsA[0] = suppPointsA[4];
+					suppPointsB[0] = suppPointsB[4];
+					points[0] = points[4];
 				} else {
 					return false;
 				}
@@ -152,26 +152,26 @@ public class EPAAlgorithm {
 					break;
 				}
 				if (badVertex < 4) {
-					suppPointsA[badVertex - 1].set(suppPointsA[4]);
-					suppPointsB[badVertex - 1].set(suppPointsB[4]);
-					points[badVertex - 1].set(points[4]);
+					suppPointsA[badVertex - 1] = suppPointsA[4];
+					suppPointsB[badVertex - 1] = suppPointsB[4];
+					points[badVertex - 1] = points[4];
 				}
 				nbVertices = 3;
 			}
 			case 3: {
-				final Vector3 v1 = Vector3.subtract(points[1], points[0]);
-				final Vector3 v2 = Vector3.subtract(points[2], points[0]);
+				final Vector3 v1 = points[1].sub(points[0]);
+				final Vector3 v2 = points[2].sub(points[0]);
 				final Vector3 n = v1.cross(v2);
 				suppPointsA[3] = collisionShape1.getLocalSupportPointWithMargin(n);
 				suppPointsB[3] = Transform.multiply(
 						body2Tobody1,
-						collisionShape2.getLocalSupportPointWithMargin(Matrix3x3.multiply(rotateToBody2, Vector3.negate(n))));
-				points[3] = Vector3.subtract(suppPointsA[3], suppPointsB[3]);
-				suppPointsA[4] = collisionShape1.getLocalSupportPointWithMargin(Vector3.negate(n));
+						collisionShape2.getLocalSupportPointWithMargin(rotateToBody2.transform(n.negate())));
+				points[3] = suppPointsA[3].sub(suppPointsB[3]);
+				suppPointsA[4] = collisionShape1.getLocalSupportPointWithMargin(n.negate());
 				suppPointsB[4] = Transform.multiply(
 						body2Tobody1,
-						collisionShape2.getLocalSupportPointWithMargin(Matrix3x3.multiply(rotateToBody2, n)));
-				points[4] = Vector3.subtract(suppPointsA[4], suppPointsB[4]);
+						collisionShape2.getLocalSupportPointWithMargin(rotateToBody2.transform(n)));
+				points[4] = suppPointsA[4].sub(suppPointsB[4]);
 				final TriangleEPA face0 = triangleStore.newTriangle(points, 0, 1, 3);
 				final TriangleEPA face1 = triangleStore.newTriangle(points, 1, 2, 3);
 				final TriangleEPA face2 = triangleStore.newTriangle(points, 2, 0, 3);
@@ -218,8 +218,8 @@ public class EPAAlgorithm {
 				suppPointsA[nbVertices] = collisionShape1.getLocalSupportPointWithMargin(triangle.getClosestPoint());
 				suppPointsB[nbVertices] = Transform.multiply(
 						body2Tobody1,
-						collisionShape2.getLocalSupportPointWithMargin(Matrix3x3.multiply(rotateToBody2, Vector3.negate(triangle.getClosestPoint()))));
-				points[nbVertices] = Vector3.subtract(suppPointsA[nbVertices], suppPointsB[nbVertices]);
+						collisionShape2.getLocalSupportPointWithMargin(rotateToBody2.transform(triangle.getClosestPoint().negate())));
+				points[nbVertices] = suppPointsA[nbVertices].sub(suppPointsB[nbVertices]);
 				final int indexNewVertex = nbVertices;
 				nbVertices++;
 				final float wDotv = points[indexNewVertex].dot(triangle.getClosestPoint());
@@ -249,10 +249,10 @@ public class EPAAlgorithm {
 			}
 		}
 		while (nbTriangles > 0 && triangleHeap.element().getDistSquare() <= upperBoundSquarePenDepth);
-		v.set(Matrix3x3.multiply(transform1.getOrientation().getMatrix(), triangle.getClosestPoint()));
+		v = transform1.getOrientation().toMatrix3().transform(triangle.getClosestPoint());
 		final Vector3 pALocal = triangle.computeClosestPointOfObject(suppPointsA);
 		final Vector3 pBLocal = Transform.multiply(body2Tobody1.inverse(), triangle.computeClosestPointOfObject(suppPointsB));
-		final Vector3 normal = v.getUnit();
+		final Vector3 normal = v.normalize();
 		final float penetrationDepth = v.length();
 		if (penetrationDepth <= 0) {
 			throw new IllegalStateException("penetration depth must be greater that zero");
@@ -265,19 +265,19 @@ public class EPAAlgorithm {
 	// Returns 0 if the origin is in the tetrahedron or returns the index (1,2,3 or 4) of the bad
 	// vertex if the origin is not in the tetrahedron.
 	private static int isOriginInTetrahedron(Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4) {
-		final Vector3 normal1 = Vector3.subtract(p2, p1).cross(Vector3.subtract(p3, p1));
+		final Vector3 normal1 = p2.sub(p1).cross(p3.sub(p1));
 		if (normal1.dot(p1) > 0 == normal1.dot(p4) > 0) {
 			return 4;
 		}
-		final Vector3 normal2 = Vector3.subtract(p4, p2).cross(Vector3.subtract(p3, p2));
+		final Vector3 normal2 = p4.sub(p2).cross(p3.sub(p2));
 		if (normal2.dot(p2) > 0 == normal2.dot(p1) > 0) {
 			return 1;
 		}
-		final Vector3 normal3 = Vector3.subtract(p4, p3).cross(Vector3.subtract(p1, p3));
+		final Vector3 normal3 = p4.sub(p3).cross(p1.sub(p3));
 		if (normal3.dot(p3) > 0 == normal3.dot(p2) > 0) {
 			return 2;
 		}
-		final Vector3 normal4 = Vector3.subtract(p2, p4).cross(Vector3.subtract(p1, p4));
+		final Vector3 normal4 = p2.sub(p4).cross(p1.sub(p4));
 		if (normal4.dot(p4) > 0 == normal4.dot(p3) > 0) {
 			return 3;
 		}

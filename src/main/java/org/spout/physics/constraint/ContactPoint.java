@@ -26,25 +26,25 @@
  */
 package org.spout.physics.constraint;
 
+import org.spout.math.vector.Vector3;
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.math.Transform;
-import org.spout.physics.math.Vector3;
 
 /**
  * Represents a collision contact point between two bodies in the physics engine. The ContactPoint
  * class inherits from the Constraint class.
  */
 public class ContactPoint extends Constraint {
-	private final Vector3 mNormal = new Vector3();
+	private Vector3 mNormal;
 	private float mPenetrationDepth;
-	private final Vector3 mLocalPointOnBody1 = new Vector3();
-	private final Vector3 mLocalPointOnBody2 = new Vector3();
-	private final Vector3 mWorldPointOnBody1 = new Vector3();
-	private final Vector3 mWorldPointOnBody2 = new Vector3();
+	private Vector3 mLocalPointOnBody1;
+	private Vector3 mLocalPointOnBody2;
+	private Vector3 mWorldPointOnBody1;
+	private Vector3 mWorldPointOnBody2;
 	private boolean mIsRestingContact = false;
-	private final Vector3 mFrictionVector1 = new Vector3();
-	private final Vector3 mFrictionVector2 = new Vector3();
+	private Vector3 mFrictionVector1;
+	private Vector3 mFrictionVector2;
 
 	/**
 	 * Constructs a new contact point from the first and second body, and the contact info.
@@ -58,12 +58,12 @@ public class ContactPoint extends Constraint {
 		if (contactInfo.getPenetrationDepth() <= 0) {
 			throw new IllegalArgumentException("penetraionDepth must be greater than zero");
 		}
-		mNormal.set(contactInfo.getNormal());
+		mNormal = contactInfo.getNormal();
 		mPenetrationDepth = contactInfo.getPenetrationDepth();
-		mLocalPointOnBody1.set(contactInfo.getFirstLocalPoint());
-		mLocalPointOnBody2.set(contactInfo.getSecondLocalPoint());
-		mWorldPointOnBody1.set(Transform.multiply(body1.getTransform(), contactInfo.getFirstLocalPoint()));
-		mWorldPointOnBody2.set(Transform.multiply(body2.getTransform(), contactInfo.getSecondLocalPoint()));
+		mLocalPointOnBody1 = contactInfo.getFirstLocalPoint();
+		mLocalPointOnBody2 = contactInfo.getSecondLocalPoint();
+		mWorldPointOnBody1 = Transform.multiply(body1.getTransform(), contactInfo.getFirstLocalPoint());
+		mWorldPointOnBody2 = Transform.multiply(body2.getTransform(), contactInfo.getSecondLocalPoint());
 	}
 
 	/**
@@ -135,7 +135,7 @@ public class ContactPoint extends Constraint {
 	 * @param worldPoint The contact point in world space
 	 */
 	public void setWorldPointOnFirstBody(Vector3 worldPoint) {
-		mWorldPointOnBody1.set(worldPoint);
+		mWorldPointOnBody1 = worldPoint;
 	}
 
 	/**
@@ -144,7 +144,7 @@ public class ContactPoint extends Constraint {
 	 * @param worldPoint The contact point in world space
 	 */
 	public void setWorldPointOnSecondBody(Vector3 worldPoint) {
-		mWorldPointOnBody2.set(worldPoint);
+		mWorldPointOnBody2 = worldPoint;
 	}
 
 	/**
@@ -180,7 +180,7 @@ public class ContactPoint extends Constraint {
 	 * @param firstFrictionVector The friction vector to set
 	 */
 	public void setFirstFrictionVector(Vector3 firstFrictionVector) {
-		mFrictionVector1.set(firstFrictionVector);
+		mFrictionVector1 = firstFrictionVector;
 	}
 
 	/**
@@ -198,6 +198,6 @@ public class ContactPoint extends Constraint {
 	 * @param secondFrictionVector The friction vector to set
 	 */
 	public void setSecondFrictionVector(Vector3 secondFrictionVector) {
-		mFrictionVector2.set(secondFrictionVector);
+		mFrictionVector2 = secondFrictionVector;
 	}
 }

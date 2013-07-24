@@ -28,13 +28,13 @@ package org.spout.physics.collision.linkedphase;
 
 import java.util.HashSet;
 import java.util.Set;
+import org.spout.math.vector.Vector3;
 
 import org.spout.physics.ReactDefaults;
 import org.spout.physics.body.ImmobileRigidBody;
 import org.spout.physics.body.MobileRigidBody;
 import org.spout.physics.collision.shape.AABB;
 import org.spout.physics.engine.linked.LinkedDynamicsWorld;
-import org.spout.physics.math.Vector3;
 
 /**
  * A phase of the physics tick where bodies are added via the {@link
@@ -63,14 +63,14 @@ public class LinkedPhase {
 	public Set<ImmobileRigidBody> getBodiesInRange(final MobileRigidBody body) {
 		final AABB aabb = body.getAABB();
 		// To object coords
-		final Vector3 max = Vector3.subtract(aabb.getMax(), aabb.getCenter());
-		final Vector3 min = Vector3.subtract(aabb.getMin(), aabb.getCenter());
+		Vector3 max = aabb.getMax().sub(aabb.getCenter());
+		Vector3 min = aabb.getMin().sub(aabb.getCenter());
 		// Scale the coords
-		max.multiply(ReactDefaults.LINKED_PHASE_AABB_SCALING);
-		min.multiply(ReactDefaults.LINKED_PHASE_AABB_SCALING);
+		max = max.mul(ReactDefaults.LINKED_PHASE_AABB_SCALING);
+		max = min.mul(ReactDefaults.LINKED_PHASE_AABB_SCALING);
 		// Back to world coords
-		max.add(aabb.getCenter());
-		min.add(aabb.getCenter());
+		max = max.add(aabb.getCenter());
+		min = min.add(aabb.getCenter());
 		final int startX = (int) Math.floor(min.getX());
 		final int startY = (int) Math.floor(min.getY());
 		final int startZ = (int) Math.floor(min.getZ());
