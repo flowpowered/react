@@ -31,7 +31,7 @@ import org.spout.physics.body.ImmobileRigidBody;
 /**
  * A simple class made for implementations with dynamic world planes (ex. Voxel generation) where no
  * assumptions can be made about the world.
- * <p/>
+ * <p>
  * It is left up to the implementation of this class to provide the body to be used at the x, y, z
  * provided.
  */
