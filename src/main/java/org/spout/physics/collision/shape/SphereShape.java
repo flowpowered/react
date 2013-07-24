@@ -26,10 +26,10 @@
  */
 package org.spout.physics.collision.shape;
 
+import org.spout.math.matrix.Matrix3;
+import org.spout.math.vector.Vector3;
 import org.spout.physics.ReactDefaults;
-import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Transform;
-import org.spout.physics.math.Vector3;
 
 /**
  * Represents a sphere collision shape that is centered at the origin and defined by its radius.
@@ -68,8 +68,8 @@ public class SphereShape extends CollisionShape {
 	@Override
 	public Vector3 getLocalSupportPointWithMargin(Vector3 direction) {
 		final float margin = getMargin();
-		if (direction.lengthSquare() >= ReactDefaults.MACHINE_EPSILON * ReactDefaults.MACHINE_EPSILON) {
-			return Vector3.multiply(margin, direction.getUnit());
+		if (direction.lengthSquared() >= ReactDefaults.MACHINE_EPSILON * ReactDefaults.MACHINE_EPSILON) {
+			return direction.normalize().mul(margin);
 		}
 		return new Vector3(0, margin, 0);
 	}
@@ -90,10 +90,9 @@ public class SphereShape extends CollisionShape {
 	}
 
 	@Override
-	public void computeLocalInertiaTensor(Matrix3x3 tensor, float mass) {
+	public Matrix3 computeLocalInertiaTensor(float mass) {
 		final float diag = 0.4f * mass * mRadius * mRadius;
-		tensor.setAllValues(
-				diag, 0, 0,
+		return new Matrix3(diag, 0, 0,
 				0, diag, 0,
 				0, 0, diag);
 	}
@@ -101,8 +100,8 @@ public class SphereShape extends CollisionShape {
 	@Override
 	public void updateAABB(AABB aabb, Transform transform) {
 		final Vector3 extents = getLocalExtents(ReactDefaults.OBJECT_MARGIN);
-		final Vector3 minCoordinates = Vector3.subtract(transform.getPosition(), extents);
-		final Vector3 maxCoordinates = Vector3.add(transform.getPosition(), extents);
+		final Vector3 minCoordinates = transform.getPosition().sub(extents);
+		final Vector3 maxCoordinates = transform.getPosition().add(extents);
 		aabb.setMin(minCoordinates);
 		aabb.setMax(maxCoordinates);
 	}

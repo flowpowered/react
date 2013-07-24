@@ -27,6 +27,9 @@
 package org.spout.physics;
 
 import java.util.Random;
+import org.spout.math.imaginary.Quaternion;
+import org.spout.math.matrix.Matrix3;
+import org.spout.math.vector.Vector3;
 
 import org.spout.physics.body.CollisionBody;
 import org.spout.physics.body.MobileRigidBody;
@@ -40,10 +43,7 @@ import org.spout.physics.collision.shape.ConeShape;
 import org.spout.physics.collision.shape.CylinderShape;
 import org.spout.physics.collision.shape.SphereShape;
 import org.spout.physics.engine.CollisionWorld;
-import org.spout.physics.math.Matrix3x3;
-import org.spout.physics.math.Quaternion;
 import org.spout.physics.math.Transform;
-import org.spout.physics.math.Vector3;
 
 /**
  * Provides fake implementations and objects for tests.
@@ -71,25 +71,25 @@ public class Dummies {
 	}
 
 	public static CollisionBody newCollisionBody(int id) {
-		return new MobileRigidBody(Transform.identity(), 0, Matrix3x3.identity(), new BoxShape(new Vector3()), id);
+		return new MobileRigidBody(Transform.identity(), 0, Matrix3.IDENTITY, new BoxShape(new Vector3()), id);
 	}
 
 	public static AABB newAABB() {
 		final Vector3 min = newPosition();
-		return new AABB(min, Vector3.add(min, new Vector3(RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4)));
+		return new AABB(min, min.add(new Vector3(RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4)));
 	}
 
 	public static AABB newIntersectingAABB(AABB with) {
 		final Vector3 wMin = with.getMin();
-		final Vector3 wSize = Vector3.subtract(with.getMax(), wMin);
+		final Vector3 wSize = with.getMax().sub(wMin);
 		final int iSizeX = RANDOM.nextInt((int) wSize.getX() + 1);
 		final int iSizeY = RANDOM.nextInt((int) wSize.getY() + 1);
 		final int iSizeZ = RANDOM.nextInt((int) wSize.getZ() + 1);
 		final int eSizeX = RANDOM.nextInt(5) + 4;
 		final int eSizeY = RANDOM.nextInt(5) + 4;
 		final int eSizeZ = RANDOM.nextInt(5) + 4;
-		final Vector3 min = Vector3.subtract(wMin, new Vector3(eSizeX, eSizeY, eSizeZ));
-		final Vector3 max = Vector3.add(wMin, new Vector3(iSizeX, iSizeY, iSizeZ));
+		final Vector3 min = wMin.sub(new Vector3(eSizeX, eSizeY, eSizeZ));
+		final Vector3 max = wMin.add(new Vector3(iSizeX, iSizeY, iSizeZ));
 		return new AABB(min, max);
 	}
 

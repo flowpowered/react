@@ -30,11 +30,11 @@ import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
 import gnu.trove.stack.TIntStack;
 import gnu.trove.stack.array.TIntArrayStack;
+import org.spout.math.vector.Vector3;
 
 import org.spout.physics.body.CollisionBody;
 import org.spout.physics.collision.CollisionDetection;
 import org.spout.physics.collision.shape.AABB;
-import org.spout.physics.math.Vector3;
 
 /**
  * This class implements the Sweep-And-Prune (SAP) broad-phase collision detection algorithm. This
@@ -42,6 +42,7 @@ import org.spout.physics.math.Vector3;
  * here: www.codercorner.com/SAP.pdf.
  */
 public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
+
 	private static final int NB_SENTINELS = 2;
 	private static final int INVALID_INDEX = Integer.MAX_VALUE;
 	private BoxAABB[] mBoxes = null;
@@ -77,7 +78,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 		if (aabb == null) {
 			throw new IllegalArgumentException("Attempting to add a null AABB");
 		}
-		final Vector3 extend = Vector3.subtract(aabb.getMax(), aabb.getMin());
+		final Vector3 extend = aabb.getMax().sub(aabb.getMin());
 		if (extend.getX() < 0 || extend.getY() < 0 || extend.getZ() < 0) {
 			throw new IllegalStateException("AABB for body: " + body + " is invalid! AABB is " + aabb);
 		}
@@ -91,22 +92,22 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 			boxIndex = mNbBoxes;
 		}
 		final int indexLimitEndPoint = 2 * mNbBoxes + NB_SENTINELS - 1;
-		for (int axis = 0; axis < 3; axis++) {
+		for (int axis = 0 ; axis < 3 ; axis++) {
 			final EndPoint maxLimitEndPoint = mEndPoints[axis][indexLimitEndPoint];
 			if (mEndPoints[axis][0].getBoxID() != INVALID_INDEX || !mEndPoints[axis][0].isMin()) {
-				throw new IllegalStateException("The box ID for the first end point of the axis must" +
-						" be equal to INVALID_INDEX and the end point must be a minimum");
+				throw new IllegalStateException("The box ID for the first end point of the axis must"
+						+ " be equal to INVALID_INDEX and the end point must be a minimum");
 			}
 			if (maxLimitEndPoint.getBoxID() != INVALID_INDEX || maxLimitEndPoint.isMin()) {
-				throw new IllegalStateException("The box ID for the limit end point of the axis must" +
-						" be equal to INVALID_INDEX and the end point must be a maximum");
+				throw new IllegalStateException("The box ID for the limit end point of the axis must"
+						+ " be equal to INVALID_INDEX and the end point must be a maximum");
 			}
 			if (mEndPoints[axis][indexLimitEndPoint + 2] == null) {
 				mEndPoints[axis][indexLimitEndPoint + 2] = new EndPoint();
 			}
 			final EndPoint newMaxLimitEndPoint = mEndPoints[axis][indexLimitEndPoint + 2];
 			newMaxLimitEndPoint.setValues(maxLimitEndPoint.getBoxID(), maxLimitEndPoint.isMin(),
-					maxLimitEndPoint.getValue());
+										  maxLimitEndPoint.getValue());
 		}
 		if (mBoxes[boxIndex] == null) {
 			mBoxes[boxIndex] = new BoxAABB();
@@ -115,7 +116,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 		box.setBody(body);
 		final long minEndPointValue = encodeFloatIntoInteger(Float.MAX_VALUE) - 2;
 		final long maxEndPointValue = encodeFloatIntoInteger(Float.MAX_VALUE) - 1;
-		for (int axis = 0; axis < 3; axis++) {
+		for (int axis = 0 ; axis < 3 ; axis++) {
 			box.getMin()[axis] = indexLimitEndPoint;
 			box.getMax()[axis] = indexLimitEndPoint + 1;
 			final EndPoint minimumEndPoint = mEndPoints[axis][box.getMin()[axis]];
@@ -138,7 +139,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 		final AABB aabb = new AABB(maxVector, maxVector);
 		updateObject(body, aabb);
 		final int indexLimitEndPoint = 2 * mNbBoxes + NB_SENTINELS - 1;
-		for (int axis = 0; axis < 3; axis++) {
+		for (int axis = 0 ; axis < 3 ; axis++) {
 			mEndPoints[axis][indexLimitEndPoint - 2] = mEndPoints[axis][indexLimitEndPoint];
 			mEndPoints[axis][indexLimitEndPoint - 1] = null;
 			mEndPoints[axis][indexLimitEndPoint] = null;
@@ -154,7 +155,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 		final AABBInt aabbInt = new AABBInt(aabb);
 		final int boxIndex = mMapBodyToBoxIndex.get(body);
 		final BoxAABB box = mBoxes[boxIndex];
-		for (int axis = 0; axis < 3; axis++) {
+		for (int axis = 0 ; axis < 3 ; axis++) {
 			final int otherAxis1 = (1 << axis) & 3;
 			final int otherAxis2 = (1 << otherAxis1) & 3;
 			final EndPoint[] startEndPointsCurrentAxis = mEndPoints[axis];
@@ -175,8 +176,8 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 					final boolean isMin = currentMinEndPoint.isMin();
 					if (!isMin) {
 						if (!box.equals(id1) && (box.getBody().isMotionEnabled() || id1.getBody().isMotionEnabled())) {
-							if (testIntersect2D(box, id1, otherAxis1, otherAxis2) &&
-									testIntersect1DSortedAABBs(id1, aabbInt, startEndPointsCurrentAxis, axis)) {
+							if (testIntersect2D(box, id1, otherAxis1, otherAxis2)
+									&& testIntersect1DSortedAABBs(id1, aabbInt, startEndPointsCurrentAxis, axis)) {
 								mPairManager.addPair(body, id1.getBody());
 							}
 						}
@@ -240,8 +241,8 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 					final boolean isMin = currentMaxEndPoint.isMin();
 					if (isMin) {
 						if (!box.equals(id1) && (box.getBody().isMotionEnabled() || id1.getBody().isMotionEnabled())) {
-							if (testIntersect2D(box, id1, otherAxis1, otherAxis2) &&
-									testIntersect1DSortedAABBs(id1, aabbInt, startEndPointsCurrentAxis, axis)) {
+							if (testIntersect2D(box, id1, otherAxis1, otherAxis2)
+									&& testIntersect1DSortedAABBs(id1, aabbInt, startEndPointsCurrentAxis, axis)) {
 								mPairManager.addPair(body, id1.getBody());
 							}
 						}
@@ -354,12 +355,13 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 	// we know the that two boxes already overlap on one axis and when we want to test if they
 	// also overlap on the two others axes.
 	private static boolean testIntersect2D(BoxAABB box1, BoxAABB box2, int axis1, int axis2) {
-		return !(box2.getMax()[axis1] < box1.getMin()[axis1] || box1.getMax()[axis1] < box2.getMin()[axis1] ||
-				box2.getMax()[axis2] < box1.getMin()[axis2] || box1.getMax()[axis2] < box2.getMin()[axis2]);
+		return !(box2.getMax()[axis1] < box1.getMin()[axis1] || box1.getMax()[axis1] < box2.getMin()[axis1]
+				|| box2.getMax()[axis2] < box1.getMin()[axis2] || box1.getMax()[axis2] < box2.getMin()[axis2]);
 	}
 
 	// Represents an end-point of an AABB on one of the three x,y or z axis.
 	private static class EndPoint {
+
 		private int boxID;
 		private boolean isMin;
 		private long value;
@@ -394,6 +396,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 
 	// Represents an AABB in the Sweep-And-Prune algorithm
 	private static class BoxAABB {
+
 		private final int[] min = new int[3];
 		private final int[] max = new int[3];
 		private CollisionBody body;
@@ -439,6 +442,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 
 	// Represents an AABB with integer coordinates.
 	private static class AABBInt {
+
 		private final long[] min = new long[3];
 		private final long[] max = new long[3];
 
@@ -451,10 +455,15 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 		}
 
 		private AABBInt(AABB aabb) {
-			for (int axis = 0; axis < 3; axis++) {
-				min[axis] = encodeFloatIntoInteger(aabb.getMin().get(axis));
-				max[axis] = encodeFloatIntoInteger(aabb.getMax().get(axis));
-			}
+			//Set X
+			min[0] = encodeFloatIntoInteger(aabb.getMin().getX());
+			max[0] = encodeFloatIntoInteger(aabb.getMax().getX());
+			//Set Y
+			min[1] = encodeFloatIntoInteger(aabb.getMin().getY());
+			max[1] = encodeFloatIntoInteger(aabb.getMax().getY());
+			//Set Z
+			min[2] = encodeFloatIntoInteger(aabb.getMin().getZ());
+			max[2] = encodeFloatIntoInteger(aabb.getMax().getZ());
 		}
 	}
 }

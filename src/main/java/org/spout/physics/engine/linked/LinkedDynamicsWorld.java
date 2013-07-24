@@ -29,10 +29,10 @@ package org.spout.physics.engine.linked;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import org.spout.math.vector.Vector3;
 
 import org.spout.physics.body.ImmobileRigidBody;
 import org.spout.physics.engine.DynamicsWorld;
-import org.spout.physics.math.Vector3;
 
 /**
  * Represents a dynamics world linked to another world. Information is shared between them through

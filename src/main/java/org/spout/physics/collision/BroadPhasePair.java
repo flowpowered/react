@@ -26,9 +26,9 @@
  */
 package org.spout.physics.collision;
 
+import org.spout.math.vector.Vector3;
 import org.spout.physics.Utilities.IntPair;
 import org.spout.physics.body.CollisionBody;
-import org.spout.physics.math.Vector3;
 
 /**
  * Represents a pair of bodies during the broad-phase collision detection.
@@ -36,7 +36,7 @@ import org.spout.physics.math.Vector3;
 public class BroadPhasePair {
 	private CollisionBody body1;
 	private CollisionBody body2;
-	private final Vector3 previousSeparatingAxis = new Vector3(1, 1, 1);
+	private Vector3 previousSeparatingAxis = new Vector3(1, 1, 1);
 
 	/**
 	 * Constructs a new broad phase pair from the first and the second body.
@@ -79,7 +79,7 @@ public class BroadPhasePair {
 	 * @param previousSeparatingAxis The axis to set
 	 */
 	public void setPreviousSeparatingAxis(Vector3 previousSeparatingAxis) {
-		this.previousSeparatingAxis.set(previousSeparatingAxis);
+		this.previousSeparatingAxis = previousSeparatingAxis;
 	}
 
 	/**

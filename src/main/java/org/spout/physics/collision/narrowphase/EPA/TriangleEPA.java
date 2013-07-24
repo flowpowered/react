@@ -26,7 +26,7 @@
  */
 package org.spout.physics.collision.narrowphase.EPA;
 
-import org.spout.physics.math.Vector3;
+import org.spout.math.vector.Vector3;
 
 /**
  * Represents a triangle face for the current polytope in the EPA algorithm.
@@ -36,7 +36,7 @@ public class TriangleEPA {
 	private final EdgeEPA[] mAdjacentEdges = new EdgeEPA[3];
 	private boolean mIsObsolete = false;
 	private float mDet;
-	private final Vector3 mClosestPoint = new Vector3();
+	private Vector3 mClosestPoint;
 	private float mLambda1;
 	private float mLambda2;
 	private float mDistSquare;
@@ -144,7 +144,7 @@ public class TriangleEPA {
 	 * @return True if the triangle is visible, false if not
 	 */
 	public boolean isVisibleFromVertex(Vector3[] vertices, int index) {
-		final Vector3 closestToVert = Vector3.subtract(vertices[index], mClosestPoint);
+		final Vector3 closestToVert = vertices[index].sub(mClosestPoint);
 		return mClosestPoint.dot(closestToVert) > 0;
 	}
 
@@ -156,10 +156,9 @@ public class TriangleEPA {
 	 */
 	public Vector3 computeClosestPointOfObject(Vector3[] supportPointsOfObject) {
 		final Vector3 p0 = supportPointsOfObject[mIndicesVertices[0]];
-		return Vector3.add(p0, Vector3.multiply(1 / mDet, Vector3.add(
-				Vector3.multiply(mLambda1, Vector3.subtract(supportPointsOfObject[mIndicesVertices[1]], p0)),
-				Vector3.multiply(mLambda2, Vector3.subtract(supportPointsOfObject[mIndicesVertices[2]], p0))
-		)));
+		final Vector3 p1 = supportPointsOfObject[mIndicesVertices[1]].sub(p0).mul(mLambda1);
+		final Vector3 p2 = supportPointsOfObject[mIndicesVertices[2]].sub(p0).mul(mLambda2);
+		return p0.add(p1.add(p2).mul(1 / mDet));
 	}
 
 	/**
@@ -184,8 +183,8 @@ public class TriangleEPA {
 	 */
 	public boolean computeClosestPoint(Vector3[] vertices) {
 		final Vector3 p0 = vertices[mIndicesVertices[0]];
-		final Vector3 v1 = Vector3.subtract(vertices[mIndicesVertices[1]], p0);
-		final Vector3 v2 = Vector3.subtract(vertices[mIndicesVertices[2]], p0);
+		final Vector3 v1 = vertices[mIndicesVertices[1]].sub(p0);
+		final Vector3 v2 = vertices[mIndicesVertices[2]].sub(p0);
 		final float v1Dotv1 = v1.dot(v1);
 		final float v1Dotv2 = v1.dot(v2);
 		final float v2Dotv2 = v2.dot(v2);
@@ -195,9 +194,7 @@ public class TriangleEPA {
 		mLambda1 = p0Dotv2 * v1Dotv2 - p0Dotv1 * v2Dotv2;
 		mLambda2 = p0Dotv1 * v1Dotv2 - p0Dotv2 * v1Dotv1;
 		if (mDet > 0) {
-			mClosestPoint.set(Vector3.add(p0, Vector3.multiply(1 / mDet, Vector3.add(
-					Vector3.multiply(mLambda1, v1),
-					Vector3.multiply(mLambda2, v2)))));
+			mClosestPoint = p0.add(v1.mul(mLambda1).add(v2.mul(mLambda2)).mul(1 / mDet));
 			mDistSquare = mClosestPoint.dot(mClosestPoint);
 			return true;
 		}

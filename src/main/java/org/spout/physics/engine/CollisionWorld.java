@@ -33,6 +33,7 @@ import java.util.Set;
 
 import gnu.trove.stack.TIntStack;
 import gnu.trove.stack.array.TIntArrayStack;
+import org.spout.math.vector.Vector3;
 
 import org.spout.physics.Utilities.IntPair;
 import org.spout.physics.body.CollisionBody;
@@ -42,7 +43,6 @@ import org.spout.physics.collision.CollisionListener;
 import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.RayCaster;
 import org.spout.physics.collision.RayCaster.IntersectedBody;
-import org.spout.physics.math.Vector3;
 
 /**
  * Represents a world where it is possible to move bodies by hand and to test collisions between

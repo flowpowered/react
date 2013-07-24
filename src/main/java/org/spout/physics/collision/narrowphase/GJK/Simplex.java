@@ -26,7 +26,8 @@
  */
 package org.spout.physics.collision.narrowphase.GJK;
 
-import org.spout.physics.math.Vector3;
+import org.spout.math.vector.Vector3;
+
 
 /**
  * Represents a simplex which is a set of 3D points. This class is used in the GJK algorithm. This
@@ -111,13 +112,13 @@ public class Simplex {
 		if (mLastFound < 0 && mLastFound >= 4) {
 			throw new IllegalStateException("lastFount must be greater or equal to zero and smaller than four");
 		}
-		mPoints[mLastFound].set(point);
+		mPoints[mLastFound] = point;
 		mPointsLengthSquare[mLastFound] = point.dot(point);
 		mAllBits = mBitsCurrentSimplex | mLastFoundBit;
 		updateCache();
 		computeDeterminants();
-		mSuppPointsA[mLastFound].set(suppPointA);
-		mSuppPointsB[mLastFound].set(suppPointB);
+		mSuppPointsA[mLastFound] = suppPointA;
+		mSuppPointsB[mLastFound] = suppPointB;
 	}
 
 	/**
@@ -139,8 +140,8 @@ public class Simplex {
 	private void updateCache() {
 		for (int i = 0, bit = 0x1; i < 4; i++, bit <<= 1) {
 			if (overlap(mBitsCurrentSimplex, bit)) {
-				mDiffLength[i][mLastFound] = Vector3.subtract(mPoints[i], mPoints[mLastFound]);
-				mDiffLength[mLastFound][i] = Vector3.negate(mDiffLength[i][mLastFound]);
+				mDiffLength[i][mLastFound] = mPoints[i].sub(mPoints[mLastFound]);
+				mDiffLength[mLastFound][i] = mDiffLength[i][mLastFound].negate();
 				mNormSquare[i][mLastFound] = mNormSquare[mLastFound][i] = mDiffLength[i][mLastFound].dot(mDiffLength[i][mLastFound]);
 			}
 		}
@@ -280,21 +281,21 @@ public class Simplex {
 	 */
 	public void computeClosestPointsOfAAndB(Vector3 pA, Vector3 pB) {
 		float deltaX = 0;
-		pA.setAllValues(0, 0, 0);
-		pB.setAllValues(0, 0, 0);
+		pA = Vector3.ZERO;
+		pB = Vector3.ZERO;
 		for (int i = 0, bit = 0x1; i < 4; i++, bit <<= 1) {
 			if (overlap(mBitsCurrentSimplex, bit)) {
 				deltaX += mDet[mBitsCurrentSimplex][i];
-				pA.add(Vector3.multiply(mDet[mBitsCurrentSimplex][i], mSuppPointsA[i]));
-				pB.add(Vector3.multiply(mDet[mBitsCurrentSimplex][i], mSuppPointsB[i]));
+				pA.add(mSuppPointsA[i].mul(mDet[mBitsCurrentSimplex][i]));
+				pB.add(mSuppPointsB[i].mul(mDet[mBitsCurrentSimplex][i]));
 			}
 		}
 		if (deltaX <= 0) {
 			throw new IllegalStateException("deltaX must be greater than zero");
 		}
 		final float factor = 1 / deltaX;
-		pA.multiply(factor);
-		pB.multiply(factor);
+		pA.mul(factor);
+		pB.mul(factor);
 	}
 
 	/**
@@ -310,14 +311,14 @@ public class Simplex {
 		for (int subset = mBitsCurrentSimplex; subset != 0x0; subset--) {
 			if (isSubset(subset, mBitsCurrentSimplex) && isValidSubset(subset | mLastFoundBit)) {
 				mBitsCurrentSimplex = subset | mLastFoundBit;
-				v.set(computeClosestPointForSubset(mBitsCurrentSimplex));
+				v = computeClosestPointForSubset(mBitsCurrentSimplex);
 				return true;
 			}
 		}
 		if (isValidSubset(mLastFoundBit)) {
 			mBitsCurrentSimplex = mLastFoundBit;
 			mMaxLengthSquare = mPointsLengthSquare[mLastFound];
-			v.set(mPoints[mLastFound]);
+			v = mPoints[mLastFound];
 			return true;
 		}
 		return false;
@@ -337,7 +338,7 @@ public class Simplex {
 				if (distSquare < minDistSquare) {
 					minDistSquare = distSquare;
 					mBitsCurrentSimplex = bit;
-					v.set(u);
+					v = u;
 				}
 			}
 		}
@@ -355,13 +356,13 @@ public class Simplex {
 				if (mMaxLengthSquare < mPointsLengthSquare[i]) {
 					mMaxLengthSquare = mPointsLengthSquare[i];
 				}
-				v.add(Vector3.multiply(mDet[subset][i], mPoints[i]));
+				v.add(mPoints[i].mul(mDet[subset][i]));
 			}
 		}
 		if (deltaX <= 0) {
 			throw new IllegalStateException("deltaX must be greater than zero");
 		}
-		return Vector3.multiply(1 / deltaX, v);
+		return v.mul(1 / deltaX);
 	}
 
 	// Returns true if some bits of "a" overlap with bits of "b".

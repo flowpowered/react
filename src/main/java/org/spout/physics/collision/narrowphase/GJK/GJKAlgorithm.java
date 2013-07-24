@@ -26,14 +26,14 @@
  */
 package org.spout.physics.collision.narrowphase.GJK;
 
+import org.spout.math.matrix.Matrix3;
+import org.spout.math.vector.Vector3;
 import org.spout.physics.ReactDefaults;
 import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.narrowphase.EPA.EPAAlgorithm;
 import org.spout.physics.collision.narrowphase.NarrowPhaseAlgorithm;
 import org.spout.physics.collision.shape.CollisionShape;
-import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Transform;
-import org.spout.physics.math.Vector3;
 
 /**
  * This class implements a narrow-phase collision detection algorithm. This algorithm uses the
@@ -55,17 +55,15 @@ public class GJKAlgorithm extends NarrowPhaseAlgorithm {
 	public boolean testCollision(CollisionShape collisionShape1, Transform transform1,
 								 CollisionShape collisionShape2, Transform transform2,
 								 ContactInfo contactInfo) {
-		final Vector3 suppA = new Vector3();
-		final Vector3 suppB = new Vector3();
-		final Vector3 w = new Vector3();
-		final Vector3 pA = new Vector3();
-		final Vector3 pB = new Vector3();
+		Vector3 suppA;
+		Vector3 suppB;
+		Vector3 w;
+		Vector3 pA = null;
+		Vector3 pB = null;
 		float vDotw;
 		float prevDistSquare;
 		final Transform body2ToBody1 = Transform.multiply(transform1.inverse(), transform2);
-		final Matrix3x3 rotateToBody2 = Matrix3x3.multiply(
-				transform2.getOrientation().getMatrix().getTranspose(),
-				transform1.getOrientation().getMatrix());
+		final Matrix3 rotateToBody2 = transform2.getOrientation().toMatrix3().transpose().mul(transform1.getOrientation().toMatrix3());
 		final float margin = collisionShape1.getMargin() + collisionShape2.getMargin();
 		final float marginSquare = margin * margin;
 		if (margin <= 0) {
@@ -75,9 +73,9 @@ public class GJKAlgorithm extends NarrowPhaseAlgorithm {
 		final Vector3 v = mCurrentOverlappingPair.getPreviousSeparatingAxis();
 		float distSquare = Float.MAX_VALUE;
 		do {
-			suppA.set(collisionShape1.getLocalSupportPointWithoutMargin(Vector3.negate(v)));
-			suppB.set(Transform.multiply(body2ToBody1, collisionShape2.getLocalSupportPointWithoutMargin(Matrix3x3.multiply(rotateToBody2, v))));
-			w.set(Vector3.subtract(suppA, suppB));
+			suppA = collisionShape1.getLocalSupportPointWithoutMargin(v.negate());
+			suppB = Transform.multiply(body2ToBody1, collisionShape2.getLocalSupportPointWithoutMargin(rotateToBody2.transform(v)));
+			w = suppA.sub(suppB);
 			vDotw = v.dot(w);
 			if (vDotw > 0 && vDotw * vDotw > distSquare * marginSquare) {
 				mCurrentOverlappingPair.setPreviousSeparatingAxis(v);
@@ -89,9 +87,9 @@ public class GJKAlgorithm extends NarrowPhaseAlgorithm {
 				if (dist <= 0) {
 					throw new IllegalStateException("dist must be greater than zero");
 				}
-				pA.set(Vector3.subtract(pA, Vector3.multiply(collisionShape1.getMargin() / dist, v)));
-				pB.set(Transform.multiply(body2ToBody1.inverse(), Vector3.add(pB, Vector3.multiply(collisionShape2.getMargin() / dist, v))));
-				final Vector3 normal = Matrix3x3.multiply(transform1.getOrientation().getMatrix(), Vector3.negate(v.getUnit()));
+				pA = pA.sub(v.mul(collisionShape1.getMargin() / dist));
+				pB = Transform.multiply(body2ToBody1.inverse(), pB.add(v.mul(collisionShape2.getMargin() / dist)));
+				final Vector3 normal = transform1.getOrientation().toMatrix3().transform(v.normalize().negate());
 				final float penetrationDepth = margin - dist;
 				if (penetrationDepth <= 0) {
 					return false;
@@ -106,9 +104,9 @@ public class GJKAlgorithm extends NarrowPhaseAlgorithm {
 				if (dist <= 0) {
 					throw new IllegalStateException("dist must be greater than zero");
 				}
-				pA.set(Vector3.subtract(pA, Vector3.multiply(collisionShape1.getMargin() / dist, v)));
-				pB.set(Transform.multiply(body2ToBody1.inverse(), Vector3.add(pB, Vector3.multiply(collisionShape2.getMargin() / dist, v))));
-				final Vector3 normal = Matrix3x3.multiply(transform1.getOrientation().getMatrix(), Vector3.negate(v.getUnit()));
+				pA = pA.sub(v.mul(collisionShape1.getMargin() / dist));
+				pB = Transform.multiply(body2ToBody1.inverse(), pB.add(v.mul(collisionShape2.getMargin() / dist)));
+				final Vector3 normal = transform1.getOrientation().toMatrix3().transform(v.normalize().negate());
 				final float penetrationDepth = margin - dist;
 				if (penetrationDepth <= 0) {
 					return false;
@@ -122,9 +120,9 @@ public class GJKAlgorithm extends NarrowPhaseAlgorithm {
 				if (dist <= 0) {
 					throw new IllegalStateException("dist must be greater than zero");
 				}
-				pA.set(Vector3.subtract(pA, Vector3.multiply(collisionShape1.getMargin() / dist, v)));
-				pB.set(Transform.multiply(body2ToBody1.inverse(), Vector3.add(pB, Vector3.multiply(collisionShape2.getMargin() / dist, v))));
-				final Vector3 normal = Matrix3x3.multiply(transform1.getOrientation().getMatrix(), Vector3.negate(v.getUnit()));
+				pA = pA.sub(v.mul(collisionShape1.getMargin() / dist));
+				pB = Transform.multiply(body2ToBody1.inverse(), pB.add(v.mul(collisionShape2.getMargin() / dist)));
+				final Vector3 normal = transform1.getOrientation().toMatrix3().transform(v.normalize().negate());
 				final float penetrationDepth = margin - dist;
 				if (penetrationDepth <= 0) {
 					return false;
@@ -133,18 +131,18 @@ public class GJKAlgorithm extends NarrowPhaseAlgorithm {
 				return true;
 			}
 			prevDistSquare = distSquare;
-			distSquare = v.lengthSquare();
+			distSquare = v.lengthSquared();
 			if (prevDistSquare - distSquare <= ReactDefaults.MACHINE_EPSILON * prevDistSquare) {
 				simplex.backupClosestPointInSimplex(v);
-				distSquare = v.lengthSquare();
+				distSquare = v.lengthSquared();
 				simplex.computeClosestPointsOfAAndB(pA, pB);
 				final float dist = (float) Math.sqrt(distSquare);
 				if (dist <= 0) {
 					throw new IllegalStateException("dist must be greater than zero");
 				}
-				pA.set(Vector3.subtract(pA, Vector3.multiply(collisionShape1.getMargin() / dist, v)));
-				pB.set(Transform.multiply(body2ToBody1.inverse(), Vector3.add(pB, Vector3.multiply(collisionShape2.getMargin() / dist, v))));
-				final Vector3 normal = Matrix3x3.multiply(transform1.getOrientation().getMatrix(), Vector3.negate(v.getUnit()));
+				pA = pA.sub(v.mul(collisionShape1.getMargin() / dist));
+				pB = Transform.multiply(body2ToBody1.inverse(), pB.add(v.mul(collisionShape2.getMargin() / dist)));
+				final Vector3 normal = transform1.getOrientation().toMatrix3().transform(v.normalize().negate());
 				final float penetrationDepth = margin - dist;
 				if (penetrationDepth <= 0) {
 					return false;
@@ -166,20 +164,18 @@ public class GJKAlgorithm extends NarrowPhaseAlgorithm {
 															  CollisionShape collisionShape2, Transform transform2,
 															  ContactInfo contactInfo, Vector3 v) {
 		final Simplex simplex = new Simplex();
-		final Vector3 suppA = new Vector3();
-		final Vector3 suppB = new Vector3();
-		final Vector3 w = new Vector3();
 		float vDotw;
 		float distSquare = Float.MAX_VALUE;
 		float prevDistSquare;
 		final Transform body2ToBody1 = Transform.multiply(transform1.inverse(), transform2);
-		final Matrix3x3 rotateToBody2 = Matrix3x3.multiply(
-				transform2.getOrientation().getMatrix().getTranspose(),
-				transform1.getOrientation().getMatrix());
+		final Matrix3 rotateToBody2 = transform2.getOrientation().toMatrix3().transpose().mul(transform1.getOrientation().toMatrix3());
+		Vector3 suppA;
+		Vector3 suppB;
+		Vector3 w;
 		do {
-			suppA.set(collisionShape1.getLocalSupportPointWithMargin(Vector3.negate(v)));
-			suppB.set(Transform.multiply(body2ToBody1, collisionShape2.getLocalSupportPointWithMargin(Matrix3x3.multiply(rotateToBody2, v))));
-			w.set(Vector3.subtract(suppA, suppB));
+			suppA = collisionShape1.getLocalSupportPointWithMargin(v.negate());
+			suppB = Transform.multiply(body2ToBody1, collisionShape2.getLocalSupportPointWithMargin(rotateToBody2.transform(v)));
+			w = suppA.sub(suppB);
 			vDotw = v.dot(w);
 			if (vDotw > 0) {
 				return false;
@@ -193,7 +189,7 @@ public class GJKAlgorithm extends NarrowPhaseAlgorithm {
 				return false;
 			}
 			prevDistSquare = distSquare;
-			distSquare = v.lengthSquare();
+			distSquare = v.lengthSquared();
 			if (prevDistSquare - distSquare <= ReactDefaults.MACHINE_EPSILON * prevDistSquare) {
 				return false;
 			}
