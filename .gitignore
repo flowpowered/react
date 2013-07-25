@@ -1,16 +1,16 @@
-# Build files #
-###############
+# Build #
+#########
 MANIFEST.MF
 dependency-reduced-pom.xml
 
-# Compiled source #
-###################
-/bin
-/build
-/dist
-/lib
-/out
-/target
+# Compiled #
+############
+bin
+build
+dist
+lib
+out
+target
 *.com
 *.class
 *.dll
@@ -35,27 +35,27 @@ dependency-reduced-pom.xml
 *.tar
 *.zip
 
-# Repository files #
-####################
+# Repository #
+##############
 .git
 
-# Log files #
-#############
+# Logging #
+###########
+/logs
 *.log
 
-# Miscellaneous #
-#################
+# Misc #
+########
 *.bak
 
-# OS generated #
-################
+# System #
+##########
 .DS_Store
 ehthumbs.db
-Icon?
 Thumbs.db
 
-# Project files #
-#################
+# Project #
+###########
 .classpath
 .externalToolBuilders
 .idea
@@ -68,3 +68,15 @@ nb-configuration.xml
 *.iml
 *.ipr
 *.iws
+
+# Runtime #
+###########
+/cache
+/config
+/data
+/natives
+/plugins
+/resources
+/update
+/updates
+/worlds
