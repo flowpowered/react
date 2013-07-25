@@ -21,7 +21,7 @@
 	<!-- Build properties -->
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<buildNumber>0</buildNumber><!-- DO NOT TOUCH! -->
+		<buildNumber>0</buildNumber>
 	</properties>
 
 	<!-- Organization information -->
@@ -41,6 +41,11 @@
 			<id>Wulfspider</id>
 			<name>Luke Spragg</name>
 			<email>the@wulf.im</email>
+		</developer>
+		<developer>
+			<id>Zidane</id>
+			<name>Chris Sanders</name>
+			<email>zidane@outlook.com</email>
 		</developer>
 	</developers>
 
