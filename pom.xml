@@ -78,7 +78,19 @@
 		<url>http://spoutdev.atlassian.net/browse/REACT</url>
 	</issueManagement>
 
-    <!-- Project dependencies -->
+	<!-- Dependency repositories -->
+	<repositories>
+		<repository>
+			<id>spout-repo</id>
+			<url>http://nexus.spout.org/content/groups/public/</url>
+			<snapshots>
+				<enabled>true</enabled>
+				<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<!-- Project dependencies -->
 	<dependencies>
 		<!-- Include in final JAR -->
 		<dependency>
