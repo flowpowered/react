@@ -179,7 +179,6 @@
 				<executions>
 					<execution>
 						<configuration>
-							<createDependencyReducedPom>false</createDependencyReducedPom>
 							<minimizeJar>true</minimizeJar>
 							<filters>
 								<filter>
