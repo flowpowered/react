@@ -35,6 +35,8 @@ import gnu.trove.map.hash.TObjectIntHashMap;
 
 import org.spout.physics.ReactDefaults;
 import org.spout.physics.Utilities.IntPair;
+import org.spout.physics.body.GhostImmobileRigidBody;
+import org.spout.physics.body.GhostMobileRigidBody;
 import org.spout.physics.body.ImmobileRigidBody;
 import org.spout.physics.body.MobileRigidBody;
 import org.spout.physics.body.RigidBody;
@@ -393,10 +395,8 @@ public class DynamicsWorld extends CollisionWorld {
 	 * @param collisionShape The collision shape
 	 * @return The new rigid body
 	 */
-	public ImmobileRigidBody createImmobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal,
-													 CollisionShape collisionShape) {
-		final ImmobileRigidBody immobileBody = new ImmobileRigidBody(transform, mass, inertiaTensorLocal,
-				collisionShape, getNextFreeID());
+	public ImmobileRigidBody createImmobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape) {
+		final ImmobileRigidBody immobileBody = new ImmobileRigidBody(transform, mass, inertiaTensorLocal, collisionShape, getNextFreeID());
 		addRigidBody(immobileBody);
 		return immobileBody;
 	}
@@ -425,12 +425,70 @@ public class DynamicsWorld extends CollisionWorld {
 	 * @param collisionShape The collision shape
 	 * @return The new rigid body
 	 */
-	public MobileRigidBody createMobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal,
-												 CollisionShape collisionShape) {
-		final MobileRigidBody mobileBody = new MobileRigidBody(transform, mass, inertiaTensorLocal,
-				collisionShape, getNextFreeID());
+	public MobileRigidBody createMobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape) {
+		final MobileRigidBody mobileBody = new MobileRigidBody(transform, mass, inertiaTensorLocal, collisionShape, getNextFreeID());
 		addRigidBody(mobileBody);
 		return mobileBody;
+	}
+
+	/**
+	 * Creates a ghost immobile rigid body and adds it to the physics world. The inertia tensor will be
+	 * computed from the shape and mass.
+	 *
+	 * @param transform The transform (position and orientation) of the body
+	 * @param mass The mass of the body
+	 * @param collisionShape The collision shape
+	 * @return The new rigid body
+	 */
+	public GhostImmobileRigidBody createGhostImmobileRigidBody(Transform transform, float mass, CollisionShape collisionShape) {
+		final Matrix3x3 inertiaTensor = new Matrix3x3();
+		collisionShape.computeLocalInertiaTensor(inertiaTensor, mass);
+		return createGhostImmobileRigidBody(transform, mass, inertiaTensor, collisionShape);
+	}
+
+	/**
+	 * Creates a ghost immobile rigid body and adds it to the physics world.
+	 *
+	 * @param transform The transform (position and orientation) of the body
+	 * @param mass The mass of the body
+	 * @param inertiaTensorLocal The local inertia tensor
+	 * @param collisionShape The collision shape
+	 * @return The new rigid body
+	 */
+	public GhostImmobileRigidBody createGhostImmobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape) {
+		final GhostImmobileRigidBody ghostBody = new GhostImmobileRigidBody(transform, mass, inertiaTensorLocal, collisionShape, getNextFreeID());
+		addRigidBody(ghostBody);
+		return ghostBody;
+	}
+
+	/**
+	 * Creates a ghost mobile rigid body and adds it to the physics world. The inertia tensor will be
+	 * computed from the shape and mass.
+	 *
+	 * @param transform The transform (position and orientation) of the body
+	 * @param mass The mass of the body
+	 * @param collisionShape The collision shape
+	 * @return The new rigid body
+	 */
+	public GhostMobileRigidBody createGhostMobileRigidBody(Transform transform, float mass, CollisionShape collisionShape) {
+		final Matrix3x3 inertiaTensor = new Matrix3x3();
+		collisionShape.computeLocalInertiaTensor(inertiaTensor, mass);
+		return createGhostMobileRigidBody(transform, mass, inertiaTensor, collisionShape);
+	}
+
+	/**
+	 * Creates a ghost mobile rigid body and adds it to the physics world.
+	 *
+	 * @param transform The transform (position and orientation) of the body
+	 * @param mass The mass of the body
+	 * @param inertiaTensorLocal The local inertia tensor
+	 * @param collisionShape The collision shape
+	 * @return The new rigid body
+	 */
+	public GhostMobileRigidBody createGhostMobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape) {
+		final GhostMobileRigidBody ghostBody = new GhostMobileRigidBody(transform, mass, inertiaTensorLocal, collisionShape, getNextFreeID());
+		addRigidBody(ghostBody);
+		return ghostBody;
 	}
 
 	// Adds a rigid body to the body collections and the collision detection.
