@@ -245,6 +245,16 @@ public class DynamicsWorld extends CollisionWorld {
 		}
 		applyGravity();
 		setInterpolationFactorToAllBodies();
+		resetTorque();
+	}
+
+	private void resetTorque() {
+		for (RigidBody rigidBody : getRigidBodies()) {
+			if (rigidBody == null) {
+				throw new IllegalStateException("rigid body cannot be null");
+			}
+			rigidBody.setExternalTorque(new Vector3(0f, 0f, 0f));
+		}
 	}
 
 	/**
