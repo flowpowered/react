@@ -114,4 +114,9 @@ public class MobileRigidBody extends ImmobileRigidBody {
 	public void setMotionEnabled(boolean isMotionEnabled) {
 		mIsMotionEnabled = isMotionEnabled;
 	}
+
+	@Override
+	public String toString() {
+		return "MobileRigidBody{id= " + getID() + ", transform= " + getTransform() + ", mass=" + getMass() + ", aabb= " + getAABB() + "}";
+	}
 }

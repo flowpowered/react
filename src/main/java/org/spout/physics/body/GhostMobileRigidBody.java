@@ -48,4 +48,9 @@ public class GhostMobileRigidBody extends MobileRigidBody {
 	public GhostMobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape, int id) {
 		super(transform, mass, inertiaTensorLocal, collisionShape, id);
 	}
+
+	@Override
+	public String toString() {
+		return "GhostMobileRigidBody{id= " + getID() + ", transform= " + getTransform() + ", mass=" + getMass() + ", aabb= " + getAABB() + "}";
+	}
 }
