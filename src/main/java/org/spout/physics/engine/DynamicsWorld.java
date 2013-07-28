@@ -65,6 +65,10 @@ public class DynamicsWorld extends CollisionWorld {
 	private final Vector<Vector3> mConstrainedLinearVelocities = new Vector<Vector3>();
 	private final Vector<Vector3> mConstrainedAngularVelocities = new Vector<Vector3>();
 	private final TObjectIntMap<RigidBody> mMapBodyToConstrainedVelocityIndex = new TObjectIntHashMap<RigidBody>();
+	private boolean isTicking = false;
+	//Tick cache
+	private final Set<RigidBody> mRigidBodiesToAddCache = new HashSet<RigidBody>();
+	private final Set<RigidBody> mRigidBodiesToDeleteCache = new HashSet<RigidBody>();
 
 	/**
 	 * Constructs a new dynamics world from the gravity and the default time step.
@@ -246,6 +250,7 @@ public class DynamicsWorld extends CollisionWorld {
 		applyGravity();
 		setInterpolationFactorToAllBodies();
 		resetTorque();
+		disperseCache();
 	}
 
 	private void resetTorque() {
@@ -266,6 +271,7 @@ public class DynamicsWorld extends CollisionWorld {
 	 * @param dt The time delta
 	 */
 	protected void tick(float dt) {
+		isTicking = true;
 		mContactManifolds.clear();
 		mCollisionDetection.computeCollisionDetection();
 		initConstrainedVelocitiesArray(dt);
@@ -277,6 +283,7 @@ public class DynamicsWorld extends CollisionWorld {
 		updateRigidBodiesPositionAndOrientation(dt);
 		mContactSolver.cleanup();
 		cleanupConstrainedVelocitiesArray();
+		isTicking = false;
 	}
 
 	// Resets the boolean movement variable for each body.
@@ -501,11 +508,21 @@ public class DynamicsWorld extends CollisionWorld {
 		return ghostBody;
 	}
 
-	// Adds a rigid body to the body collections and the collision detection.
-	public void addRigidBody(RigidBody body) {
+	protected void addRigidBodyIgnoreTick(RigidBody body) {
 		mBodies.add(body);
 		mRigidBodies.add(body);
 		mCollisionDetection.addBody(body);
+	}
+
+	// Adds a rigid body to the body collections and the collision detection.
+	public void addRigidBody(RigidBody body) {
+		if (!isTicking) {
+			mBodies.add(body);
+			mRigidBodies.add(body);
+			mCollisionDetection.addBody(body);
+		} else {
+			mRigidBodiesToAddCache.add(body);
+		}
 	}
 
 	/**
@@ -514,10 +531,14 @@ public class DynamicsWorld extends CollisionWorld {
 	 * @param rigidBody The rigid body to destroy
 	 */
 	public void destroyRigidBody(RigidBody rigidBody) {
-		mCollisionDetection.removeBody(rigidBody);
-		mFreeBodiesIDs.push(rigidBody.getID());
-		mBodies.remove(rigidBody);
-		mRigidBodies.remove(rigidBody);
+		if (!isTicking) {
+			mCollisionDetection.removeBody(rigidBody);
+			mFreeBodiesIDs.push(rigidBody.getID());
+			mBodies.remove(rigidBody);
+			mRigidBodies.remove(rigidBody);
+		} else {
+		 	mRigidBodiesToDeleteCache.add(rigidBody);
+		}
 	}
 
 	/**
@@ -568,5 +589,28 @@ public class DynamicsWorld extends CollisionWorld {
 		}
 		overlappingPair.addContact(contact);
 		mContactManifolds.add(overlappingPair.getContactManifold());
+	}
+
+	/**
+	 * Returns if the world is currently undertaking a tick
+	 * @return True if ticking, false if not
+	 */
+	public boolean isTicking() {
+		return isTicking;
+	}
+
+	/**
+	 * Disperses the cache of bodies added/removed during the physics tick.
+	 */
+	public void disperseCache() {
+		for (RigidBody body : mRigidBodiesToAddCache) {
+			addRigidBody(body);
+		}
+
+		for (RigidBody body : mRigidBodiesToDeleteCache) {
+			destroyRigidBody(body);
+		}
+		mRigidBodiesToAddCache.clear();
+		mRigidBodiesToDeleteCache.clear();
 	}
 }
