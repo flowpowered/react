@@ -1,13 +1,11 @@
 language: java
 jdk: oraclejdk7
 
-before_script: "git clone -b travis `git config --get git://github.com/$TRAVIS_REPO_SLUG.git` target/travis"
 script: mvn clean -DbuildNumber=$TRAVIS_BUILD_NUMBER -DciSystem=travis -Dcommit=$TRAVIS_COMMIT
 after_success:
   - export PROJECT_ARTIFACT_ID="`sed -n 's|.*<artifactId>\(.*\)</artifactId>.*|\1|p' $TRAVIS_BUILD_DIR/pom.xml | awk '{ print $1; exit }'`" && echo Project artifactId is $PROJECT_ARTIFACT_ID
   - export PROJECT_NAME="`sed -n 's|.*<name>\(.*\)</name>.*|\1|p' $TRAVIS_BUILD_DIR/pom.xml | awk '{ print $1; exit }'`" && echo Project name is $PROJECT_NAME
   - export PROJECT_VERSION="`sed -n 's|.*<version>\(.*\)</version>.*|\1|p' $TRAVIS_BUILD_DIR/pom.xml | awk '{ print $1; exit }'`" && echo Project version is $PROJECT_VERSION
-  - "[[ \"$TRAVIS_BRANCH\" == \"master\" ]] && mvn deploy --settings target/travis/settings.xml"
 
 notifications:
   email: false
@@ -15,8 +13,3 @@ notifications:
   webhooks:
     - http://get.spout.org/hook
     - http://n.tkte.ch/h/1148/c1ZbS3rufJyzaghnxyW5Iu5e
-
-env:
-  global:
-    - secure: "Li4NUpK09uDNBvRz56d7D/XeMc4sLVWTt4X24P+QizyurI43WUROnTBhd6rZ\n4PsyhzxCDTgHRMnPxrH3bvEjBuurxYvpmFdKxN2msH0aYgI69eLZ7vzkXTCL\nG7EJbmpGapa85WtLb2TFJ1+SD5/S4Ze8FNqQxtfUHGhM6WjDOJk="
-    - secure: "WCcUjLbrtdPKA6G1Tn0E2UIZ39DoZBJQoa5YoJjO80Cto3RIeLjOPqY9Kncf\nMe6nMOGNTk0wGplvjRgicmQaKHXL0lyHXgtJrvlconuSu4BBO5kUPna9ZUi2\nesbyNVceA+IHvJR2V/6Flopd3hEvmyZs+6G5ZJAgUOsV1MORWyA="
