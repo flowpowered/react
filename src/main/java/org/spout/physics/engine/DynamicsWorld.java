@@ -603,13 +603,17 @@ public class DynamicsWorld extends CollisionWorld {
 	 * Disperses the cache of bodies added/removed during the physics tick.
 	 */
 	public void disperseCache() {
-		for (RigidBody body : mRigidBodiesToAddCache) {
-			addRigidBody(body);
-		}
+		//Only add bodies that aren't being removed
+		mRigidBodiesToAddCache.removeAll(mRigidBodiesToDeleteCache);
 
 		for (RigidBody body : mRigidBodiesToDeleteCache) {
 			destroyRigidBody(body);
 		}
+
+		for (RigidBody body : mRigidBodiesToAddCache) {
+			addRigidBody(body);
+		}
+
 		mRigidBodiesToAddCache.clear();
 		mRigidBodiesToDeleteCache.clear();
 	}

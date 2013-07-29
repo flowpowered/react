@@ -68,8 +68,8 @@ public class LinkedDynamicsWorld extends DynamicsWorld {
 	}
 
 	@Override
-	protected void tick(float dt) {
-		super.tick(dt);
+	public void update() {
+		super.update();
 		clearLinkedBodies();
 	}
 
