@@ -22,6 +22,8 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<buildNumber>0</buildNumber>
+		<ciSystem>unknown</ciSystem>
+		<commit>unknown</commit>
 	</properties>
 
 	<!-- Organization information -->
@@ -188,6 +190,30 @@
 					<showDeprecation>true</showDeprecation>
 				</configuration>
 			</plugin>
+			<!-- JAR creation plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>2.4</version>
+				<configuration>
+					<archive>
+						<manifestEntries>
+							<Specification-Title>${project.name}</Specification-Title>
+							<Specification-Version>${project.version}+${ciSystem}-b${buildNumber}.git-${commit}</Specification-Version>
+							<Specification-Vendor>${project.organization.name}</Specification-Vendor>
+							<Sealed>true</Sealed>
+						</manifestEntries>
+						<manifestSections>
+							<manifestSection>
+								<name>org/spout/</name>
+								<manifestEntries>
+									<Sealed>true</Sealed>
+								</manifestEntries>
+							</manifestSection>
+						</manifestSections>
+					</archive>
+				</configuration>
+			</plugin>
 			<!-- Dependency addition plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -233,8 +259,8 @@
 				<version>2.9.1</version>
 				<configuration>
 					<bottom><![CDATA[Copyright (c) {project.inceptionYear} <a href="${project.organization.url}" target="_blank">${project.organization.name}</a>. ${project.name} is licensed under <a href="http://www.gnu.org/licenses/lgpl.html" target="_blank">GNU Lesser General Public License Version 3</a>]]></bottom>
-					<doctitle><![CDATA[${project.name} ${project.version}-b${buildNumber}]]></doctitle>
-					<windowtitle>Javadoc | ${project.name} ${project.version}-b${buildNumber}</windowtitle>
+					<doctitle><![CDATA[${project.name} ${project.version}+${ciSystem}-b${buildNumber}.git-${commit}]]></doctitle>
+					<windowtitle>${project.name} Javadocs</windowtitle>
 					<author>false</author>
 					<version>false</version>
 				</configuration>
