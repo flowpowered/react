@@ -364,10 +364,7 @@ public class Vector3 {
 	}
 
 	/**
-	 * Gets the corresponding float value from this vector based on the requested axis.<br><br>
-	 * <p>
-	 * Valid axis are:<br> {@link Vector3#X_AXIS}<br> {@link Vector3#Y_AXIS}<br> {@link
-	 * Vector3#Z_AXIS}<br>
+	 * Gets the corresponding float value from this vector based on the requested axis.<br><br> <p> Valid axis are:<br> {@link Vector3#X_AXIS}<br> {@link Vector3#Y_AXIS}<br> {@link Vector3#Z_AXIS}<br>
 	 *
 	 * @param axis to get; {@link Vector3#X_AXIS} OR {@link Vector3#Y_AXIS} OR {@link Vector3#Z_AXIS}
 	 * @return {@link float} value of the axis
@@ -385,10 +382,7 @@ public class Vector3 {
 	}
 
 	/**
-	 * Sets the corresponding float value from this vector based on the requested axis.<br><br>
-	 * <p>
-	 * Valid axis are:<br> {@link Vector3#X_AXIS}<br> {@link Vector3#Y_AXIS}<br> {@link
-	 * Vector3#Z_AXIS}<br>
+	 * Sets the corresponding float value from this vector based on the requested axis.<br><br> <p> Valid axis are:<br> {@link Vector3#X_AXIS}<br> {@link Vector3#Y_AXIS}<br> {@link Vector3#Z_AXIS}<br>
 	 *
 	 * @param axis to set; {@link Vector3#X_AXIS} OR {@link Vector3#Y_AXIS} OR {@link Vector3#Z_AXIS}
 	 * @param value {@link float} value for the axis

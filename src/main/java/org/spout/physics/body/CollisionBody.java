@@ -31,8 +31,7 @@ import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.math.Transform;
 
 /**
- * Represents a body that is able to collide with others bodies. This class inherits from the Body
- * class.
+ * Represents a body that is able to collide with others bodies. This class inherits from the Body class.
  */
 public abstract class CollisionBody extends Body {
 	protected CollisionShape mCollisionShape;
@@ -118,11 +117,9 @@ public abstract class CollisionBody extends Body {
 	}
 
 	/**
-	 * Returns an interpolated body from the old to the current transform, based on this body's
-	 * interpolation factor.
+	 * Returns an interpolated body from the old to the current transform, based on this body's interpolation factor.
 	 *
-	 * @return A transform interpolated from the old to the current transform based on the
-	 *         interpolation factor
+	 * @return A transform interpolated from the old to the current transform based on the interpolation factor
 	 */
 	public Transform getInterpolatedTransform() {
 		return Transform.interpolateTransforms(msnapshotTransform, mliveTransform, mInterpolationFactor);
@@ -193,8 +190,7 @@ public abstract class CollisionBody extends Body {
 	}
 
 	/**
-	 * Update the old transform with the current one. This is used to compute the interpolated position
-	 * and orientation of the body.
+	 * Update the old transform with the current one. This is used to compute the interpolated position and orientation of the body.
 	 */
 	public void snapshotTransform() {
 		msnapshotTransform.set(mliveTransform);

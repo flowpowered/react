@@ -51,8 +51,7 @@ import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
 
 /**
- * This class represents a dynamics world. This class inherits from the CollisionWorld class. In a
- * dynamics world bodies can collide and their movements are simulated using the laws of physics.
+ * This class represents a dynamics world. This class inherits from the CollisionWorld class. In a dynamics world bodies can collide and their movements are simulated using the laws of physics.
  */
 public class DynamicsWorld extends CollisionWorld {
 	private final Timer mTimer;
@@ -128,8 +127,7 @@ public class DynamicsWorld extends CollisionWorld {
 	}
 
 	/**
-	 * Activates or deactivates the solving of friction constraints at the center of the contact
-	 * manifold instead of solving them at each contact point.
+	 * Activates or deactivates the solving of friction constraints at the center of the contact manifold instead of solving them at each contact point.
 	 *
 	 * @param isActive Whether or not to solve the friction constraint at the center of the manifold
 	 */
@@ -234,9 +232,8 @@ public class DynamicsWorld extends CollisionWorld {
 	}
 
 	/**
-	 * Updates the physics simulation. The elapsed time is determined by the timer. A step is only
-	 * actually taken if enough time has passed. If a lot of time has passed, more than twice the time
-	 * step, multiple steps will be taken, to catch up.
+	 * Updates the physics simulation. The elapsed time is determined by the timer. A step is only actually taken if enough time has passed. If a lot of time has passed, more than twice the time step,
+	 * multiple steps will be taken, to catch up.
 	 */
 	public void update() {
 		if (!mTimer.isRunning()) {
@@ -263,10 +260,8 @@ public class DynamicsWorld extends CollisionWorld {
 	}
 
 	/**
-	 * Ticks the simulation by the provided time delta. Note that this method should only be called
-	 * externally if the simulation is stopped; to prevent issues with the timer and the {@link
-	 * #update()} method. This method doesn't reapply gravity to bodies or set their interpolation
-	 * factor. This is accomplished by the {@link #update()} method at the end of the update.
+	 * Ticks the simulation by the provided time delta. Note that this method should only be called externally if the simulation is stopped; to prevent issues with the timer and the {@link #update()}
+	 * method. This method doesn't reapply gravity to bodies or set their interpolation factor. This is accomplished by the {@link #update()} method at the end of the update.
 	 *
 	 * @param dt The time delta
 	 */
@@ -389,8 +384,7 @@ public class DynamicsWorld extends CollisionWorld {
 	}
 
 	/**
-	 * Creates an immobile rigid body and adds it to the physics world. The inertia tensor will be
-	 * computed from the shape and mass.
+	 * Creates an immobile rigid body and adds it to the physics world. The inertia tensor will be computed from the shape and mass.
 	 *
 	 * @param transform The transform (position and orientation) of the body
 	 * @param mass The mass of the body
@@ -419,8 +413,7 @@ public class DynamicsWorld extends CollisionWorld {
 	}
 
 	/**
-	 * Creates a mobile rigid body and adds it to the physics world. The inertia tensor will be
-	 * computed from the shape and mass.
+	 * Creates a mobile rigid body and adds it to the physics world. The inertia tensor will be computed from the shape and mass.
 	 *
 	 * @param transform The transform (position and orientation) of the body
 	 * @param mass The mass of the body
@@ -449,8 +442,7 @@ public class DynamicsWorld extends CollisionWorld {
 	}
 
 	/**
-	 * Creates a ghost immobile rigid body and adds it to the physics world. The inertia tensor will be
-	 * computed from the shape and mass.
+	 * Creates a ghost immobile rigid body and adds it to the physics world. The inertia tensor will be computed from the shape and mass.
 	 *
 	 * @param transform The transform (position and orientation) of the body
 	 * @param mass The mass of the body
@@ -479,8 +471,7 @@ public class DynamicsWorld extends CollisionWorld {
 	}
 
 	/**
-	 * Creates a ghost mobile rigid body and adds it to the physics world. The inertia tensor will be
-	 * computed from the shape and mass.
+	 * Creates a ghost mobile rigid body and adds it to the physics world. The inertia tensor will be computed from the shape and mass.
 	 *
 	 * @param transform The transform (position and orientation) of the body
 	 * @param mass The mass of the body
@@ -537,7 +528,7 @@ public class DynamicsWorld extends CollisionWorld {
 			mBodies.remove(rigidBody);
 			mRigidBodies.remove(rigidBody);
 		} else {
-		 	mRigidBodiesToDeleteCache.add(rigidBody);
+			mRigidBodiesToDeleteCache.add(rigidBody);
 		}
 	}
 
@@ -593,6 +584,7 @@ public class DynamicsWorld extends CollisionWorld {
 
 	/**
 	 * Returns if the world is currently undertaking a tick
+	 *
 	 * @return True if ticking, false if not
 	 */
 	public boolean isTicking() {

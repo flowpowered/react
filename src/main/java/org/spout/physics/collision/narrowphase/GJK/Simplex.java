@@ -29,10 +29,8 @@ package org.spout.physics.collision.narrowphase.GJK;
 import org.spout.physics.math.Vector3;
 
 /**
- * Represents a simplex which is a set of 3D points. This class is used in the GJK algorithm. This
- * implementation is based on the implementation discussed in the book "Collision Detection in 3D
- * Environments". This class implements the Johnson's algorithm for computing the point of a simplex
- * that is closest to the origin and  the smallest simplex needed to represent that closest point.
+ * Represents a simplex which is a set of 3D points. This class is used in the GJK algorithm. This implementation is based on the implementation discussed in the book "Collision Detection in 3D
+ * Environments". This class implements the Johnson's algorithm for computing the point of a simplex that is closest to the origin and  the smallest simplex needed to represent that closest point.
  */
 public class Simplex {
 	private final Vector3[] mPoints = {
@@ -147,8 +145,7 @@ public class Simplex {
 	}
 
 	/**
-	 * Gets the points of the simplex. These will be stored in the arrays. The returned integer is the
-	 * number of vertices.
+	 * Gets the points of the simplex. These will be stored in the arrays. The returned integer is the number of vertices.
 	 *
 	 * @param suppPointsA The support points of object A in a direction -v
 	 * @param suppPointsB The support points of object B in a direction v
@@ -236,8 +233,7 @@ public class Simplex {
 	}
 
 	/**
-	 * Returns true if the set is affinely dependent. A set if affinely dependent if a point of the set
-	 * is an affine combination of other points in the set.
+	 * Returns true if the set is affinely dependent. A set if affinely dependent if a point of the set is an affine combination of other points in the set.
 	 *
 	 * @return Whether or not the set is affinely dependent
 	 */
@@ -273,10 +269,8 @@ public class Simplex {
 	/**
 	 * Computes the closest points "pA" and "pB" of objects A and B.
 	 *
-	 * @param pA sum(lambda_i * a_i), where "a_i" is the support point of object A, with lambda_i =
-	 * deltaX_i / deltaX
-	 * @param pB sum(lambda_i * b_i), where "b_i" is the support point of object B, with lambda_i =
-	 * deltaX_i / deltaX
+	 * @param pA sum(lambda_i * a_i), where "a_i" is the support point of object A, with lambda_i = deltaX_i / deltaX
+	 * @param pB sum(lambda_i * b_i), where "b_i" is the support point of object B, with lambda_i = deltaX_i / deltaX
 	 */
 	public void computeClosestPointsOfAAndB(Vector3 pA, Vector3 pB) {
 		float deltaX = 0;
@@ -298,10 +292,8 @@ public class Simplex {
 	}
 
 	/**
-	 * Compute the closest point "v" to the origin of the current simplex. This method executes the
-	 * Johnson's algorithm for computing the point "v" of a simplex that is the closest to the origin.
-	 * The method returns true if a closest point has been found, false if not. The closest point is
-	 * store in the passed vector, if found.
+	 * Compute the closest point "v" to the origin of the current simplex. This method executes the Johnson's algorithm for computing the point "v" of a simplex that is the closest to the origin. The
+	 * method returns true if a closest point has been found, false if not. The closest point is store in the passed vector, if found.
 	 *
 	 * @param v The vector in which to store the closest point
 	 * @return Whether or not the closest point has been found

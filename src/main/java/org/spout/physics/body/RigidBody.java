@@ -32,8 +32,7 @@ import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
 
 /**
- * Represents a rigid body for the physics engine. A rigid body is a non-deformable body that has a
- * constant mass. This class inherits from the CollisionBody class.
+ * Represents a rigid body for the physics engine. A rigid body is a non-deformable body that has a constant mass. This class inherits from the CollisionBody class.
  */
 public abstract class RigidBody extends CollisionBody {
 	private static final RigidBodyMaterial DEFAULT_MATERIAL = RigidBodyMaterial.asUnmodifiableMaterial(new RigidBodyMaterial());
@@ -107,10 +106,8 @@ public abstract class RigidBody extends CollisionBody {
 	public abstract void setExternalTorque(Vector3 torque);
 
 	/**
-	 * Gets the inverse of the inertia tensor in world coordinates. The inertia tensor I_w in world
-	 * coordinates is computed with the local inverse inertia tensor I_b^-1 in body coordinates by I_w
-	 * = R * I_b^-1 * R^T, where R is the rotation matrix (and R^T its transpose) of the current
-	 * orientation quaternion of the body.
+	 * Gets the inverse of the inertia tensor in world coordinates. The inertia tensor I_w in world coordinates is computed with the local inverse inertia tensor I_b^-1 in body coordinates by I_w = R *
+	 * I_b^-1 * R^T, where R is the rotation matrix (and R^T its transpose) of the current orientation quaternion of the body.
 	 *
 	 * @return The world inverse inertia tensor
 	 */

@@ -32,8 +32,7 @@ import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
 
 /**
- * Represents a mobile rigid body. Such a body can move and has all of the properties of a normal
- * rigid body.
+ * Represents a mobile rigid body. Such a body can move and has all of the properties of a normal rigid body.
  */
 public class MobileRigidBody extends ImmobileRigidBody {
 	private final Vector3 mLinearVelocity = new Vector3();
@@ -41,8 +40,7 @@ public class MobileRigidBody extends ImmobileRigidBody {
 	private boolean mIsMotionEnabled = true;
 
 	/**
-	 * Constructs a new rigid body from its transform, mass, local inertia tensor, collision shape and
-	 * ID.
+	 * Constructs a new rigid body from its transform, mass, local inertia tensor, collision shape and ID.
 	 *
 	 * @param transform The transform (position and orientation)
 	 * @param mass The mass

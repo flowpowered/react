@@ -46,9 +46,8 @@ import org.spout.physics.math.Vector3;
  */
 public class RayCaster {
 	/**
-	 * Finds the closest of the bodies intersecting with the ray to the ray start. The ray is defined
-	 * by a starting point and a direction. This method returns an {@link IntersectedBody} object
-	 * containing the body and the intersection point.
+	 * Finds the closest of the bodies intersecting with the ray to the ray start. The ray is defined by a starting point and a direction. This method returns an {@link IntersectedBody} object containing
+	 * the body and the intersection point.
 	 *
 	 * @param rayStart The ray starting point
 	 * @param rayDir The ray direction
@@ -74,9 +73,8 @@ public class RayCaster {
 	}
 
 	/**
-	 * Finds the furthest of the bodies intersecting with the ray from the ray start. The ray is
-	 * defined by a starting point and a direction. This method returns an {@link IntersectedBody}
-	 * object containing the body and the intersection point.
+	 * Finds the furthest of the bodies intersecting with the ray from the ray start. The ray is defined by a starting point and a direction. This method returns an {@link IntersectedBody} object
+	 * containing the body and the intersection point.
 	 *
 	 * @param rayStart The ray starting point
 	 * @param rayDir The ray direction
@@ -102,14 +100,12 @@ public class RayCaster {
 	}
 
 	/**
-	 * Finds all of the bodies intersecting with the ray. The ray is defined by a starting point and a
-	 * direction. The bodies are returned mapped with the closest intersection point.
+	 * Finds all of the bodies intersecting with the ray. The ray is defined by a starting point and a direction. The bodies are returned mapped with the closest intersection point.
 	 *
 	 * @param rayStart The ray starting point
 	 * @param rayDir The ray direction
 	 * @param bodies The bodies to check for intersection
-	 * @return All of the intersection bodies, in no particular order, mapped to the intersection
-	 *         point
+	 * @return All of the intersection bodies, in no particular order, mapped to the intersection point
 	 */
 	public static Map<CollisionBody, Vector3> findIntersectingBodies(Vector3 rayStart, Vector3 rayDir,
 																	 Collection<CollisionBody> bodies) {
@@ -378,8 +374,7 @@ public class RayCaster {
 	}
 
 	/**
-	 * Represents a body that was intersected by a ray. This class stores the body and the intersection
-	 * point.
+	 * Represents a body that was intersected by a ray. This class stores the body and the intersection point.
 	 */
 	public static class IntersectedBody {
 		private final CollisionBody body;

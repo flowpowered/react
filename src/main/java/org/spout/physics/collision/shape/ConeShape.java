@@ -31,10 +31,8 @@ import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Vector3;
 
 /**
- * Represents a cone collision shape centered at the origin and aligned with the Y axis. The cone is
- * defined by its height and by the radius of its base. The center of the cone is at the half of the
- * height. The "transform" of the corresponding rigid body gives an orientation and a position to
- * the cone.
+ * Represents a cone collision shape centered at the origin and aligned with the Y axis. The cone is defined by its height and by the radius of its base. The center of the cone is at the half of the
+ * height. The "transform" of the corresponding rigid body gives an orientation and a position to the cone.
  */
 public class ConeShape extends CollisionShape {
 	private float mRadius;

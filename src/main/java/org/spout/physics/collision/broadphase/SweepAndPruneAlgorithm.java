@@ -37,9 +37,8 @@ import org.spout.physics.collision.shape.AABB;
 import org.spout.physics.math.Vector3;
 
 /**
- * This class implements the Sweep-And-Prune (SAP) broad-phase collision detection algorithm. This
- * class implements an array-based version of the algorithm from Pierre Terdiman that is described
- * here: www.codercorner.com/SAP.pdf.
+ * This class implements the Sweep-And-Prune (SAP) broad-phase collision detection algorithm. This class implements an array-based version of the algorithm from Pierre Terdiman that is described here:
+ * www.codercorner.com/SAP.pdf.
  */
 public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 	private static final int NB_SENTINELS = 2;

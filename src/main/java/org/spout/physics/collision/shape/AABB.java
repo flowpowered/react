@@ -29,9 +29,8 @@ package org.spout.physics.collision.shape;
 import org.spout.physics.math.Vector3;
 
 /**
- * Represents a bounding volume of type "Axis Aligned Bounding Box". It's a box where all the edges
- * are always aligned with the world coordinate system. The AABB is defined by the minimum and
- * maximum world coordinates of the three axis.
+ * Represents a bounding volume of type "Axis Aligned Bounding Box". It's a box where all the edges are always aligned with the world coordinate system. The AABB is defined by the minimum and maximum
+ * world coordinates of the three axis.
  */
 public class AABB {
 	private final Vector3 mMinCoordinates = new Vector3();

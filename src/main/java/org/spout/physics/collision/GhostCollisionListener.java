@@ -31,10 +31,9 @@ import org.spout.physics.body.GhostImmobileRigidBody;
 import org.spout.physics.body.GhostMobileRigidBody;
 
 /**
- * Simple {@link CollisionListener} where bodies which are instances of either {@link GhostImmobileRigidBody} or {@link GhostMobileRigidBody} automatically cease collision adjustments.
- * <p>
- * While completely possible to implement CollisionListener directly, implementations are encouraged to use this class to honor ghost objects as well as extend it to inform their callbacks
- * that a collision occurred (and call this method in the superclass while doing so).
+ * Simple {@link CollisionListener} where bodies which are instances of either {@link GhostImmobileRigidBody} or {@link GhostMobileRigidBody} automatically cease collision adjustments. <p> While
+ * completely possible to implement CollisionListener directly, implementations are encouraged to use this class to honor ghost objects as well as extend it to inform their callbacks that a collision
+ * occurred (and call this method in the superclass while doing so).
  */
 public class GhostCollisionListener implements CollisionListener {
 	@Override

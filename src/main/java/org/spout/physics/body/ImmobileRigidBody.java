@@ -32,8 +32,7 @@ import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
 
 /**
- * Represents an immobile rigid body. Such a body cannot move, but has all of the properties of a
- * normal rigid body, except for velocities. This can be used for scenery, floors, walls, etc.
+ * Represents an immobile rigid body. Such a body cannot move, but has all of the properties of a normal rigid body, except for velocities. This can be used for scenery, floors, walls, etc.
  */
 public class ImmobileRigidBody extends RigidBody {
 	private static final Vector3 ZERO = new Vector3(0, 0, 0);
@@ -44,8 +43,7 @@ public class ImmobileRigidBody extends RigidBody {
 	protected final Vector3 mExternalTorque = new Vector3();
 
 	/**
-	 * Constructs a new rigid body from its transform, mass, local inertia tensor, collision shape and
-	 * ID.
+	 * Constructs a new rigid body from its transform, mass, local inertia tensor, collision shape and ID.
 	 *
 	 * @param transform The transform (position and orientation)
 	 * @param mass The mass
@@ -77,7 +75,7 @@ public class ImmobileRigidBody extends RigidBody {
 	 */
 	@Override
 	public float getMassInverse() {
-		return (1/mMass);
+		return (1 / mMass);
 	}
 
 	/**
@@ -109,10 +107,8 @@ public class ImmobileRigidBody extends RigidBody {
 	}
 
 	/**
-	 * Gets the inertia tensor in world coordinates. The inertia tensor I_w in world coordinates is
-	 * computed with the local inertia tensor I_b in body coordinates by I_w = R * I_b * R^T, where R
-	 * is the rotation matrix (and R^T its transpose) of the current orientation quaternion of the
-	 * body.
+	 * Gets the inertia tensor in world coordinates. The inertia tensor I_w in world coordinates is computed with the local inertia tensor I_b in body coordinates by I_w = R * I_b * R^T, where R is the
+	 * rotation matrix (and R^T its transpose) of the current orientation quaternion of the body.
 	 *
 	 * @return The world inertia tensor
 	 */

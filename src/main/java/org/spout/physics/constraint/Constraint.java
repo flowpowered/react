@@ -32,8 +32,7 @@ import gnu.trove.list.array.TFloatArrayList;
 import org.spout.physics.body.RigidBody;
 
 /**
- * This is the base class of a constraint in the physics engine. A constraint can be a collision
- * contact or a joint for instance. Each constraint can be made of several auxiliary "mathematical
+ * This is the base class of a constraint in the physics engine. A constraint can be a collision contact or a joint for instance. Each constraint can be made of several auxiliary "mathematical
  * constraints" needed to represent the main constraint.
  */
 public class Constraint {
@@ -45,8 +44,7 @@ public class Constraint {
 	protected final TFloatList mCachedLambdas;
 
 	/**
-	 * Constructs a new constraint from the two bodies, the number of auxiliary constraints, the
-	 * activity status and the type of constraint.
+	 * Constructs a new constraint from the two bodies, the number of auxiliary constraints, the activity status and the type of constraint.
 	 *
 	 * @param body1 The first body
 	 * @param body2 The second body
@@ -110,13 +108,11 @@ public class Constraint {
 	}
 
 	/**
-	 * Gets the previous lambda value at the desired index, which is greater or equal to zero and
-	 * smaller than {@link #getNbConstraints()}.
+	 * Gets the previous lambda value at the desired index, which is greater or equal to zero and smaller than {@link #getNbConstraints()}.
 	 *
 	 * @param index The index of the lambda value
 	 * @return The lambda value
-	 * @throws IllegalArgumentException If the index is greater than the number of constraints, as
-	 * defined by {@link #getNbConstraints()}
+	 * @throws IllegalArgumentException If the index is greater than the number of constraints, as defined by {@link #getNbConstraints()}
 	 */
 	public float getCachedLambda(int index) {
 		if (index >= mNbConstraints) {
@@ -126,13 +122,11 @@ public class Constraint {
 	}
 
 	/**
-	 * Sets the lambda value at the desired index, which is greater or equal to zero and smaller than
-	 * {@link #getNbConstraints()}.
+	 * Sets the lambda value at the desired index, which is greater or equal to zero and smaller than {@link #getNbConstraints()}.
 	 *
 	 * @param index The index to set the lambda value at
 	 * @param lambda The lambda value to set
-	 * @throws IllegalArgumentException If the index is greater than the number of constraints, as
-	 * defined by {@link #getNbConstraints()}
+	 * @throws IllegalArgumentException If the index is greater than the number of constraints, as defined by {@link #getNbConstraints()}
 	 */
 	public void setCachedLambda(int index, float lambda) {
 		if (index >= mNbConstraints) {

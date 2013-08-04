@@ -29,16 +29,14 @@ package org.spout.physics.body;
 import org.spout.physics.ReactDefaults;
 
 /**
- * Represents a material for a rigid body. The material has the restitution and friction
- * coefficients. Altering these constants for a material will alter the constants for all bodies.
+ * Represents a material for a rigid body. The material has the restitution and friction coefficients. Altering these constants for a material will alter the constants for all bodies.
  */
 public class RigidBodyMaterial {
 	private float mRestitution = ReactDefaults.DEFAULT_RESTITUTION_COEFFICIENT;
 	private float mFriction = ReactDefaults.DEFAULT_FRICTION_COEFFICIENT;
 
 	/**
-	 * Constructs a new rigid body material using {@link ReactDefaults#DEFAULT_RESTITUTION_COEFFICIENT}
-	 * and {@link ReactDefaults#DEFAULT_FRICTION_COEFFICIENT} as the default restitution and friction
+	 * Constructs a new rigid body material using {@link ReactDefaults#DEFAULT_RESTITUTION_COEFFICIENT} and {@link ReactDefaults#DEFAULT_FRICTION_COEFFICIENT} as the default restitution and friction
 	 * coefficients.
 	 */
 	public RigidBodyMaterial() {
@@ -95,11 +93,9 @@ public class RigidBodyMaterial {
 	}
 
 	/**
-	 * Returns a new unmodifiable rigid body material. Unmodifiable means that the {@link
-	 * #setRestitution(float)} and {@link #setFriction(float)} methods will throw an {@link
-	 * UnsupportedOperationException}. This is does not use a wrapper class, and the original material
-	 * is not linked to the one returned. That is, changes to the original material are not reflected
-	 * by the returned material.
+	 * Returns a new unmodifiable rigid body material. Unmodifiable means that the {@link #setRestitution(float)} and {@link #setFriction(float)} methods will throw an {@link
+	 * UnsupportedOperationException}. This is does not use a wrapper class, and the original material is not linked to the one returned. That is, changes to the original material are not reflected by
+	 * the returned material.
 	 *
 	 * @param material The material to make an unmodifiable copy of
 	 * @return A new unmodifiable rigid body material.

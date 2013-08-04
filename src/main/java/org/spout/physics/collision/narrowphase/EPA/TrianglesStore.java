@@ -29,8 +29,7 @@ package org.spout.physics.collision.narrowphase.EPA;
 import org.spout.physics.math.Vector3;
 
 /**
- * This class stores several triangles for the polytope in the EPA algorithm. The max number of
- * triangles is {@link #MAX_TRIANGLES}.
+ * This class stores several triangles for the polytope in the EPA algorithm. The max number of triangles is {@link #MAX_TRIANGLES}.
  */
 public class TrianglesStore {
 	public static final int MAX_TRIANGLES = 200;
@@ -54,8 +53,7 @@ public class TrianglesStore {
 	}
 
 	/**
-	 * Sets the number of triangles back to the specified number. This number should be smaller than
-	 * the current number.
+	 * Sets the number of triangles back to the specified number. This number should be smaller than the current number.
 	 *
 	 * @param backup The new number of triangles.
 	 */
@@ -77,8 +75,7 @@ public class TrianglesStore {
 	}
 
 	/**
-	 * Creates and returns a new triangle, keeping it in the store. If the store is full or the
-	 * triangle is invalid, this will return null.
+	 * Creates and returns a new triangle, keeping it in the store. If the store is full or the triangle is invalid, this will return null.
 	 *
 	 * @param vertices The vertices of this triangle (three)
 	 * @param v0 The index of the first vertex
@@ -101,8 +98,7 @@ public class TrianglesStore {
 	}
 
 	/**
-	 * Gets the triangle at the desired index in the store. This index should be smaller than {@link
-	 * #MAX_TRIANGLES}.
+	 * Gets the triangle at the desired index in the store. This index should be smaller than {@link #MAX_TRIANGLES}.
 	 *
 	 * @param index The index
 	 * @return The triangle, or null if there's not triangle at the index

@@ -31,9 +31,8 @@ import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Vector3;
 
 /**
- * Represents a cylinder collision shape around the Y axis and centered at the origin. The cylinder
- * is defined by its height and the radius of its base. The "transform" of the corresponding rigid
- * body gives an orientation and a position to the cylinder.
+ * Represents a cylinder collision shape around the Y axis and centered at the origin. The cylinder is defined by its height and the radius of its base. The "transform" of the corresponding rigid body
+ * gives an orientation and a position to the cylinder.
  */
 public class CylinderShape extends CollisionShape {
 	private float mRadius;

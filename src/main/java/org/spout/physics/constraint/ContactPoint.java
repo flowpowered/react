@@ -32,8 +32,7 @@ import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
 
 /**
- * Represents a collision contact point between two bodies in the physics engine. The ContactPoint
- * class inherits from the Constraint class.
+ * Represents a collision contact point between two bodies in the physics engine. The ContactPoint class inherits from the Constraint class.
  */
 public class ContactPoint extends Constraint {
 	private final Vector3 mNormal = new Vector3();

@@ -32,9 +32,8 @@ import org.spout.physics.body.CollisionBody;
 import org.spout.physics.collision.CollisionDetection;
 
 /**
- * This class is a data-structure contains the pairs of bodies that are overlapping during the
- * broad-phase collision detection. This class implements the pair manager described by Pierre
- * Terdiman in www.codercorner.com/SAP.pdf.
+ * This class is a data-structure contains the pairs of bodies that are overlapping during the broad-phase collision detection. This class implements the pair manager described by Pierre Terdiman in
+ * www.codercorner.com/SAP.pdf.
  */
 public class PairManager {
 	private static final int INVALID_INDEX = Integer.MAX_VALUE;
@@ -119,8 +118,7 @@ public class PairManager {
 	}
 
 	/**
-	 * Finds a pair for the two body IDs. Returns null if no pair with the bodies having the IDs can be
-	 * found.
+	 * Finds a pair for the two body IDs. Returns null if no pair with the bodies having the IDs can be found.
 	 *
 	 * @param id1 The first ID
 	 * @param id2 The second ID
@@ -166,8 +164,7 @@ public class PairManager {
 	}
 
 	/**
-	 * Returns the array of overlapping pairs managed by this class, for iteration purposes. Note that
-	 * the array returned contains trailing null elements.
+	 * Returns the array of overlapping pairs managed by this class, for iteration purposes. Note that the array returned contains trailing null elements.
 	 *
 	 * @return The array of overlapping pairs
 	 */
@@ -176,8 +173,7 @@ public class PairManager {
 	}
 
 	/**
-	 * Return the last overlapping pair (used to iterate over the overlapping pairs) or returns null if
-	 * there are no overlapping pairs. Note that the array returned by {@link #getOverlappingPairs()}
+	 * Return the last overlapping pair (used to iterate over the overlapping pairs) or returns null if there are no overlapping pairs. Note that the array returned by {@link #getOverlappingPairs()}
 	 * contains trailing null elements.
 	 *
 	 * @return The last overlapping pair
@@ -191,9 +187,8 @@ public class PairManager {
 	}
 
 	/**
-	 * Adds a pair of bodies in the pair manager and returns the pair. If the pair to add does not
-	 * already exist in the set of overlapping pairs, it will be created. If it already exists, the
-	 * pair is returned only.
+	 * Adds a pair of bodies in the pair manager and returns the pair. If the pair to add does not already exist in the set of overlapping pairs, it will be created. If it already exists, the pair is
+	 * returned only.
 	 *
 	 * @param body1 The first body of the pair
 	 * @param body2 The second boy of the pair
@@ -224,8 +219,7 @@ public class PairManager {
 	}
 
 	/**
-	 * Removes a pair of bodies from the pair manager. Returns true if the pair has been found and
-	 * removed, false if not.
+	 * Removes a pair of bodies from the pair manager. Returns true if the pair has been found and removed, false if not.
 	 *
 	 * @param id1 The ID of the first body in the pair
 	 * @param id2 The ID of the second body in the pair

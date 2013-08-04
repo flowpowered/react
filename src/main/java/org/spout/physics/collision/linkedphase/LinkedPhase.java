@@ -37,8 +37,7 @@ import org.spout.physics.engine.linked.LinkedDynamicsWorld;
 import org.spout.physics.math.Vector3;
 
 /**
- * A phase of the physics tick where bodies are added via the {@link
- * org.spout.physics.engine.linked.LinkedDynamicsWorld}'s {@link org.spout.physics.engine.linked.LinkedWorldInfo}.
+ * A phase of the physics tick where bodies are added via the {@link org.spout.physics.engine.linked.LinkedDynamicsWorld}'s {@link org.spout.physics.engine.linked.LinkedWorldInfo}.
  */
 public class LinkedPhase {
 	private final LinkedDynamicsWorld linkedWorld;
@@ -53,8 +52,7 @@ public class LinkedPhase {
 	}
 
 	/**
-	 * Sweeps for {@link ImmobileRigidBody}s around the body provided. <p> The algorithm will ask for
-	 * all bodies within the bounds of the bodies' AABB scaled by a {@link
+	 * Sweeps for {@link ImmobileRigidBody}s around the body provided. <p> The algorithm will ask for all bodies within the bounds of the bodies' AABB scaled by a {@link
 	 * ReactDefaults#LINKED_PHASE_AABB_SCALING}. </p>
 	 *
 	 * @param body The mobile body to scan around

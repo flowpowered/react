@@ -118,8 +118,7 @@ public class EdgeEPA {
 	 * @param vertices The vertices
 	 * @param indexNewVertex The index of the new vertex
 	 * @param triangleStore The triangle store
-	 * @return True if the owner triangle was obsolete or if a new triangle edge was half liked with
-	 *         this one
+	 * @return True if the owner triangle was obsolete or if a new triangle edge was half liked with this one
 	 */
 	public boolean computeSilhouette(Vector3[] vertices, int indexNewVertex, TrianglesStore triangleStore) {
 		if (!mOwnerTriangle.isObsolete()) {

@@ -29,9 +29,8 @@ package org.spout.physics.collision;
 import org.spout.physics.math.Vector3;
 
 /**
- * This class contains information about a collision contact computed during the narrow-phase
- * collision detection. This information is used to compute the contact set for a contact between
- * two bodies. The information fields are immutable.
+ * This class contains information about a collision contact computed during the narrow-phase collision detection. This information is used to compute the contact set for a contact between two bodies.
+ * The information fields are immutable.
  */
 public class ContactInfo {
 	private final Vector3 normal = new Vector3();

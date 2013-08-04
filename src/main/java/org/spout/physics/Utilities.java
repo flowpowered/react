@@ -27,8 +27,7 @@
 package org.spout.physics;
 
 /**
- * This class contains static utilities. It was added for the port to implement some C++ code in
- * Java.
+ * This class contains static utilities. It was added for the port to implement some C++ code in Java.
  */
 public class Utilities {
 	/**

@@ -32,9 +32,8 @@ import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.math.Transform;
 
 /**
- * This class is an abstract class that represents an algorithm used to perform the narrow-phase of
- * a collision detection. The goal of the narrow phase algorithm is to compute contact information
- * of a collision between two bodies.
+ * This class is an abstract class that represents an algorithm used to perform the narrow-phase of a collision detection. The goal of the narrow phase algorithm is to compute contact information of a
+ * collision between two bodies.
  */
 public abstract class NarrowPhaseAlgorithm {
 	protected BroadPhasePair mCurrentOverlappingPair = null;
@@ -49,9 +48,8 @@ public abstract class NarrowPhaseAlgorithm {
 	}
 
 	/**
-	 * Returns true and computes the contact info if the two bounding volume collide. If they do not,
-	 * this method returns false and the contact info will remain unchanged. The new contact info is
-	 * stored in the {@code ContactInfo} parameter.
+	 * Returns true and computes the contact info if the two bounding volume collide. If they do not, this method returns false and the contact info will remain unchanged. The new contact info is stored
+	 * in the {@code ContactInfo} parameter.
 	 *
 	 * @param collisionShape1 The first collisionShape of the collision
 	 * @param transform1 The first shape's transform

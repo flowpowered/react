@@ -29,8 +29,7 @@ package org.spout.physics.math;
 import org.spout.physics.ReactDefaults;
 
 /**
- * Represents a quaternion. The notation q = (x*i, y*j, z*k, w) is used to represent the
- * quaternion.
+ * Represents a quaternion. The notation q = (x*i, y*j, z*k, w) is used to represent the quaternion.
  */
 public class Quaternion {
 	private float x;
@@ -46,8 +45,7 @@ public class Quaternion {
 	}
 
 	/**
-	 * Constructs a new quaternion from the w component as a float and the x, y and z component as a
-	 * vector.
+	 * Constructs a new quaternion from the w component as a float and the x, y and z component as a vector.
 	 *
 	 * @param w The w component
 	 * @param v The vector for the x, y and z component
@@ -263,8 +261,7 @@ public class Quaternion {
 	}
 
 	/**
-	 * Gets the unit length quaternion for this quaternion. Both have the same orientation. Creates a
-	 * new quaternion.
+	 * Gets the unit length quaternion for this quaternion. Both have the same orientation. Creates a new quaternion.
 	 *
 	 * @return The unit length quaternion for this one
 	 */
@@ -318,8 +315,7 @@ public class Quaternion {
 	}
 
 	/**
-	 * Gets the rotation represented as an angle around an axis. The angle part is returned by the
-	 * method, while the axis, represented as a vector, will be stored in the passed vector parameter.
+	 * Gets the rotation represented as an angle around an axis. The angle part is returned by the method, while the axis, represented as a vector, will be stored in the passed vector parameter.
 	 *
 	 * @param axis The vector in which to store the axis component values
 	 * @return The angle as a float
@@ -402,6 +398,7 @@ public class Quaternion {
 	public String toString() {
 		return "(" + w + ", " + x + ", " + y + ", " + z + ")";
 	}
+
 	/**
 	 * Returns a new identity quaternion.
 	 *

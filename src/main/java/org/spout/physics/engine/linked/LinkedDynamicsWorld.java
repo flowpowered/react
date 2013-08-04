@@ -35,16 +35,14 @@ import org.spout.physics.engine.DynamicsWorld;
 import org.spout.physics.math.Vector3;
 
 /**
- * Represents a dynamics world linked to another world. Information is shared between them through
- * an instance of {@link LinkedWorldInfo}.
+ * Represents a dynamics world linked to another world. Information is shared between them through an instance of {@link LinkedWorldInfo}.
  */
 public class LinkedDynamicsWorld extends DynamicsWorld {
 	private final LinkedWorldInfo info;
 	private final Set<ImmobileRigidBody> linkedBodies = new HashSet<ImmobileRigidBody>();
 
 	/**
-	 * Constructs a new linked dynamics world from the gravity, the time step and the linked world
-	 * information.
+	 * Constructs a new linked dynamics world from the gravity, the time step and the linked world information.
 	 *
 	 * @param gravity The gravity
 	 * @param timeStep The simulation time step
@@ -56,8 +54,7 @@ public class LinkedDynamicsWorld extends DynamicsWorld {
 	}
 
 	/**
-	 * Constructs a new linked dynamics world from the gravity, the default time step and the linked
-	 * world information.
+	 * Constructs a new linked dynamics world from the gravity, the default time step and the linked world information.
 	 *
 	 * @param gravity The gravity
 	 * @param info The linked world information
@@ -83,8 +80,7 @@ public class LinkedDynamicsWorld extends DynamicsWorld {
 	}
 
 	/**
-	 * Adds {@link ImmobileRigidBody}s to this world. These will be cleared at the end of the physics
-	 * tick.
+	 * Adds {@link ImmobileRigidBody}s to this world. These will be cleared at the end of the physics tick.
 	 *
 	 * @param bodies The bodies to add
 	 */

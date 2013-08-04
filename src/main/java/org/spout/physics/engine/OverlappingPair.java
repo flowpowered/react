@@ -31,10 +31,8 @@ import org.spout.physics.constraint.ContactPoint;
 import org.spout.physics.math.Vector3;
 
 /**
- * Represents a pair of two bodies that are overlapping during the broad-phase collision detection.
- * It is created when the two bodies start to overlap and is destroyed when they do not overlap
- * anymore. This class contains a contact manifold that stores all the contact points between the
- * two bodies.
+ * Represents a pair of two bodies that are overlapping during the broad-phase collision detection. It is created when the two bodies start to overlap and is destroyed when they do not overlap
+ * anymore. This class contains a contact manifold that stores all the contact points between the two bodies.
  */
 public class OverlappingPair {
 	private final CollisionBody mBody1;

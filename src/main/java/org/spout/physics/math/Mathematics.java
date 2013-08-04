@@ -33,9 +33,7 @@ import org.spout.physics.ReactDefaults;
  */
 public class Mathematics {
 	/**
-	 * Returns true if the values a and b are approximately equal, using {@link
-	 * ReactDefaults#MACHINE_EPSILON} as the acceptable error. Returns false if the values are not
-	 * approximately equal.
+	 * Returns true if the values a and b are approximately equal, using {@link ReactDefaults#MACHINE_EPSILON} as the acceptable error. Returns false if the values are not approximately equal.
 	 *
 	 * @param a The first value
 	 * @param b The second value
@@ -46,8 +44,7 @@ public class Mathematics {
 	}
 
 	/**
-	 * Returns true if the values a and b are approximately equal, using the provided acceptable error.
-	 * Returns false if the values are not approximately equal.
+	 * Returns true if the values a and b are approximately equal, using the provided acceptable error. Returns false if the values are not approximately equal.
 	 *
 	 * @param a The first value
 	 * @param b The second value

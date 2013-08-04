@@ -32,8 +32,7 @@ import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
 
 /**
- * Represents the collision shape associated with a body that is used during the narrow-phase
- * collision detection.
+ * Represents the collision shape associated with a body that is used during the narrow-phase collision detection.
  */
 public abstract class CollisionShape {
 	protected final CollisionShapeType mType;
@@ -88,8 +87,7 @@ public abstract class CollisionShape {
 	public abstract float getMargin();
 
 	/**
-	 * Computes the local inertia tensor of the collision shape for the mass. Stores the results in the
-	 * passed matrix3x3.
+	 * Computes the local inertia tensor of the collision shape for the mass. Stores the results in the passed matrix3x3.
 	 *
 	 * @param tensor The matrix3x3 in which the tensor should be stored
 	 * @param mass The mass of the shape
@@ -119,6 +117,9 @@ public abstract class CollisionShape {
 	 * An enumeration of the possible collision shape (box, sphere, cone and cylinder).
 	 */
 	public static enum CollisionShapeType {
-		BOX, SPHERE, CONE, CYLINDER;
+		BOX,
+		SPHERE,
+		CONE,
+		CYLINDER;
 	}
 }

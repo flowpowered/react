@@ -36,15 +36,11 @@ import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
 
 /**
- * This class implements a narrow-phase collision detection algorithm. This algorithm uses the
- * ISA-GJK algorithm and the EPA algorithm. This implementation is based on the implementation
- * discussed in the book "Collision Detection in 3D Environments". This method implements the Hybrid
- * Technique for calculating the penetration depth. The two objects are enlarged with a small
- * margin. If the object intersect, the penetration depth is quickly computed using the GJK
- * algorithm on the original objects (without margin). If the original objects (without margin)
- * intersect, we run the GJK algorithm again on the enlarged objects (with margin) to compute the
- * simplex polytope that contains the origin and give it to the EPA (Expanding Polytope Algorithm)
- * to compute the correct penetration depth between the enlarged objects.
+ * This class implements a narrow-phase collision detection algorithm. This algorithm uses the ISA-GJK algorithm and the EPA algorithm. This implementation is based on the implementation discussed in
+ * the book "Collision Detection in 3D Environments". This method implements the Hybrid Technique for calculating the penetration depth. The two objects are enlarged with a small margin. If the object
+ * intersect, the penetration depth is quickly computed using the GJK algorithm on the original objects (without margin). If the original objects (without margin) intersect, we run the GJK algorithm
+ * again on the enlarged objects (with margin) to compute the simplex polytope that contains the origin and give it to the EPA (Expanding Polytope Algorithm) to compute the correct penetration depth
+ * between the enlarged objects.
  */
 public class GJKAlgorithm extends NarrowPhaseAlgorithm {
 	public static final float REL_ERROR = 1e-3f;

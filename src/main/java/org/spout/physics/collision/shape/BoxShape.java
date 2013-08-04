@@ -31,16 +31,15 @@ import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Vector3;
 
 /**
- * Represents a 3D box shape. Those axis are unit length. The three extents are half-lengths of the
- * box along the three x, y, z local axes. The "transform" of the corresponding rigid body gives an
+ * Represents a 3D box shape. Those axis are unit length. The three extents are half-lengths of the box along the three x, y, z local axes. The "transform" of the corresponding rigid body gives an
  * orientation and a position to the box.
  */
 public class BoxShape extends CollisionShape {
 	private final Vector3 mExtent = new Vector3();
 
 	/**
-	 * Constructs a box shape from its extents which is half the vector between the two opposing
-	 * corners that are the furthest away.
+	 * Constructs a box shape from its extents which is half the vector between the two opposing corners that are the furthest away.
+	 *
 	 * @param x x extent
 	 * @param y y extent
 	 * @param z z extent
@@ -51,8 +50,7 @@ public class BoxShape extends CollisionShape {
 	}
 
 	/**
-	 * Constructs a box shape from its extents which is half the vector between the two opposing
-	 * corners that are the furthest away.
+	 * Constructs a box shape from its extents which is half the vector between the two opposing corners that are the furthest away.
 	 *
 	 * @param extent The extent vector
 	 */
@@ -62,8 +60,7 @@ public class BoxShape extends CollisionShape {
 	}
 
 	/**
-	 * Gets the extent vector, which is half the vector between the two opposing corners that are the
-	 * furthest away.
+	 * Gets the extent vector, which is half the vector between the two opposing corners that are the furthest away.
 	 *
 	 * @return The extents vector
 	 */
@@ -72,8 +69,7 @@ public class BoxShape extends CollisionShape {
 	}
 
 	/**
-	 * Sets the extent vector, which is half the vector between the two opposing corners that are the
-	 * furthest away.
+	 * Sets the extent vector, which is half the vector between the two opposing corners that are the furthest away.
 	 *
 	 * @param extent The extents vector
 	 */

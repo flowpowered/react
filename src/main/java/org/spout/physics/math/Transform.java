@@ -27,8 +27,7 @@
 package org.spout.physics.math;
 
 /**
- * Represents a position and an orientation in 3D. It can also be seen as representing a translation
- * and a rotation.
+ * Represents a position and an orientation in 3D. It can also be seen as representing a translation and a rotation.
  */
 public class Transform {
 	private final Vector3 mPosition = new Vector3();
@@ -42,8 +41,7 @@ public class Transform {
 	}
 
 	/**
-	 * Constructs a new transform from the position as a vector3 and the orientation as a 3x3
-	 * matrix.
+	 * Constructs a new transform from the position as a vector3 and the orientation as a 3x3 matrix.
 	 *
 	 * @param position The position
 	 * @param orientation The orientation
@@ -53,8 +51,7 @@ public class Transform {
 	}
 
 	/**
-	 * Constructs a new transform from the position as a vector3 and the orientation as a
-	 * quaternion.
+	 * Constructs a new transform from the position as a vector3 and the orientation as a quaternion.
 	 *
 	 * @param position The position
 	 * @param orientation The orientation
@@ -121,8 +118,7 @@ public class Transform {
 	}
 
 	/**
-	 * Sets this transform to identity. The vector is set to the zero vector, and the quaternion, to
-	 * the identity quaternion.
+	 * Sets this transform to identity. The vector is set to the zero vector, and the quaternion, to the identity quaternion.
 	 */
 	public void setToIdentity() {
 		mPosition.set(new Vector3(0, 0, 0));
@@ -143,8 +139,8 @@ public class Transform {
 	@Override
 	public int hashCode() {
 		int hash = 3;
-		hash = 11 * hash + mPosition.hashCode() ;
-		hash = 11 * hash +  mOrientation.hashCode();
+		hash = 11 * hash + mPosition.hashCode();
+		hash = 11 * hash + mOrientation.hashCode();
 		return hash;
 	}
 
@@ -169,8 +165,7 @@ public class Transform {
 	}
 
 	/**
-	 * Returns a new identity transform. That is, a transform with the position as the zero vector
-	 * and the orientation as the identity quaternion.
+	 * Returns a new identity transform. That is, a transform with the position as the zero vector and the orientation as the identity quaternion.
 	 *
 	 * @return A new identity transform
 	 */

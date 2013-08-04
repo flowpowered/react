@@ -33,8 +33,7 @@ import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
 
 /**
- * This class is used to compute the narrow-phase collision detection between two sphere shaped
- * collision volumes.
+ * This class is used to compute the narrow-phase collision detection between two sphere shaped collision volumes.
  */
 public class SphereVsSphereAlgorithm extends NarrowPhaseAlgorithm {
 	@Override

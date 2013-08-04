@@ -49,8 +49,7 @@ import org.spout.physics.engine.CollisionWorld;
 import org.spout.physics.engine.linked.LinkedDynamicsWorld;
 
 /**
- * This class computes the collision detection algorithms. We first perform a broad-phase algorithm
- * to know which pairs of bodies can collide and then we run a narrow-phase algorithm to compute the
+ * This class computes the collision detection algorithms. We first perform a broad-phase algorithm to know which pairs of bodies can collide and then we run a narrow-phase algorithm to compute the
  * collision contacts between the bodies.
  */
 public class CollisionDetection {
@@ -176,8 +175,7 @@ public class CollisionDetection {
 	}
 
 	/**
-	 * Allows the broad phase to notify the collision detection about an overlapping pair. This method
-	 * is called by a broad-phase collision detection algorithm.
+	 * Allows the broad phase to notify the collision detection about an overlapping pair. This method is called by a broad-phase collision detection algorithm.
 	 *
 	 * @param addedPair The pair that was added
 	 */

@@ -27,8 +27,7 @@
 package org.spout.physics.engine;
 
 /**
- * This class takes care of the time in the physics engine. It uses {@link System#nanoTime()} to get
- * the current time.
+ * This class takes care of the time in the physics engine. It uses {@link System#nanoTime()} to get the current time.
  */
 public class Timer {
 	private double mTimeStep;

@@ -41,27 +41,20 @@ import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
 
 /**
- * This class is the implementation of the Expanding Polytope Algorithm (EPA). The EPA algorithm
- * computes the penetration depth and contact points between two enlarged objects (with margin)
- * where the original objects (without margin) intersect. The penetration depth of a pair of
- * intersecting objects A and B is the length of a point on the boundary of the Minkowski sum (A-B)
- * closest to the origin. The goal of the EPA algorithm is to start with an initial simplex polytope
- * that contains the origin and expend it in order to find the point on the boundary of (A-B) that
- * is closest to the origin. An initial simplex that contains the origin has been computed with the
- * GJK algorithm. The EPA Algorithm will extend this simplex polytope to find the correct
- * penetration depth. The implementation of the EPA algorithm is based on the book "Collision
- * Detection in 3D Environments".
+ * This class is the implementation of the Expanding Polytope Algorithm (EPA). The EPA algorithm computes the penetration depth and contact points between two enlarged objects (with margin) where the
+ * original objects (without margin) intersect. The penetration depth of a pair of intersecting objects A and B is the length of a point on the boundary of the Minkowski sum (A-B) closest to the
+ * origin. The goal of the EPA algorithm is to start with an initial simplex polytope that contains the origin and expend it in order to find the point on the boundary of (A-B) that is closest to the
+ * origin. An initial simplex that contains the origin has been computed with the GJK algorithm. The EPA Algorithm will extend this simplex polytope to find the correct penetration depth. The
+ * implementation of the EPA algorithm is based on the book "Collision Detection in 3D Environments".
  */
 public class EPAAlgorithm {
 	private static final int MAX_SUPPORT_POINTS = 100;
 	private static final int MAX_FACETS = 200;
 
 	/**
-	 * Computes the penetration depth with the EPA algorithm. This method computes the penetration
-	 * depth and contact points between two enlarged objects (with margin) where the original objects
-	 * (without margin) intersect. An initial simplex that contains the origin has been computed with
-	 * GJK algorithm. The EPA Algorithm will extend this simplex polytope to find the correct
-	 * penetration depth. Returns true if the computation was successful, false if not.
+	 * Computes the penetration depth with the EPA algorithm. This method computes the penetration depth and contact points between two enlarged objects (with margin) where the original objects (without
+	 * margin) intersect. An initial simplex that contains the origin has been computed with GJK algorithm. The EPA Algorithm will extend this simplex polytope to find the correct penetration depth.
+	 * Returns true if the computation was successful, false if not.
 	 *
 	 * @param simplex The initial simplex
 	 * @param collisionShape1 The first collision shape

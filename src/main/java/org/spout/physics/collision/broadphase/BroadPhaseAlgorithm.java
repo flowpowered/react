@@ -32,12 +32,9 @@ import org.spout.physics.collision.broadphase.PairManager.BodyPair;
 import org.spout.physics.collision.shape.AABB;
 
 /**
- * This class is an abstract class that represents an algorithm used to perform the broad-phase of a
- * collision detection. The goal of the broad-phase algorithm is to compute the pair of bodies that
- * can collide. It's important to understand that the broad-phase doesn't only compute body pairs
- * that can collide, but could those that don't collide but are very close. The goal of the
- * broad-phase is to remove pairs of body that cannot collide in order to reduce the quantity of
- * bodies to be tested in the narrow-phase.
+ * This class is an abstract class that represents an algorithm used to perform the broad-phase of a collision detection. The goal of the broad-phase algorithm is to compute the pair of bodies that
+ * can collide. It's important to understand that the broad-phase doesn't only compute body pairs that can collide, but could those that don't collide but are very close. The goal of the broad-phase
+ * is to remove pairs of body that cannot collide in order to reduce the quantity of bodies to be tested in the narrow-phase.
  */
 public abstract class BroadPhaseAlgorithm {
 	protected final PairManager mPairManager;
@@ -77,8 +74,7 @@ public abstract class BroadPhaseAlgorithm {
 	public abstract void updateObject(CollisionBody body, AABB aabb);
 
 	/**
-	 * Returns the array of overlapping pairs managed by the pair manager, for iteration purposes. Note
-	 * that the array returned contains trailing null elements.
+	 * Returns the array of overlapping pairs managed by the pair manager, for iteration purposes. Note that the array returned contains trailing null elements.
 	 *
 	 * @return The array of overlapping pairs
 	 */
@@ -87,8 +83,7 @@ public abstract class BroadPhaseAlgorithm {
 	}
 
 	/**
-	 * Return the last overlapping pair (used to iterate over the overlapping pairs) or returns null if
-	 * there are no overlapping pairs. Note that the array returned by {@link #getOverlappingPairs()}
+	 * Return the last overlapping pair (used to iterate over the overlapping pairs) or returns null if there are no overlapping pairs. Note that the array returned by {@link #getOverlappingPairs()}
 	 * contains trailing null elements.
 	 *
 	 * @return The last overlapping pair

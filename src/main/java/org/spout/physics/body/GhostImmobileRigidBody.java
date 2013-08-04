@@ -31,9 +31,8 @@ import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Transform;
 
 /**
- * Detector body which only informs callbacks of a collision. This body will not incur any collision adjustments nor will it prevent objects from passing through.
- * <p>
- * Uses for this object are when you want to inform the callbacks of a collision but handle adjustments on your own (ex. Character movement, moving through water, etc.)
+ * Detector body which only informs callbacks of a collision. This body will not incur any collision adjustments nor will it prevent objects from passing through. <p> Uses for this object are when you
+ * want to inform the callbacks of a collision but handle adjustments on your own (ex. Character movement, moving through water, etc.)
  */
 public class GhostImmobileRigidBody extends ImmobileRigidBody {
 	/**

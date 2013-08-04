@@ -34,8 +34,7 @@ import org.spout.physics.collision.CollisionDetection;
 import org.spout.physics.collision.shape.AABB;
 
 /**
- * This class implements a broad-phase algorithm that does nothing. It should be use if we don't
- * want to perform a broad-phase for the collision detection.
+ * This class implements a broad-phase algorithm that does nothing. It should be use if we don't want to perform a broad-phase for the collision detection.
  */
 public class NoBroadPhaseAlgorithm extends BroadPhaseAlgorithm {
 	private final Set<CollisionBody> mBodies = new HashSet<CollisionBody>();

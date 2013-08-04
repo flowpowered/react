@@ -45,8 +45,7 @@ import org.spout.physics.collision.RayCaster.IntersectedBody;
 import org.spout.physics.math.Vector3;
 
 /**
- * Represents a world where it is possible to move bodies by hand and to test collisions between
- * them. In this kind of world the body movement is not computed using the laws of physics.
+ * Represents a world where it is possible to move bodies by hand and to test collisions between them. In this kind of world the body movement is not computed using the laws of physics.
  */
 public abstract class CollisionWorld {
 	protected final CollisionDetection mCollisionDetection;
@@ -110,8 +109,7 @@ public abstract class CollisionWorld {
 	}
 
 	/**
-	 * Finds the closest of the bodies in the world intersecting with the ray to the ray start. The ray
-	 * is defined by a starting point and a direction. This method returns an {@link IntersectedBody}
+	 * Finds the closest of the bodies in the world intersecting with the ray to the ray start. The ray is defined by a starting point and a direction. This method returns an {@link IntersectedBody}
 	 * object containing the body and the intersection point.
 	 *
 	 * @param rayStart The ray starting point
@@ -123,9 +121,8 @@ public abstract class CollisionWorld {
 	}
 
 	/**
-	 * Finds the furthest of the bodies in the world intersecting with the ray from the ray start. The
-	 * ray is defined by a starting point and a direction. This method returns an {@link
-	 * IntersectedBody} object containing the body and the intersection point.
+	 * Finds the furthest of the bodies in the world intersecting with the ray from the ray start. The ray is defined by a starting point and a direction. This method returns an {@link IntersectedBody}
+	 * object containing the body and the intersection point.
 	 *
 	 * @param rayStart The ray starting point
 	 * @param rayDir The ray direction
@@ -136,8 +133,7 @@ public abstract class CollisionWorld {
 	}
 
 	/**
-	 * Finds all of the bodies in the world intersecting with the ray. The ray is defined by a starting
-	 * point and a direction. The bodies are returned mapped with the closest intersection point.
+	 * Finds all of the bodies in the world intersecting with the ray. The ray is defined by a starting point and a direction. The bodies are returned mapped with the closest intersection point.
 	 *
 	 * @param rayStart The ray starting point
 	 * @param rayDir The ray direction

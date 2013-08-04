@@ -179,8 +179,7 @@ public class Matrix4x4 {
 	/**
 	 * Gets the desired row as a vector4.
 	 *
-	 * @param row The row number, either {@link #FIRST_ROW}, {@link #SECOND_ROW}, {@link #THIRD_ROW},
-	 * {@link #FOURTH_ROW}
+	 * @param row The row number, either {@link #FIRST_ROW}, {@link #SECOND_ROW}, {@link #THIRD_ROW}, {@link #FOURTH_ROW}
 	 * @return The vector4 for the row
 	 */
 	public Vector4 get(int row) {
@@ -190,10 +189,8 @@ public class Matrix4x4 {
 	/**
 	 * Gets the desired value at the row and column.
 	 *
-	 * @param row The row number, either {@link #FIRST_ROW}, {@link #SECOND_ROW}, {@link #THIRD_ROW},
-	 * {@link #FOURTH_ROW}
-	 * @param col The column number, either {@link #FIRST_COLUMN}, {@link #SECOND_COLUMN}, {@link
-	 * #THIRD_COLUMN}, {@link #FOURTH_COLUMN}
+	 * @param row The row number, either {@link #FIRST_ROW}, {@link #SECOND_ROW}, {@link #THIRD_ROW}, {@link #FOURTH_ROW}
+	 * @param col The column number, either {@link #FIRST_COLUMN}, {@link #SECOND_COLUMN}, {@link #THIRD_COLUMN}, {@link #FOURTH_COLUMN}
 	 * @return The value at the row and column
 	 */
 	public float get(int row, int col) {
@@ -203,8 +200,7 @@ public class Matrix4x4 {
 	/**
 	 * Gets the desired column as a vector3.
 	 *
-	 * @param col The column number, either {@link #FIRST_COLUMN}, {@link #SECOND_COLUMN}, {@link
-	 * #THIRD_COLUMN}, {@link #FOURTH_COLUMN}
+	 * @param col The column number, either {@link #FIRST_COLUMN}, {@link #SECOND_COLUMN}, {@link #THIRD_COLUMN}, {@link #FOURTH_COLUMN}
 	 * @return The column as a vector3
 	 */
 	public Vector4 getColumn(int col) {
@@ -214,8 +210,7 @@ public class Matrix4x4 {
 	/**
 	 * Gets the desired row as a vector4.
 	 *
-	 * @param row The row number, either {@link #FIRST_ROW}, {@link #SECOND_ROW}, {@link #THIRD_ROW},
-	 * {@link #FOURTH_ROW}
+	 * @param row The row number, either {@link #FIRST_ROW}, {@link #SECOND_ROW}, {@link #THIRD_ROW}, {@link #FOURTH_ROW}
 	 * @return The vector4 for the row
 	 */
 	public Vector4 getRow(int row) {
@@ -225,10 +220,8 @@ public class Matrix4x4 {
 	/**
 	 * Sets the value at the row and column to the desired value.
 	 *
-	 * @param row The row number, either {@link #FIRST_ROW}, {@link #SECOND_ROW}, {@link #THIRD_ROW},
-	 * {@link #FOURTH_ROW}
-	 * @param col The column number, either {@link #FIRST_COLUMN}, {@link #SECOND_COLUMN}, {@link
-	 * #THIRD_COLUMN}, {@link #FOURTH_COLUMN}
+	 * @param row The row number, either {@link #FIRST_ROW}, {@link #SECOND_ROW}, {@link #THIRD_ROW}, {@link #FOURTH_ROW}
+	 * @param col The column number, either {@link #FIRST_COLUMN}, {@link #SECOND_COLUMN}, {@link #THIRD_COLUMN}, {@link #FOURTH_COLUMN}
 	 * @param value The value to set at the row and column
 	 */
 	public void set(int row, int col, float value) {

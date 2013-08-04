@@ -32,15 +32,10 @@ import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
 
 /**
- * Represents the set of contact points between two bodies. The contact manifold is implemented in a
- * way to cache the contact points among the frames for better stability, following the "Contact
- * Generation" presentation by Erwin Coumans at the GDC 2010 conference
- * (bullet.googlecode.com/files/GDC10_Coumans_Erwin_Contact.pdf). Some code from this class is based
- * on the implementation of the btPersistentManifold class from the Bullet physics engine
- * (www.http://bulletphysics.org). The contacts between two bodies are added one after the other in
- * the cache. When the cache is full, one point needs to be removed. The idea is to keep the point
- * with the deepest penetration depth and  producing the larger area (for a more stable contact
- * manifold). The new added point is always kept.
+ * Represents the set of contact points between two bodies. The contact manifold is implemented in a way to cache the contact points among the frames for better stability, following the "Contact
+ * Generation" presentation by Erwin Coumans at the GDC 2010 conference (bullet.googlecode.com/files/GDC10_Coumans_Erwin_Contact.pdf). Some code from this class is based on the implementation of the
+ * btPersistentManifold class from the Bullet physics engine (www.http://bulletphysics.org). The contacts between two bodies are added one after the other in the cache. When the cache is full, one
+ * point needs to be removed. The idea is to keep the point with the deepest penetration depth and  producing the larger area (for a more stable contact manifold). The new added point is always kept.
  */
 public class ContactManifold {
 	public static final int MAX_CONTACT_POINTS_IN_MANIFOLD = 4;
@@ -152,13 +147,11 @@ public class ContactManifold {
 	}
 
 	/**
-	 * Gets the contact point of the manifold at the desired index, which is greater or equal to zero
-	 * and smaller than {@link #getNbContactPoints()}.
+	 * Gets the contact point of the manifold at the desired index, which is greater or equal to zero and smaller than {@link #getNbContactPoints()}.
 	 *
 	 * @param index The index of the contact point
 	 * @return The contact point
-	 * @throws IllegalArgumentException If the index is smaller than zero or greater than the number of
-	 * constraints, as defined by {@link #getNbContactPoints()}
+	 * @throws IllegalArgumentException If the index is smaller than zero or greater than the number of constraints, as defined by {@link #getNbContactPoints()}
 	 */
 	public ContactPoint getContactPoint(int index) {
 		if (index < 0 || index >= mNbContactPoints) {
@@ -215,11 +208,9 @@ public class ContactManifold {
 	}
 
 	/**
-	 * Updates the contact manifold. First the world space coordinates of the current contacts in the
-	 * manifold are recomputed from the corresponding transforms for the bodies because they have
-	 * moved. Then we remove the contacts with a negative penetration depth (meaning that the bodies
-	 * are not penetrating anymore) and with a distance between the contact points in the plane
-	 * orthogonal to the contact normal that is too large.
+	 * Updates the contact manifold. First the world space coordinates of the current contacts in the manifold are recomputed from the corresponding transforms for the bodies because they have moved.
+	 * Then we remove the contacts with a negative penetration depth (meaning that the bodies are not penetrating anymore) and with a distance between the contact points in the plane orthogonal to the
+	 * contact normal that is too large.
 	 *
 	 * @param transform1 The transform of the first body
 	 * @param transform2 The transform of the second body

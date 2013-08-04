@@ -42,16 +42,14 @@ public class TriangleEPA {
 	private float mDistSquare;
 
 	/**
-	 * Default constructor for the triangle. It contains no vertices or edges and the closest point is
-	 * the zero vector. The triangle is not flagged as obsolete.
+	 * Default constructor for the triangle. It contains no vertices or edges and the closest point is the zero vector. The triangle is not flagged as obsolete.
 	 */
 	public TriangleEPA() {
 		this(0, 0, 0);
 	}
 
 	/**
-	 * Constructs a new triangle from the three vertex indices. This triangle is not flagged as
-	 * obsolete.
+	 * Constructs a new triangle from the three vertex indices. This triangle is not flagged as obsolete.
 	 *
 	 * @param indexVertex1 The first vertex index
 	 * @param indexVertex2 The second vertex index
@@ -64,8 +62,7 @@ public class TriangleEPA {
 	}
 
 	/**
-	 * Gets an edge the triangle at the desired index. The index must be greater or equal to zero and
-	 * smaller than three.
+	 * Gets an edge the triangle at the desired index. The index must be greater or equal to zero and smaller than three.
 	 *
 	 * @param index An index in the [0,3[ range
 	 * @return The edge at the index
@@ -78,8 +75,7 @@ public class TriangleEPA {
 	}
 
 	/**
-	 * Sets an adjacent edge of the triangle to the desired value at the specified index. The index
-	 * must be greater or equal to zero and smaller than three.
+	 * Sets an adjacent edge of the triangle to the desired value at the specified index. The index must be greater or equal to zero and smaller than three.
 	 *
 	 * @param index An index in the [0,3[ range
 	 * @param edge The edge to set
@@ -163,8 +159,7 @@ public class TriangleEPA {
 	}
 
 	/**
-	 * Gets the vertex index at the desired index. The index must be greater or equal to zero and
-	 * smaller than three.
+	 * Gets the vertex index at the desired index. The index must be greater or equal to zero and smaller than three.
 	 *
 	 * @param index An index in the [0,3[ range
 	 * @return The vertex index at the index
@@ -205,17 +200,12 @@ public class TriangleEPA {
 	}
 
 	/**
-	 * Executes the recursive silhouette algorithm from this triangle face. The parameter "vertices" is
-	 * an array that contains the vertices of the current polytope and the parameter "indexNewVertex"
-	 * is the index of the new vertex in this array. The goal of the silhouette algorithm is to add the
-	 * new vertex in the polytope by keeping it convex. Therefore, the triangle faces that are visible
-	 * from the new vertex must be removed from the polytope. We need to add triangle faces where each
-	 * face contains the new vertex and an edge for the silhouette. The silhouette is the connected set
-	 * of edges that are part of the border between faces that are seen and not seen from the new
-	 * vertex. This method starts from the nearest face of the new vertex, computes the silhouette and
-	 * creates the new faces from the new vertex, ensuring that we always have a convex polytope. The
-	 * faces visible from the new vertex are flagged as obsolete and will not be considered as being
-	 * candidate faces in the future.
+	 * Executes the recursive silhouette algorithm from this triangle face. The parameter "vertices" is an array that contains the vertices of the current polytope and the parameter "indexNewVertex" is
+	 * the index of the new vertex in this array. The goal of the silhouette algorithm is to add the new vertex in the polytope by keeping it convex. Therefore, the triangle faces that are visible from
+	 * the new vertex must be removed from the polytope. We need to add triangle faces where each face contains the new vertex and an edge for the silhouette. The silhouette is the connected set of edges
+	 * that are part of the border between faces that are seen and not seen from the new vertex. This method starts from the nearest face of the new vertex, computes the silhouette and creates the new
+	 * faces from the new vertex, ensuring that we always have a convex polytope. The faces visible from the new vertex are flagged as obsolete and will not be considered as being candidate faces in the
+	 * future.
 	 *
 	 * @param vertices The vertices to compute with
 	 * @param indexNewVertex The index of the new vertex
@@ -241,8 +231,7 @@ public class TriangleEPA {
 	}
 
 	/**
-	 * Links an edge with another one. This means that the edge of a triangle will be associated with
-	 * the edge of another triangle so that both triangles are neighbours along both edges.
+	 * Links an edge with another one. This means that the edge of a triangle will be associated with the edge of another triangle so that both triangles are neighbours along both edges.
 	 *
 	 * @param edge0 The first edge to link
 	 * @param edge1 The second edge to link
@@ -259,8 +248,7 @@ public class TriangleEPA {
 	}
 
 	/**
-	 * Makes a half link with two edges from two different triangles. An half-link between the edge
-	 * "edge0" and the edge "edge1" means that "edge1" is adjacent to "edge0" but not the opposite. The
+	 * Makes a half link with two edges from two different triangles. An half-link between the edge "edge0" and the edge "edge1" means that "edge1" is adjacent to "edge0" but not the opposite. The
 	 * opposite edge connection is to be made later.
 	 *
 	 * @param edge0 The first edge to link
