@@ -365,7 +365,7 @@ public class ContactSolver {
 				}
 				contactPoint.restitutionBias = 0;
 				final float deltaVDotN = deltaV.dot(contactPoint.normal);
-				if (deltaVDotN < ReactDefaults.RESTITUTION_VELOCITY_THRESHOLD) {
+				if (deltaVDotN < -ReactDefaults.RESTITUTION_VELOCITY_THRESHOLD) {
 					contactPoint.restitutionBias = manifold.restitutionFactor * deltaVDotN;
 				}
 				if (WARM_STARTING_ACTIVE) {
