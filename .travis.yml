@@ -3,12 +3,16 @@ language: java
 jdk: oraclejdk7
 
 # Compile and package JAR and set build properties.
-install: mvn package -DbuildNumber=$TRAVIS_BUILD_NUMBER -DciSystem=travis -Dcommit=${TRAVIS_COMMIT:0:7}
+install: mvn package javadoc:javadoc cobertura:cobertura coveralls:cobertura -DbuildNumber=$TRAVIS_BUILD_NUMBER -DciSystem=travis -Dcommit=${TRAVIS_COMMIT:0:7} -DserviceJobId=$TRAVIS_JOB_ID
 after_success:
   # Get files for use with build, namely the custom Maven settings.xml.
-  - "git clone https://github.com/SpoutDev/travis-ci-resources.git target/travis"
+  - "git clone https://github.com/ReactPhysics/travis-ci-resources.git target/travis"
   # Check if commit s not a pull request, if git repo is official, and if branch is master. If checks pass, deploy artifacts to Maven repository.
-  - "[[ $TRAVIS_PULL_REQUEST == false ]] && [[ $TRAVIS_REPO_SLUG == SpoutDev/React ]] && [[ $TRAVIS_BRANCH == master ]] && mvn deploy --settings target/travis/settings.xml"
+  - "[[ $TRAVIS_PULL_REQUEST == false ]] && [[ $TRAVIS_REPO_SLUG == ReactPhysics/React ]] && [[ $TRAVIS_BRANCH == master ]] && mvn deploy --settings target/travis/settings.xml"
+  # Check if commit s not a pull request, if git repo is official, and if branch is master. If checks pass, update gh-pages branch with generated site/docs.
+  ## TODO: Only generate for release versions, not snapshots?
+  - "[[ $TRAVIS_PULL_REQUEST == false ]] && [[ $TRAVIS_REPO_SLUG == ReactPhysics/React ]] && [[ $TRAVIS_BRANCH == master ]] && chmod +x target/travis/update-gh-pages.sh && ./target/travis/update-gh-pages.sh"
+  # TODO: Add deployment to downloads site.
 
 notifications:
   # Disable build status email notifications, until the issue with forks is fixed.
@@ -21,3 +25,4 @@ env:
   global:
     - secure: "RfkXqulUgAeL5BSzWY42nec2xSTFsPi8/SPFgUeJ4qM7OXsDAl2CR/XUwW4YC5uGM0Gq1x+kKXph5/OXmovIW62YLvfUGTdEmEjTSGnwSafAxzVoHbV8glfo/0SX5CaQeZQvbRR6gJxSiNUWJGuiA3UbW3UOMJHKNaWOi1HMf48="
     - secure: "AjQ7sIgwFgicIvFZhRsn8KkA4H2XWEsIDH+QjRTLpOj8eoPcKP/IcfxH8X8KRNBJK/g84K+8YdGCDlZ9QJz349BI+Jzchp+pBAQyau8wK3nR1yerhOxFLwbOB7SdW/rMj+AfufJNq4QBzwjs1b4hoO7NRrmdb5rgbGfu1DeOFSE="
+    - secure: "KLGHvbSzebvL6CVFMexEXsLCKhkEM4RexL/e9WgGtnvtsXQ/Dtz/VVMAJd9YCS/sHIgBYW+HRGO7NOA1b2Loc7qDGjO21oOuljswCKiwZ/lytpaJ0s8Ygp8SGHMdoHJg/lvNBoI3u9kMYNtzZeFRJMTdfMgjwz3np6YIJ7V2anw="

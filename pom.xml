@@ -8,8 +8,8 @@
 	<version>1.0.0-SNAPSHOT</version>
 	<packaging>jar</packaging>
 	<inceptionYear>2013</inceptionYear>
-	<url>https://github.com/SpoutDev/React</url>
-	<description>Java port of the ReactReact3D C++ physics library, relicensed with permission.</description>
+	<url>https://github.com/ReactPhysics/React</url>
+	<description>Java port of the ReactReact3D C++ physics library.</description>
 
 	<!-- Parent information -->
 	<parent>
@@ -63,21 +63,21 @@
 
 	<!-- Source code access -->
 	<scm>
-		<connection>scm:git:git://github.com/SpoutDev/React.git</connection>
-		<developerConnection>scm:git:git@github.com:SpoutDev/React.git</developerConnection>
-		<url>https://github.com/SpoutDev/React</url>
+		<connection>scm:git:git://github.com/ReactPhysics/React.git</connection>
+		<developerConnection>scm:git:git@github.com:ReactPhysics/React.git</developerConnection>
+		<url>https://github.com/ReactPhysics/React</url>
 	</scm>
 
 	<!-- Continuous integration -->
 	<ciManagement>
 		<system>travis</system>
-		<url>https://travis-ci.org/SpoutDev/React</url>
+		<url>https://travis-ci.org/ReactPhysics/React</url>
 	</ciManagement>
 
 	<!-- Issue management -->
 	<issueManagement>
-		<system>jira</system>
-		<url>http://spoutdev.atlassian.net/browse/REACT</url>
+		<system>github</system>
+		<url>https://github.com/ReactPhysics/React/issues</url>
 	</issueManagement>
 
 	<!-- Dependency repositories -->
@@ -231,6 +231,22 @@
 							</manifestSection>
 						</manifestSections>
 					</archive>
+				</configuration>
+			</plugin>
+			<!-- Coveralls reporting plugin  -->
+			<plugin>
+				<groupId>org.eluder.coveralls</groupId>
+				<artifactId>coveralls-maven-plugin</artifactId>
+				<version>2.0.1</version>
+			</plugin>
+			<!-- Cobertura test coverage plugin -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>cobertura-maven-plugin</artifactId>
+				<version>2.6</version>
+				<configuration>
+					<format>xml</format>
+					<maxmem>256m</maxmem>
 				</configuration>
 			</plugin>
 		</plugins>
