@@ -35,168 +35,168 @@ import org.spout.physics.math.Vector3;
  * Represents a collision contact point between two bodies in the physics engine. The ContactPoint class inherits from the Constraint class.
  */
 public class ContactPoint extends Constraint {
-	private final Vector3 mNormal = new Vector3();
-	private float mPenetrationDepth;
-	private final Vector3 mLocalPointOnBody1 = new Vector3();
-	private final Vector3 mLocalPointOnBody2 = new Vector3();
-	private final Vector3 mWorldPointOnBody1 = new Vector3();
-	private final Vector3 mWorldPointOnBody2 = new Vector3();
-	private boolean mIsRestingContact = false;
-	private final Vector3 mFrictionVector1 = new Vector3();
-	private final Vector3 mFrictionVector2 = new Vector3();
+    private final Vector3 mNormal = new Vector3();
+    private float mPenetrationDepth;
+    private final Vector3 mLocalPointOnBody1 = new Vector3();
+    private final Vector3 mLocalPointOnBody2 = new Vector3();
+    private final Vector3 mWorldPointOnBody1 = new Vector3();
+    private final Vector3 mWorldPointOnBody2 = new Vector3();
+    private boolean mIsRestingContact = false;
+    private final Vector3 mFrictionVector1 = new Vector3();
+    private final Vector3 mFrictionVector2 = new Vector3();
 
-	/**
-	 * Constructs a new contact point from the first and second body, and the contact info.
-	 *
-	 * @param body1 The first body
-	 * @param body2 The second body
-	 * @param contactInfo The contact info
-	 */
-	public ContactPoint(RigidBody body1, RigidBody body2, ContactInfo contactInfo) {
-		super(body1, body2, 3, true, ConstraintType.CONTACT);
-		if (contactInfo.getPenetrationDepth() <= 0) {
-			throw new IllegalArgumentException("penetraionDepth must be greater than zero");
-		}
-		mNormal.set(contactInfo.getNormal());
-		mPenetrationDepth = contactInfo.getPenetrationDepth();
-		mLocalPointOnBody1.set(contactInfo.getFirstLocalPoint());
-		mLocalPointOnBody2.set(contactInfo.getSecondLocalPoint());
-		mWorldPointOnBody1.set(Transform.multiply(body1.getTransform(), contactInfo.getFirstLocalPoint()));
-		mWorldPointOnBody2.set(Transform.multiply(body2.getTransform(), contactInfo.getSecondLocalPoint()));
-	}
+    /**
+     * Constructs a new contact point from the first and second body, and the contact info.
+     *
+     * @param body1 The first body
+     * @param body2 The second body
+     * @param contactInfo The contact info
+     */
+    public ContactPoint(RigidBody body1, RigidBody body2, ContactInfo contactInfo) {
+        super(body1, body2, 3, true, ConstraintType.CONTACT);
+        if (contactInfo.getPenetrationDepth() <= 0) {
+            throw new IllegalArgumentException("penetraionDepth must be greater than zero");
+        }
+        mNormal.set(contactInfo.getNormal());
+        mPenetrationDepth = contactInfo.getPenetrationDepth();
+        mLocalPointOnBody1.set(contactInfo.getFirstLocalPoint());
+        mLocalPointOnBody2.set(contactInfo.getSecondLocalPoint());
+        mWorldPointOnBody1.set(Transform.multiply(body1.getTransform(), contactInfo.getFirstLocalPoint()));
+        mWorldPointOnBody2.set(Transform.multiply(body2.getTransform(), contactInfo.getSecondLocalPoint()));
+    }
 
-	/**
-	 * Gets the normal vector of the contact.
-	 *
-	 * @return The contact's normal vector
-	 */
-	public Vector3 getNormal() {
-		return mNormal;
-	}
+    /**
+     * Gets the normal vector of the contact.
+     *
+     * @return The contact's normal vector
+     */
+    public Vector3 getNormal() {
+        return mNormal;
+    }
 
-	/**
-	 * Gets the penetration depth of the contact.
-	 *
-	 * @return The penetration depth
-	 */
-	public float getPenetrationDepth() {
-		return mPenetrationDepth;
-	}
+    /**
+     * Gets the penetration depth of the contact.
+     *
+     * @return The penetration depth
+     */
+    public float getPenetrationDepth() {
+        return mPenetrationDepth;
+    }
 
-	/**
-	 * Sets the penetration depth of the contact.
-	 *
-	 * @param penetrationDepth The penetration depth to set
-	 */
-	public void setPenetrationDepth(float penetrationDepth) {
-		this.mPenetrationDepth = penetrationDepth;
-	}
+    /**
+     * Sets the penetration depth of the contact.
+     *
+     * @param penetrationDepth The penetration depth to set
+     */
+    public void setPenetrationDepth(float penetrationDepth) {
+        this.mPenetrationDepth = penetrationDepth;
+    }
 
-	/**
-	 * Gets the contact point on the first body.
-	 *
-	 * @return The contact point
-	 */
-	public Vector3 getLocalPointOnFirstBody() {
-		return mLocalPointOnBody1;
-	}
+    /**
+     * Gets the contact point on the first body.
+     *
+     * @return The contact point
+     */
+    public Vector3 getLocalPointOnFirstBody() {
+        return mLocalPointOnBody1;
+    }
 
-	/**
-	 * Gets the contact point on the second body.
-	 *
-	 * @return The contact point
-	 */
-	public Vector3 getLocalPointOnSecondBody() {
-		return mLocalPointOnBody2;
-	}
+    /**
+     * Gets the contact point on the second body.
+     *
+     * @return The contact point
+     */
+    public Vector3 getLocalPointOnSecondBody() {
+        return mLocalPointOnBody2;
+    }
 
-	/**
-	 * Gets the contact point in world space on the first body.
-	 *
-	 * @return The contact point
-	 */
-	public Vector3 getWorldPointOnFirstBody() {
-		return mWorldPointOnBody1;
-	}
+    /**
+     * Gets the contact point in world space on the first body.
+     *
+     * @return The contact point
+     */
+    public Vector3 getWorldPointOnFirstBody() {
+        return mWorldPointOnBody1;
+    }
 
-	/**
-	 * Gets the contact point in world space on the second body.
-	 *
-	 * @return The contact point
-	 */
-	public Vector3 getWorldPointOnSecondBody() {
-		return mWorldPointOnBody2;
-	}
+    /**
+     * Gets the contact point in world space on the second body.
+     *
+     * @return The contact point
+     */
+    public Vector3 getWorldPointOnSecondBody() {
+        return mWorldPointOnBody2;
+    }
 
-	/**
-	 * Sets the contact point in world space on the first body.
-	 *
-	 * @param worldPoint The contact point in world space
-	 */
-	public void setWorldPointOnFirstBody(Vector3 worldPoint) {
-		mWorldPointOnBody1.set(worldPoint);
-	}
+    /**
+     * Sets the contact point in world space on the first body.
+     *
+     * @param worldPoint The contact point in world space
+     */
+    public void setWorldPointOnFirstBody(Vector3 worldPoint) {
+        mWorldPointOnBody1.set(worldPoint);
+    }
 
-	/**
-	 * Sets the contact point in world space on the second body.
-	 *
-	 * @param worldPoint The contact point in world space
-	 */
-	public void setWorldPointOnSecondBody(Vector3 worldPoint) {
-		mWorldPointOnBody2.set(worldPoint);
-	}
+    /**
+     * Sets the contact point in world space on the second body.
+     *
+     * @param worldPoint The contact point in world space
+     */
+    public void setWorldPointOnSecondBody(Vector3 worldPoint) {
+        mWorldPointOnBody2.set(worldPoint);
+    }
 
-	/**
-	 * Returns true if the contact is a resting contact, false if not.
-	 *
-	 * @return Whether or not the contact is a resting contact
-	 */
-	public boolean isRestingContact() {
-		return mIsRestingContact;
-	}
+    /**
+     * Returns true if the contact is a resting contact, false if not.
+     *
+     * @return Whether or not the contact is a resting contact
+     */
+    public boolean isRestingContact() {
+        return mIsRestingContact;
+    }
 
-	/**
-	 * Sets if the contact is a resting contact.
-	 *
-	 * @param isRestingContact True for a resting contact, false if otherwise.
-	 */
-	public void setRestingContact(boolean isRestingContact) {
-		mIsRestingContact = isRestingContact;
-	}
+    /**
+     * Sets if the contact is a resting contact.
+     *
+     * @param isRestingContact True for a resting contact, false if otherwise.
+     */
+    public void setRestingContact(boolean isRestingContact) {
+        mIsRestingContact = isRestingContact;
+    }
 
-	/**
-	 * Gets the first friction vector.
-	 *
-	 * @return The friction vector
-	 */
-	public Vector3 getFirstFrictionVector() {
-		return mFrictionVector1;
-	}
+    /**
+     * Gets the first friction vector.
+     *
+     * @return The friction vector
+     */
+    public Vector3 getFirstFrictionVector() {
+        return mFrictionVector1;
+    }
 
-	/**
-	 * Sets the first friction vector.
-	 *
-	 * @param firstFrictionVector The friction vector to set
-	 */
-	public void setFirstFrictionVector(Vector3 firstFrictionVector) {
-		mFrictionVector1.set(firstFrictionVector);
-	}
+    /**
+     * Sets the first friction vector.
+     *
+     * @param firstFrictionVector The friction vector to set
+     */
+    public void setFirstFrictionVector(Vector3 firstFrictionVector) {
+        mFrictionVector1.set(firstFrictionVector);
+    }
 
-	/**
-	 * Gets the second friction vector.
-	 *
-	 * @return The friction vector
-	 */
-	public Vector3 getSecondFrictionVector() {
-		return mFrictionVector2;
-	}
+    /**
+     * Gets the second friction vector.
+     *
+     * @return The friction vector
+     */
+    public Vector3 getSecondFrictionVector() {
+        return mFrictionVector2;
+    }
 
-	/**
-	 * Sets the second friction vector.
-	 *
-	 * @param secondFrictionVector The friction vector to set
-	 */
-	public void setSecondFrictionVector(Vector3 secondFrictionVector) {
-		mFrictionVector2.set(secondFrictionVector);
-	}
+    /**
+     * Sets the second friction vector.
+     *
+     * @param secondFrictionVector The friction vector to set
+     */
+    public void setSecondFrictionVector(Vector3 secondFrictionVector) {
+        mFrictionVector2.set(secondFrictionVector);
+    }
 }

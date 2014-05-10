@@ -34,14 +34,14 @@ import org.spout.physics.body.CollisionBody;
  * org.spout.physics.engine.CollisionWorld#addListener(CollisionListener)} to add a listener.
  */
 public interface CollisionListener {
-	/**
-	 * This method is called when two bodies are about to collide in a collision detection. Both bodies are provided, including the contact information, which includes the contact points on each body,
-	 * the penetration depth, and the normal. The method returns a boolean. If it is true, the collision will be canceled.
-	 *
-	 * @param body1 The first body
-	 * @param body2 The second body
-	 * @param contactInfo The contact information
-	 * @return Whether or not the collision should be canceled
-	 */
-	public boolean onCollide(CollisionBody body1, CollisionBody body2, ContactInfo contactInfo);
+    /**
+     * This method is called when two bodies are about to collide in a collision detection. Both bodies are provided, including the contact information, which includes the contact points on each body,
+     * the penetration depth, and the normal. The method returns a boolean. If it is true, the collision will be canceled.
+     *
+     * @param body1 The first body
+     * @param body2 The second body
+     * @param contactInfo The contact information
+     * @return Whether or not the collision should be canceled
+     */
+    public boolean onCollide(CollisionBody body1, CollisionBody body2, ContactInfo contactInfo);
 }

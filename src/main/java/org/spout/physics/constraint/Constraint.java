@@ -36,109 +36,109 @@ import org.spout.physics.body.RigidBody;
  * constraints" needed to represent the main constraint.
  */
 public class Constraint {
-	protected final RigidBody mBody1;
-	protected final RigidBody mBody2;
-	protected final boolean mActive;
-	protected final int mNbConstraints;
-	protected final ConstraintType mType;
-	protected final TFloatList mCachedLambdas;
+    protected final RigidBody mBody1;
+    protected final RigidBody mBody2;
+    protected final boolean mActive;
+    protected final int mNbConstraints;
+    protected final ConstraintType mType;
+    protected final TFloatList mCachedLambdas;
 
-	/**
-	 * Constructs a new constraint from the two bodies, the number of auxiliary constraints, the activity status and the type of constraint.
-	 *
-	 * @param body1 The first body
-	 * @param body2 The second body
-	 * @param nbConstraints The number of auxiliary constraints
-	 * @param active True if this constraint is active, false if not
-	 * @param type The type of this constraint
-	 */
-	public Constraint(RigidBody body1, RigidBody body2, int nbConstraints, boolean active, ConstraintType type) {
-		mBody1 = body1;
-		mBody2 = body2;
-		mActive = active;
-		mNbConstraints = nbConstraints;
-		mType = type;
-		mCachedLambdas = new TFloatArrayList(nbConstraints);
-		mCachedLambdas.fill(0, nbConstraints, 0);
-	}
+    /**
+     * Constructs a new constraint from the two bodies, the number of auxiliary constraints, the activity status and the type of constraint.
+     *
+     * @param body1 The first body
+     * @param body2 The second body
+     * @param nbConstraints The number of auxiliary constraints
+     * @param active True if this constraint is active, false if not
+     * @param type The type of this constraint
+     */
+    public Constraint(RigidBody body1, RigidBody body2, int nbConstraints, boolean active, ConstraintType type) {
+        mBody1 = body1;
+        mBody2 = body2;
+        mActive = active;
+        mNbConstraints = nbConstraints;
+        mType = type;
+        mCachedLambdas = new TFloatArrayList(nbConstraints);
+        mCachedLambdas.fill(0, nbConstraints, 0);
+    }
 
-	/**
-	 * Gets the first body.
-	 *
-	 * @return The first body
-	 */
-	public RigidBody getBody1() {
-		return mBody1;
-	}
+    /**
+     * Gets the first body.
+     *
+     * @return The first body
+     */
+    public RigidBody getBody1() {
+        return mBody1;
+    }
 
-	/**
-	 * Gets the second body.
-	 *
-	 * @return The second body
-	 */
-	public RigidBody getBody2() {
-		return mBody2;
-	}
+    /**
+     * Gets the second body.
+     *
+     * @return The second body
+     */
+    public RigidBody getBody2() {
+        return mBody2;
+    }
 
-	/**
-	 * Returns true if the constraint is active, false if not.
-	 *
-	 * @return Whether or not the constraint is active
-	 */
-	public boolean isActive() {
-		return mActive;
-	}
+    /**
+     * Returns true if the constraint is active, false if not.
+     *
+     * @return Whether or not the constraint is active
+     */
+    public boolean isActive() {
+        return mActive;
+    }
 
-	/**
-	 * Gets the type of constraint.
-	 *
-	 * @return The constraint type
-	 */
-	public ConstraintType getType() {
-		return mType;
-	}
+    /**
+     * Gets the type of constraint.
+     *
+     * @return The constraint type
+     */
+    public ConstraintType getType() {
+        return mType;
+    }
 
-	/**
-	 * Gets the number auxiliary constraints.
-	 *
-	 * @return The amount of auxiliary constraints
-	 */
-	public int getNbConstraints() {
-		return mNbConstraints;
-	}
+    /**
+     * Gets the number auxiliary constraints.
+     *
+     * @return The amount of auxiliary constraints
+     */
+    public int getNbConstraints() {
+        return mNbConstraints;
+    }
 
-	/**
-	 * Gets the previous lambda value at the desired index, which is greater or equal to zero and smaller than {@link #getNbConstraints()}.
-	 *
-	 * @param index The index of the lambda value
-	 * @return The lambda value
-	 * @throws IllegalArgumentException If the index is greater than the number of constraints, as defined by {@link #getNbConstraints()}
-	 */
-	public float getCachedLambda(int index) {
-		if (index >= mNbConstraints) {
-			throw new IllegalArgumentException("index cannot be greater than nbConstraints");
-		}
-		return mCachedLambdas.get(index);
-	}
+    /**
+     * Gets the previous lambda value at the desired index, which is greater or equal to zero and smaller than {@link #getNbConstraints()}.
+     *
+     * @param index The index of the lambda value
+     * @return The lambda value
+     * @throws IllegalArgumentException If the index is greater than the number of constraints, as defined by {@link #getNbConstraints()}
+     */
+    public float getCachedLambda(int index) {
+        if (index >= mNbConstraints) {
+            throw new IllegalArgumentException("index cannot be greater than nbConstraints");
+        }
+        return mCachedLambdas.get(index);
+    }
 
-	/**
-	 * Sets the lambda value at the desired index, which is greater or equal to zero and smaller than {@link #getNbConstraints()}.
-	 *
-	 * @param index The index to set the lambda value at
-	 * @param lambda The lambda value to set
-	 * @throws IllegalArgumentException If the index is greater than the number of constraints, as defined by {@link #getNbConstraints()}
-	 */
-	public void setCachedLambda(int index, float lambda) {
-		if (index >= mNbConstraints) {
-			throw new IllegalArgumentException("index cannot be greater than nbConstraints");
-		}
-		mCachedLambdas.set(index, lambda);
-	}
+    /**
+     * Sets the lambda value at the desired index, which is greater or equal to zero and smaller than {@link #getNbConstraints()}.
+     *
+     * @param index The index to set the lambda value at
+     * @param lambda The lambda value to set
+     * @throws IllegalArgumentException If the index is greater than the number of constraints, as defined by {@link #getNbConstraints()}
+     */
+    public void setCachedLambda(int index, float lambda) {
+        if (index >= mNbConstraints) {
+            throw new IllegalArgumentException("index cannot be greater than nbConstraints");
+        }
+        mCachedLambdas.set(index, lambda);
+    }
 
-	/**
-	 * An enumeration of the possible constraint types (contact).
-	 */
-	public static enum ConstraintType {
-		CONTACT
-	}
+    /**
+     * An enumeration of the possible constraint types (contact).
+     */
+    public static enum ConstraintType {
+        CONTACT
+    }
 }

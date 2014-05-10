@@ -37,58 +37,58 @@ import org.spout.physics.collision.shape.AABB;
  * is to remove pairs of body that cannot collide in order to reduce the quantity of bodies to be tested in the narrow-phase.
  */
 public abstract class BroadPhaseAlgorithm {
-	protected final PairManager mPairManager;
-	protected final CollisionDetection mCollisionDetection;
+    protected final PairManager mPairManager;
+    protected final CollisionDetection mCollisionDetection;
 
-	/**
-	 * Constructs a new broad-phase algorithm from the collision detection it's associated to.
-	 *
-	 * @param collisionDetection The collision detection
-	 */
-	protected BroadPhaseAlgorithm(CollisionDetection collisionDetection) {
-		mPairManager = new PairManager(collisionDetection);
-		mCollisionDetection = collisionDetection;
-	}
+    /**
+     * Constructs a new broad-phase algorithm from the collision detection it's associated to.
+     *
+     * @param collisionDetection The collision detection
+     */
+    protected BroadPhaseAlgorithm(CollisionDetection collisionDetection) {
+        mPairManager = new PairManager(collisionDetection);
+        mCollisionDetection = collisionDetection;
+    }
 
-	/**
-	 * Notify the broad-phase about the addition of an object from the world.
-	 *
-	 * @param body The body that was added
-	 * @param aabb The body's AABB
-	 */
-	public abstract void addObject(CollisionBody body, AABB aabb);
+    /**
+     * Notify the broad-phase about the addition of an object from the world.
+     *
+     * @param body The body that was added
+     * @param aabb The body's AABB
+     */
+    public abstract void addObject(CollisionBody body, AABB aabb);
 
-	/**
-	 * Notify the broad-phase about the removal of an object from the world.
-	 *
-	 * @param body The body that was removed
-	 */
-	public abstract void removeObject(CollisionBody body);
+    /**
+     * Notify the broad-phase about the removal of an object from the world.
+     *
+     * @param body The body that was removed
+     */
+    public abstract void removeObject(CollisionBody body);
 
-	/**
-	 * Notify the broad-phase that the AABB of an object has changed.
-	 *
-	 * @param body The body who had his AABB change
-	 * @param aabb The body's new AABB
-	 */
-	public abstract void updateObject(CollisionBody body, AABB aabb);
+    /**
+     * Notify the broad-phase that the AABB of an object has changed.
+     *
+     * @param body The body who had his AABB change
+     * @param aabb The body's new AABB
+     */
+    public abstract void updateObject(CollisionBody body, AABB aabb);
 
-	/**
-	 * Returns the array of overlapping pairs managed by the pair manager, for iteration purposes. Note that the array returned contains trailing null elements.
-	 *
-	 * @return The array of overlapping pairs
-	 */
-	public BodyPair[] getOverlappingPairs() {
-		return mPairManager.getOverlappingPairs();
-	}
+    /**
+     * Returns the array of overlapping pairs managed by the pair manager, for iteration purposes. Note that the array returned contains trailing null elements.
+     *
+     * @return The array of overlapping pairs
+     */
+    public BodyPair[] getOverlappingPairs() {
+        return mPairManager.getOverlappingPairs();
+    }
 
-	/**
-	 * Return the last overlapping pair (used to iterate over the overlapping pairs) or returns null if there are no overlapping pairs. Note that the array returned by {@link #getOverlappingPairs()}
-	 * contains trailing null elements.
-	 *
-	 * @return The last overlapping pair
-	 */
-	public BodyPair getLastOverlappingPair() {
-		return mPairManager.getLastOverlappingPair();
-	}
+    /**
+     * Return the last overlapping pair (used to iterate over the overlapping pairs) or returns null if there are no overlapping pairs. Note that the array returned by {@link #getOverlappingPairs()}
+     * contains trailing null elements.
+     *
+     * @return The last overlapping pair
+     */
+    public BodyPair getLastOverlappingPair() {
+        return mPairManager.getLastOverlappingPair();
+    }
 }

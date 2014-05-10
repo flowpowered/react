@@ -30,90 +30,90 @@ package org.spout.physics.body;
  * This is the base class for a body in the physics engine.
  */
 public abstract class Body {
-	protected final int mID;
-	/* A pointer to the owner of the body (if any) */
-	private Object userPointer;
+    protected final int mID;
+    /* A pointer to the owner of the body (if any) */
+    private Object userPointer;
 
-	/**
-	 * Construct a new body from its ID.
-	 *
-	 * @param id The body's ID
-	 */
-	protected Body(int id) {
-		mID = id;
-	}
+    /**
+     * Construct a new body from its ID.
+     *
+     * @param id The body's ID
+     */
+    protected Body(int id) {
+        mID = id;
+    }
 
-	/**
-	 * Gets the body's unique ID.
-	 *
-	 * @return The body's ID
-	 */
-	public int getID() {
-		return mID;
-	}
+    /**
+     * Gets the body's unique ID.
+     *
+     * @return The body's ID
+     */
+    public int getID() {
+        return mID;
+    }
 
-	public Object getUserPointer() {
-		return userPointer;
-	}
+    public Object getUserPointer() {
+        return userPointer;
+    }
 
-	public void setUserPointer(final Object userPointer) {
-		this.userPointer = userPointer;
-	}
+    public void setUserPointer(final Object userPointer) {
+        this.userPointer = userPointer;
+    }
 
-	/**
-	 * Returns true this body's ID is smaller than the other body's ID, false if not.
-	 *
-	 * @param other The body to compare with
-	 * @return True if this body is smaller, false if not
-	 */
-	public boolean isSmallerThan(Body other) {
-		return mID < other.getID();
-	}
+    /**
+     * Returns true this body's ID is smaller than the other body's ID, false if not.
+     *
+     * @param other The body to compare with
+     * @return True if this body is smaller, false if not
+     */
+    public boolean isSmallerThan(Body other) {
+        return mID < other.getID();
+    }
 
-	/**
-	 * Returns true this body's ID is greater than the other body's ID, false if not.
-	 *
-	 * @param other The body to compare with
-	 * @return True if this body is greater, false if not
-	 */
-	public boolean isGreaterThan(Body other) {
-		return mID > other.getID();
-	}
+    /**
+     * Returns true this body's ID is greater than the other body's ID, false if not.
+     *
+     * @param other The body to compare with
+     * @return True if this body is greater, false if not
+     */
+    public boolean isGreaterThan(Body other) {
+        return mID > other.getID();
+    }
 
-	/**
-	 * Returns true this body's ID is equal than the other body's ID, false if not.
-	 *
-	 * @param other The body to compare with
-	 * @return True if this body is equal, false if not
-	 */
-	public boolean isEqualTo(Body other) {
-		return mID == other.getID();
-	}
+    /**
+     * Returns true this body's ID is equal than the other body's ID, false if not.
+     *
+     * @param other The body to compare with
+     * @return True if this body is equal, false if not
+     */
+    public boolean isEqualTo(Body other) {
+        return mID == other.getID();
+    }
 
-	/**
-	 * Returns true this body's ID is not equal than the other body's ID, false if not.
-	 *
-	 * @param other The body to compare with
-	 * @return True if this body is not equal, false if not
-	 */
-	public boolean isNotEqualTo(Body other) {
-		return mID != other.getID();
-	}
+    /**
+     * Returns true this body's ID is not equal than the other body's ID, false if not.
+     *
+     * @param other The body to compare with
+     * @return True if this body is not equal, false if not
+     */
+    public boolean isNotEqualTo(Body other) {
+        return mID != other.getID();
+    }
 
-	@Override
-	public boolean equals(Object o) {
-		if (this == o) {
-			return true;
-		}
-		if (!(o instanceof Body)) {
-			return false;
-		}
-		final Body body = (Body) o;
-		return mID == body.mID;
-	}
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof Body)) {
+            return false;
+        }
+        final Body body = (Body) o;
+        return mID == body.mID;
+    }
 
-	@Override
-	public int hashCode() {
-		return mID;
-	}
+    @Override
+    public int hashCode() {
+        return mID;
+    }
 }

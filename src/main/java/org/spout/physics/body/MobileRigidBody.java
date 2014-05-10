@@ -35,86 +35,86 @@ import org.spout.physics.math.Vector3;
  * Represents a mobile rigid body. Such a body can move and has all of the properties of a normal rigid body.
  */
 public class MobileRigidBody extends ImmobileRigidBody {
-	private final Vector3 mLinearVelocity = new Vector3();
-	private final Vector3 mAngularVelocity = new Vector3();
-	private boolean mIsMotionEnabled = true;
+    private final Vector3 mLinearVelocity = new Vector3();
+    private final Vector3 mAngularVelocity = new Vector3();
+    private boolean mIsMotionEnabled = true;
 
-	/**
-	 * Constructs a new rigid body from its transform, mass, local inertia tensor, collision shape and ID.
-	 *
-	 * @param transform The transform (position and orientation)
-	 * @param mass The mass
-	 * @param inertiaTensorLocal The local inertial tensor
-	 * @param collisionShape The collision shape
-	 * @param id The ID
-	 */
-	public MobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape, int id) {
-		super(transform, mass, inertiaTensorLocal, collisionShape, id);
-	}
+    /**
+     * Constructs a new rigid body from its transform, mass, local inertia tensor, collision shape and ID.
+     *
+     * @param transform The transform (position and orientation)
+     * @param mass The mass
+     * @param inertiaTensorLocal The local inertial tensor
+     * @param collisionShape The collision shape
+     * @param id The ID
+     */
+    public MobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape, int id) {
+        super(transform, mass, inertiaTensorLocal, collisionShape, id);
+    }
 
-	/**
-	 * Gets the linear velocity of the body.
-	 *
-	 * @return The linear velocity
-	 */
-	@Override
-	public Vector3 getLinearVelocity() {
-		return mLinearVelocity;
-	}
+    /**
+     * Gets the linear velocity of the body.
+     *
+     * @return The linear velocity
+     */
+    @Override
+    public Vector3 getLinearVelocity() {
+        return mLinearVelocity;
+    }
 
-	/**
-	 * Set the linear velocity for this body, but only if it can move.
-	 *
-	 * @param linearVelocity The linear velocity to set
-	 * @see #isMotionEnabled()
-	 * @see #setMotionEnabled(boolean)
-	 */
-	public void setLinearVelocity(Vector3 linearVelocity) {
-		if (mIsMotionEnabled) {
-			mLinearVelocity.set(linearVelocity);
-		}
-	}
+    /**
+     * Set the linear velocity for this body, but only if it can move.
+     *
+     * @param linearVelocity The linear velocity to set
+     * @see #isMotionEnabled()
+     * @see #setMotionEnabled(boolean)
+     */
+    public void setLinearVelocity(Vector3 linearVelocity) {
+        if (mIsMotionEnabled) {
+            mLinearVelocity.set(linearVelocity);
+        }
+    }
 
-	/**
-	 * Gets the angular velocity of the body.
-	 *
-	 * @return The angular velocity
-	 */
-	@Override
-	public Vector3 getAngularVelocity() {
-		return mAngularVelocity;
-	}
+    /**
+     * Gets the angular velocity of the body.
+     *
+     * @return The angular velocity
+     */
+    @Override
+    public Vector3 getAngularVelocity() {
+        return mAngularVelocity;
+    }
 
-	/**
-	 * Sets the angular velocity of the body.
-	 *
-	 * @param angularVelocity The angular velocity to set
-	 */
-	public void setAngularVelocity(Vector3 angularVelocity) {
-		mAngularVelocity.set(angularVelocity);
-	}
+    /**
+     * Sets the angular velocity of the body.
+     *
+     * @param angularVelocity The angular velocity to set
+     */
+    public void setAngularVelocity(Vector3 angularVelocity) {
+        mAngularVelocity.set(angularVelocity);
+    }
 
-	/**
-	 * Returns true if the body can move, false if not.
-	 *
-	 * @return Whether or not the body can move
-	 */
-	@Override
-	public boolean isMotionEnabled() {
-		return mIsMotionEnabled;
-	}
+    /**
+     * Returns true if the body can move, false if not.
+     *
+     * @return Whether or not the body can move
+     */
+    @Override
+    public boolean isMotionEnabled() {
+        return mIsMotionEnabled;
+    }
 
-	/**
-	 * Sets whether or not this body can move. True to allow movement, false to disallow.
-	 *
-	 * @param isMotionEnabled True if the body should move, false if not
-	 */
-	public void setMotionEnabled(boolean isMotionEnabled) {
-		mIsMotionEnabled = isMotionEnabled;
-	}
+    /**
+     * Sets whether or not this body can move. True to allow movement, false to disallow.
+     *
+     * @param isMotionEnabled True if the body should move, false if not
+     */
+    public void setMotionEnabled(boolean isMotionEnabled) {
+        mIsMotionEnabled = isMotionEnabled;
+    }
 
-	@Override
-	public String toString() {
-		return "MobileRigidBody{id= " + getID() + ", transform= " + getTransform() + ", mass=" + getMass() + ", aabb= " + getAABB() + "}";
-	}
+    @Override
+    public String toString() {
+        return "MobileRigidBody{id= " + getID() + ", transform= " + getTransform() + ", mass=" + getMass() + ", aabb= " + getAABB() + "}";
+    }
 }

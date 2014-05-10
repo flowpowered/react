@@ -49,107 +49,107 @@ import org.spout.physics.math.Vector3;
  * Provides fake implementations and objects for tests.
  */
 public class Dummies {
-	private static final Random RANDOM = new Random();
+    private static final Random RANDOM = new Random();
 
-	public static Vector3 newPosition() {
-		return new Vector3(RANDOM.nextInt(21) - 10, RANDOM.nextInt(21) - 10, RANDOM.nextInt(21) - 10);
-	}
+    public static Vector3 newPosition() {
+        return new Vector3(RANDOM.nextInt(21) - 10, RANDOM.nextInt(21) - 10, RANDOM.nextInt(21) - 10);
+    }
 
-	public static Quaternion newOrientation() {
-		final float phi = RANDOM.nextFloat() * 2 * (float) Math.PI;
-		final float theta = RANDOM.nextFloat() * 2 * (float) Math.PI;
-		final float x = (float) Math.sin(theta) * (float) Math.cos(phi);
-		final float y = (float) Math.sin(theta) * (float) Math.sin(phi);
-		final float z = (float) Math.cos(theta);
-		final float halfAngle = (float) Math.toRadians(RANDOM.nextFloat() * 2 * Math.PI) / 2;
-		final float q = (float) Math.sin(halfAngle);
-		return new Quaternion(x * q, y * q, z * q, (float) Math.cos(halfAngle));
-	}
+    public static Quaternion newOrientation() {
+        final float phi = RANDOM.nextFloat() * 2 * (float) Math.PI;
+        final float theta = RANDOM.nextFloat() * 2 * (float) Math.PI;
+        final float x = (float) Math.sin(theta) * (float) Math.cos(phi);
+        final float y = (float) Math.sin(theta) * (float) Math.sin(phi);
+        final float z = (float) Math.cos(theta);
+        final float halfAngle = (float) Math.toRadians(RANDOM.nextFloat() * 2 * Math.PI) / 2;
+        final float q = (float) Math.sin(halfAngle);
+        return new Quaternion(x * q, y * q, z * q, (float) Math.cos(halfAngle));
+    }
 
-	public static Transform newTransform() {
-		return new Transform(newPosition(), newOrientation());
-	}
+    public static Transform newTransform() {
+        return new Transform(newPosition(), newOrientation());
+    }
 
-	public static CollisionBody newCollisionBody(int id) {
-		return new MobileRigidBody(Transform.identity(), 0, Matrix3x3.identity(), new BoxShape(new Vector3()), id);
-	}
+    public static CollisionBody newCollisionBody(int id) {
+        return new MobileRigidBody(Transform.identity(), 0, Matrix3x3.identity(), new BoxShape(new Vector3()), id);
+    }
 
-	public static AABB newAABB() {
-		final Vector3 min = newPosition();
-		return new AABB(min, Vector3.add(min, new Vector3(RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4)));
-	}
+    public static AABB newAABB() {
+        final Vector3 min = newPosition();
+        return new AABB(min, Vector3.add(min, new Vector3(RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4)));
+    }
 
-	public static AABB newIntersectingAABB(AABB with) {
-		final Vector3 wMin = with.getMin();
-		final Vector3 wSize = Vector3.subtract(with.getMax(), wMin);
-		final int iSizeX = RANDOM.nextInt((int) wSize.getX() + 1);
-		final int iSizeY = RANDOM.nextInt((int) wSize.getY() + 1);
-		final int iSizeZ = RANDOM.nextInt((int) wSize.getZ() + 1);
-		final int eSizeX = RANDOM.nextInt(5) + 4;
-		final int eSizeY = RANDOM.nextInt(5) + 4;
-		final int eSizeZ = RANDOM.nextInt(5) + 4;
-		final Vector3 min = Vector3.subtract(wMin, new Vector3(eSizeX, eSizeY, eSizeZ));
-		final Vector3 max = Vector3.add(wMin, new Vector3(iSizeX, iSizeY, iSizeZ));
-		return new AABB(min, max);
-	}
+    public static AABB newIntersectingAABB(AABB with) {
+        final Vector3 wMin = with.getMin();
+        final Vector3 wSize = Vector3.subtract(with.getMax(), wMin);
+        final int iSizeX = RANDOM.nextInt((int) wSize.getX() + 1);
+        final int iSizeY = RANDOM.nextInt((int) wSize.getY() + 1);
+        final int iSizeZ = RANDOM.nextInt((int) wSize.getZ() + 1);
+        final int eSizeX = RANDOM.nextInt(5) + 4;
+        final int eSizeY = RANDOM.nextInt(5) + 4;
+        final int eSizeZ = RANDOM.nextInt(5) + 4;
+        final Vector3 min = Vector3.subtract(wMin, new Vector3(eSizeX, eSizeY, eSizeZ));
+        final Vector3 max = Vector3.add(wMin, new Vector3(iSizeX, iSizeY, iSizeZ));
+        return new AABB(min, max);
+    }
 
-	public static BoxShape newBoxShape() {
-		return new BoxShape(new Vector3(RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4));
-	}
+    public static BoxShape newBoxShape() {
+        return new BoxShape(new Vector3(RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4));
+    }
 
-	public static ConeShape newConeShape() {
-		return new ConeShape(RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4);
-	}
+    public static ConeShape newConeShape() {
+        return new ConeShape(RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4);
+    }
 
-	public static CylinderShape newCylinderShape() {
-		return new CylinderShape(RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4);
-	}
+    public static CylinderShape newCylinderShape() {
+        return new CylinderShape(RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4);
+    }
 
-	public static SphereShape newSphereShape() {
-		return new SphereShape(RANDOM.nextInt(5) + 4);
-	}
+    public static SphereShape newSphereShape() {
+        return new SphereShape(RANDOM.nextInt(5) + 4);
+    }
 
-	public static CollisionShape newCollisionShape() {
-		switch (RANDOM.nextInt(4)) {
-			case 0:
-				return newBoxShape();
-			case 1:
-				return newConeShape();
-			case 2:
-				return newCylinderShape();
-			case 3:
-				return newSphereShape();
-			default:
-				throw new IllegalStateException("random int larger than shape types count");
-		}
-	}
+    public static CollisionShape newCollisionShape() {
+        switch (RANDOM.nextInt(4)) {
+            case 0:
+                return newBoxShape();
+            case 1:
+                return newConeShape();
+            case 2:
+                return newCylinderShape();
+            case 3:
+                return newSphereShape();
+            default:
+                throw new IllegalStateException("random int larger than shape types count");
+        }
+    }
 
-	public static CollisionWorld newCollisionWorld() {
-		return new DummyCollisionWorld();
-	}
+    public static CollisionWorld newCollisionWorld() {
+        return new DummyCollisionWorld();
+    }
 
-	public static CollisionDetection newCollisionDetection() {
-		return new CollisionDetection(newCollisionWorld());
-	}
+    public static CollisionDetection newCollisionDetection() {
+        return new CollisionDetection(newCollisionWorld());
+    }
 
-	private static class DummyCollisionWorld extends CollisionWorld {
-		private DummyCollisionWorld() {
-		}
+    private static class DummyCollisionWorld extends CollisionWorld {
+        private DummyCollisionWorld() {
+        }
 
-		@Override
-		public void notifyAddedOverlappingPair(BroadPhasePair addedPair) {
-		}
+        @Override
+        public void notifyAddedOverlappingPair(BroadPhasePair addedPair) {
+        }
 
-		@Override
-		public void notifyRemovedOverlappingPair(BroadPhasePair removedPair) {
-		}
+        @Override
+        public void notifyRemovedOverlappingPair(BroadPhasePair removedPair) {
+        }
 
-		@Override
-		public void notifyNewContact(BroadPhasePair pair, ContactInfo contactInfo) {
-		}
+        @Override
+        public void notifyNewContact(BroadPhasePair pair, ContactInfo contactInfo) {
+        }
 
-		@Override
-		public void updateOverlappingPair(BroadPhasePair pair) {
-		}
-	}
+        @Override
+        public void updateOverlappingPair(BroadPhasePair pair) {
+        }
+    }
 }

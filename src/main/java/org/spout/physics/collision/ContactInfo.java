@@ -33,95 +33,95 @@ import org.spout.physics.math.Vector3;
  * The information fields are immutable.
  */
 public class ContactInfo {
-	private final Vector3 normal = new Vector3();
-	private float penetrationDepth;
-	private final Vector3 localPoint1 = new Vector3();
-	private final Vector3 localPoint2 = new Vector3();
+    private final Vector3 normal = new Vector3();
+    private float penetrationDepth;
+    private final Vector3 localPoint1 = new Vector3();
+    private final Vector3 localPoint2 = new Vector3();
 
-	/**
-	 * Gets the normal vector for the collision contact in world space.
-	 *
-	 * @return The normal vector
-	 */
-	public Vector3 getNormal() {
-		return normal;
-	}
+    /**
+     * Gets the normal vector for the collision contact in world space.
+     *
+     * @return The normal vector
+     */
+    public Vector3 getNormal() {
+        return normal;
+    }
 
-	/**
-	 * Sets the normal vector for the collision contact in world space.
-	 *
-	 * @param normal The normal vector to set
-	 */
-	public void setNormal(Vector3 normal) {
-		this.normal.set(normal);
-	}
+    /**
+     * Sets the normal vector for the collision contact in world space.
+     *
+     * @param normal The normal vector to set
+     */
+    public void setNormal(Vector3 normal) {
+        this.normal.set(normal);
+    }
 
-	/**
-	 * Gets the penetration depth of the contact.
-	 *
-	 * @return The penetration depth
-	 */
-	public float getPenetrationDepth() {
-		return penetrationDepth;
-	}
+    /**
+     * Gets the penetration depth of the contact.
+     *
+     * @return The penetration depth
+     */
+    public float getPenetrationDepth() {
+        return penetrationDepth;
+    }
 
-	/**
-	 * Sets the penetration depth of the contact.
-	 *
-	 * @param penetrationDepth The penetration depth to set
-	 */
-	public void setPenetrationDepth(float penetrationDepth) {
-		this.penetrationDepth = penetrationDepth;
-	}
+    /**
+     * Sets the penetration depth of the contact.
+     *
+     * @param penetrationDepth The penetration depth to set
+     */
+    public void setPenetrationDepth(float penetrationDepth) {
+        this.penetrationDepth = penetrationDepth;
+    }
 
-	/**
-	 * Gets the contact point of the first body in the local space of the first body.
-	 *
-	 * @return The local point of contact for the first body
-	 */
-	public Vector3 getFirstLocalPoint() {
-		return localPoint1;
-	}
+    /**
+     * Gets the contact point of the first body in the local space of the first body.
+     *
+     * @return The local point of contact for the first body
+     */
+    public Vector3 getFirstLocalPoint() {
+        return localPoint1;
+    }
 
-	/**
-	 * Sets the contact point of the first body in the local space of the first body.
-	 *
-	 * @param firstLocalPoint The contact point to set for the first body
-	 */
-	public void setFirstLocalPoint(Vector3 firstLocalPoint) {
-		localPoint1.set(firstLocalPoint);
-	}
+    /**
+     * Sets the contact point of the first body in the local space of the first body.
+     *
+     * @param firstLocalPoint The contact point to set for the first body
+     */
+    public void setFirstLocalPoint(Vector3 firstLocalPoint) {
+        localPoint1.set(firstLocalPoint);
+    }
 
-	/**
-	 * Gets the contact point of second body body in the local space of second body body.
-	 *
-	 * @return The local point of contact for second body body
-	 */
-	public Vector3 getSecondLocalPoint() {
-		return localPoint2;
-	}
+    /**
+     * Gets the contact point of second body body in the local space of second body body.
+     *
+     * @return The local point of contact for second body body
+     */
+    public Vector3 getSecondLocalPoint() {
+        return localPoint2;
+    }
 
-	/**
-	 * Sets the contact point of the second body in the local space of the second body.
-	 *
-	 * @param secondLocalPoint The contact point to set for second body body
-	 */
-	public void setSecondLocalPoint(Vector3 secondLocalPoint) {
-		localPoint2.set(secondLocalPoint);
-	}
+    /**
+     * Sets the contact point of the second body in the local space of the second body.
+     *
+     * @param secondLocalPoint The contact point to set for second body body
+     */
+    public void setSecondLocalPoint(Vector3 secondLocalPoint) {
+        localPoint2.set(secondLocalPoint);
+    }
 
-	/**
-	 * Sets all the values of this contact info.
-	 *
-	 * @param normal The normal vector to set
-	 * @param penetrationDepth The penetration depth to set
-	 * @param localPoint1 The contact point to set for the first body
-	 * @param localPoint2 The contact point to set for second body body
-	 */
-	public void set(Vector3 normal, float penetrationDepth, Vector3 localPoint1, Vector3 localPoint2) {
-		setNormal(normal);
-		setPenetrationDepth(penetrationDepth);
-		setFirstLocalPoint(localPoint1);
-		setSecondLocalPoint(localPoint2);
-	}
+    /**
+     * Sets all the values of this contact info.
+     *
+     * @param normal The normal vector to set
+     * @param penetrationDepth The penetration depth to set
+     * @param localPoint1 The contact point to set for the first body
+     * @param localPoint2 The contact point to set for second body body
+     */
+    public void set(Vector3 normal, float penetrationDepth, Vector3 localPoint1, Vector3 localPoint2) {
+        setNormal(normal);
+        setPenetrationDepth(penetrationDepth);
+        setFirstLocalPoint(localPoint1);
+        setSecondLocalPoint(localPoint2);
+    }
 }

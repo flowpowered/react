@@ -35,21 +35,21 @@ import org.spout.physics.math.Transform;
  * want to inform the callbacks of a collision but handle adjustments on your own (ex. Character movement, moving through water, etc.)
  */
 public class GhostMobileRigidBody extends MobileRigidBody {
-	/**
-	 * Constructs a new rigid body from its transform, mass, local inertia tensor, collision shape and ID.
-	 *
-	 * @param transform The transform (position and orientation)
-	 * @param mass The mass
-	 * @param inertiaTensorLocal The local inertial tensor
-	 * @param collisionShape The collision shape
-	 * @param id The ID
-	 */
-	public GhostMobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape, int id) {
-		super(transform, mass, inertiaTensorLocal, collisionShape, id);
-	}
+    /**
+     * Constructs a new rigid body from its transform, mass, local inertia tensor, collision shape and ID.
+     *
+     * @param transform The transform (position and orientation)
+     * @param mass The mass
+     * @param inertiaTensorLocal The local inertial tensor
+     * @param collisionShape The collision shape
+     * @param id The ID
+     */
+    public GhostMobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape, int id) {
+        super(transform, mass, inertiaTensorLocal, collisionShape, id);
+    }
 
-	@Override
-	public String toString() {
-		return "GhostMobileRigidBody{id= " + getID() + ", transform= " + getTransform() + ", mass=" + getMass() + ", aabb= " + getAABB() + "}";
-	}
+    @Override
+    public String toString() {
+        return "GhostMobileRigidBody{id= " + getID() + ", transform= " + getTransform() + ", mass=" + getMass() + ", aabb= " + getAABB() + "}";
+    }
 }

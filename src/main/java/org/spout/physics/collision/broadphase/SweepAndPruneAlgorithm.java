@@ -41,419 +41,419 @@ import org.spout.physics.math.Vector3;
  * www.codercorner.com/SAP.pdf.
  */
 public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
-	private static final int NB_SENTINELS = 2;
-	private static final int INVALID_INDEX = Integer.MAX_VALUE;
-	private BoxAABB[] mBoxes = null;
-	private final EndPoint[][] mEndPoints = {null, null, null};
-	private int mNbBoxes = 0;
-	private int mNbMaxBoxes = 0;
-	private final TIntStack mFreeBoxIndices = new TIntArrayStack();
-	private final TObjectIntMap<CollisionBody> mMapBodyToBoxIndex = new TObjectIntHashMap<CollisionBody>();
+    private static final int NB_SENTINELS = 2;
+    private static final int INVALID_INDEX = Integer.MAX_VALUE;
+    private BoxAABB[] mBoxes = null;
+    private final EndPoint[][] mEndPoints = {null, null, null};
+    private int mNbBoxes = 0;
+    private int mNbMaxBoxes = 0;
+    private final TIntStack mFreeBoxIndices = new TIntArrayStack();
+    private final TObjectIntMap<CollisionBody> mMapBodyToBoxIndex = new TObjectIntHashMap<>();
 
-	/**
-	 * Constructs a new sweep and prune algorithm from the collision detection it's associated to.
-	 *
-	 * @param collisionDetection The collision detection
-	 */
-	public SweepAndPruneAlgorithm(CollisionDetection collisionDetection) {
-		super(collisionDetection);
-	}
+    /**
+     * Constructs a new sweep and prune algorithm from the collision detection it's associated to.
+     *
+     * @param collisionDetection The collision detection
+     */
+    public SweepAndPruneAlgorithm(CollisionDetection collisionDetection) {
+        super(collisionDetection);
+    }
 
-	/**
-	 * Gets the number of objects managed by this algorithm.
-	 *
-	 * @return The number of objects
-	 */
-	public int getNbObjects() {
-		return mNbBoxes;
-	}
+    /**
+     * Gets the number of objects managed by this algorithm.
+     *
+     * @return The number of objects
+     */
+    public int getNbObjects() {
+        return mNbBoxes;
+    }
 
-	@Override
-	public void addObject(CollisionBody body, AABB aabb) {
-		if (body == null) {
-			throw new IllegalArgumentException("Attempting to add a null collision body");
-		}
-		if (aabb == null) {
-			throw new IllegalArgumentException("Attempting to add a null AABB");
-		}
-		final Vector3 extend = Vector3.subtract(aabb.getMax(), aabb.getMin());
-		if (extend.getX() < 0 || extend.getY() < 0 || extend.getZ() < 0) {
-			throw new IllegalStateException("AABB for body: " + body + " is invalid! AABB is " + aabb);
-		}
-		final int boxIndex;
-		if (mFreeBoxIndices.size() != 0) {
-			boxIndex = mFreeBoxIndices.pop();
-		} else {
-			if (mNbBoxes == mNbMaxBoxes) {
-				resizeArrays();
-			}
-			boxIndex = mNbBoxes;
-		}
-		final int indexLimitEndPoint = 2 * mNbBoxes + NB_SENTINELS - 1;
-		for (int axis = 0; axis < 3; axis++) {
-			final EndPoint maxLimitEndPoint = mEndPoints[axis][indexLimitEndPoint];
-			if (mEndPoints[axis][0].getBoxID() != INVALID_INDEX || !mEndPoints[axis][0].isMin()) {
-				throw new IllegalStateException("The box ID for the first end point of the axis must" +
-						" be equal to INVALID_INDEX and the end point must be a minimum");
-			}
-			if (maxLimitEndPoint.getBoxID() != INVALID_INDEX || maxLimitEndPoint.isMin()) {
-				throw new IllegalStateException("The box ID for the limit end point of the axis must" +
-						" be equal to INVALID_INDEX and the end point must be a maximum");
-			}
-			if (mEndPoints[axis][indexLimitEndPoint + 2] == null) {
-				mEndPoints[axis][indexLimitEndPoint + 2] = new EndPoint();
-			}
-			final EndPoint newMaxLimitEndPoint = mEndPoints[axis][indexLimitEndPoint + 2];
-			newMaxLimitEndPoint.setValues(maxLimitEndPoint.getBoxID(), maxLimitEndPoint.isMin(),
-					maxLimitEndPoint.getValue());
-		}
-		if (mBoxes[boxIndex] == null) {
-			mBoxes[boxIndex] = new BoxAABB();
-		}
-		final BoxAABB box = mBoxes[boxIndex];
-		box.setBody(body);
-		final long minEndPointValue = encodeFloatIntoInteger(Float.MAX_VALUE) - 2;
-		final long maxEndPointValue = encodeFloatIntoInteger(Float.MAX_VALUE) - 1;
-		for (int axis = 0; axis < 3; axis++) {
-			box.getMin()[axis] = indexLimitEndPoint;
-			box.getMax()[axis] = indexLimitEndPoint + 1;
-			final EndPoint minimumEndPoint = mEndPoints[axis][box.getMin()[axis]];
-			minimumEndPoint.setValues(boxIndex, true, minEndPointValue);
-			if (mEndPoints[axis][box.getMax()[axis]] == null) {
-				mEndPoints[axis][box.getMax()[axis]] = new EndPoint();
-			}
-			final EndPoint maximumEndPoint = mEndPoints[axis][box.getMax()[axis]];
-			maximumEndPoint.setValues(boxIndex, false, maxEndPointValue);
-		}
-		mMapBodyToBoxIndex.put(body, boxIndex);
-		mNbBoxes++;
-		updateObject(body, aabb);
-	}
+    @Override
+    public void addObject(CollisionBody body, AABB aabb) {
+        if (body == null) {
+            throw new IllegalArgumentException("Attempting to add a null collision body");
+        }
+        if (aabb == null) {
+            throw new IllegalArgumentException("Attempting to add a null AABB");
+        }
+        final Vector3 extend = Vector3.subtract(aabb.getMax(), aabb.getMin());
+        if (extend.getX() < 0 || extend.getY() < 0 || extend.getZ() < 0) {
+            throw new IllegalStateException("AABB for body: " + body + " is invalid! AABB is " + aabb);
+        }
+        final int boxIndex;
+        if (mFreeBoxIndices.size() != 0) {
+            boxIndex = mFreeBoxIndices.pop();
+        } else {
+            if (mNbBoxes == mNbMaxBoxes) {
+                resizeArrays();
+            }
+            boxIndex = mNbBoxes;
+        }
+        final int indexLimitEndPoint = 2 * mNbBoxes + NB_SENTINELS - 1;
+        for (int axis = 0; axis < 3; axis++) {
+            final EndPoint maxLimitEndPoint = mEndPoints[axis][indexLimitEndPoint];
+            if (mEndPoints[axis][0].getBoxID() != INVALID_INDEX || !mEndPoints[axis][0].isMin()) {
+                throw new IllegalStateException("The box ID for the first end point of the axis must" +
+                        " be equal to INVALID_INDEX and the end point must be a minimum");
+            }
+            if (maxLimitEndPoint.getBoxID() != INVALID_INDEX || maxLimitEndPoint.isMin()) {
+                throw new IllegalStateException("The box ID for the limit end point of the axis must" +
+                        " be equal to INVALID_INDEX and the end point must be a maximum");
+            }
+            if (mEndPoints[axis][indexLimitEndPoint + 2] == null) {
+                mEndPoints[axis][indexLimitEndPoint + 2] = new EndPoint();
+            }
+            final EndPoint newMaxLimitEndPoint = mEndPoints[axis][indexLimitEndPoint + 2];
+            newMaxLimitEndPoint.setValues(maxLimitEndPoint.getBoxID(), maxLimitEndPoint.isMin(),
+                    maxLimitEndPoint.getValue());
+        }
+        if (mBoxes[boxIndex] == null) {
+            mBoxes[boxIndex] = new BoxAABB();
+        }
+        final BoxAABB box = mBoxes[boxIndex];
+        box.setBody(body);
+        final long minEndPointValue = encodeFloatIntoInteger(Float.MAX_VALUE) - 2;
+        final long maxEndPointValue = encodeFloatIntoInteger(Float.MAX_VALUE) - 1;
+        for (int axis = 0; axis < 3; axis++) {
+            box.getMin()[axis] = indexLimitEndPoint;
+            box.getMax()[axis] = indexLimitEndPoint + 1;
+            final EndPoint minimumEndPoint = mEndPoints[axis][box.getMin()[axis]];
+            minimumEndPoint.setValues(boxIndex, true, minEndPointValue);
+            if (mEndPoints[axis][box.getMax()[axis]] == null) {
+                mEndPoints[axis][box.getMax()[axis]] = new EndPoint();
+            }
+            final EndPoint maximumEndPoint = mEndPoints[axis][box.getMax()[axis]];
+            maximumEndPoint.setValues(boxIndex, false, maxEndPointValue);
+        }
+        mMapBodyToBoxIndex.put(body, boxIndex);
+        mNbBoxes++;
+        updateObject(body, aabb);
+    }
 
-	@Override
-	public void removeObject(CollisionBody body) {
-		final float max = Float.MAX_VALUE;
-		final Vector3 maxVector = new Vector3(max, max, max);
-		final AABB aabb = new AABB(maxVector, maxVector);
-		updateObject(body, aabb);
-		final int indexLimitEndPoint = 2 * mNbBoxes + NB_SENTINELS - 1;
-		for (int axis = 0; axis < 3; axis++) {
-			mEndPoints[axis][indexLimitEndPoint - 2] = mEndPoints[axis][indexLimitEndPoint];
-			mEndPoints[axis][indexLimitEndPoint - 1] = null;
-			mEndPoints[axis][indexLimitEndPoint] = null;
-		}
-		final int boxIndex = mMapBodyToBoxIndex.get(body);
-		mFreeBoxIndices.push(boxIndex);
-		mMapBodyToBoxIndex.remove(body);
-		mNbBoxes--;
-	}
+    @Override
+    public void removeObject(CollisionBody body) {
+        final float max = Float.MAX_VALUE;
+        final Vector3 maxVector = new Vector3(max, max, max);
+        final AABB aabb = new AABB(maxVector, maxVector);
+        updateObject(body, aabb);
+        final int indexLimitEndPoint = 2 * mNbBoxes + NB_SENTINELS - 1;
+        for (int axis = 0; axis < 3; axis++) {
+            mEndPoints[axis][indexLimitEndPoint - 2] = mEndPoints[axis][indexLimitEndPoint];
+            mEndPoints[axis][indexLimitEndPoint - 1] = null;
+            mEndPoints[axis][indexLimitEndPoint] = null;
+        }
+        final int boxIndex = mMapBodyToBoxIndex.get(body);
+        mFreeBoxIndices.push(boxIndex);
+        mMapBodyToBoxIndex.remove(body);
+        mNbBoxes--;
+    }
 
-	@Override
-	public void updateObject(CollisionBody body, AABB aabb) {
-		final AABBInt aabbInt = new AABBInt(aabb);
-		final int boxIndex = mMapBodyToBoxIndex.get(body);
-		final BoxAABB box = mBoxes[boxIndex];
-		for (int axis = 0; axis < 3; axis++) {
-			final int otherAxis1 = (1 << axis) & 3;
-			final int otherAxis2 = (1 << otherAxis1) & 3;
-			final EndPoint[] startEndPointsCurrentAxis = mEndPoints[axis];
-			// -------- Update the minimum end-point ------------//
-			EndPoint currentMinEndPoint = startEndPointsCurrentAxis[box.getMin()[axis]];
-			int currentMinEndPointIndex = box.getMin()[axis];
-			if (!currentMinEndPoint.isMin()) {
-				throw new IllegalStateException("currentMinEndPoint must be a minimum");
-			}
-			long limit = aabbInt.getMin()[axis];
-			if (limit < currentMinEndPoint.getValue()) {
-				final EndPoint savedEndPoint = currentMinEndPoint;
-				int indexEndPoint = currentMinEndPointIndex;
-				final int savedEndPointIndex = indexEndPoint;
-				currentMinEndPoint.setValue(limit);
-				while ((currentMinEndPoint = startEndPointsCurrentAxis[--currentMinEndPointIndex]).getValue() > limit) {
-					final BoxAABB id1 = mBoxes[currentMinEndPoint.getBoxID()];
-					final boolean isMin = currentMinEndPoint.isMin();
-					if (!isMin) {
-						if (!box.equals(id1) && (box.getBody().isMotionEnabled() || id1.getBody().isMotionEnabled())) {
-							if (testIntersect2D(box, id1, otherAxis1, otherAxis2) &&
-									testIntersect1DSortedAABBs(id1, aabbInt, startEndPointsCurrentAxis, axis)) {
-								mPairManager.addPair(body, id1.getBody());
-							}
-						}
-						id1.getMax()[axis] = indexEndPoint--;
-					} else {
-						id1.getMin()[axis] = indexEndPoint--;
-					}
-					startEndPointsCurrentAxis[currentMinEndPointIndex + 1] = currentMinEndPoint;
-				}
-				if (savedEndPointIndex != indexEndPoint) {
-					if (savedEndPoint.isMin()) {
-						mBoxes[savedEndPoint.getBoxID()].getMin()[axis] = indexEndPoint;
-					} else {
-						mBoxes[savedEndPoint.getBoxID()].getMax()[axis] = indexEndPoint;
-					}
-					startEndPointsCurrentAxis[indexEndPoint] = savedEndPoint;
-				}
-			} else if (limit > currentMinEndPoint.getValue()) {
-				final EndPoint savedEndPoint = currentMinEndPoint;
-				int indexEndPoint = currentMinEndPointIndex;
-				final int savedEndPointIndex = indexEndPoint;
-				currentMinEndPoint.setValue(limit);
-				while ((currentMinEndPoint = startEndPointsCurrentAxis[++currentMinEndPointIndex]).getValue() < limit) {
-					final BoxAABB id1 = mBoxes[currentMinEndPoint.getBoxID()];
-					final boolean isMin = currentMinEndPoint.isMin();
-					if (!isMin) {
-						if (!box.equals(id1) && (box.getBody().isMotionEnabled() || id1.getBody().isMotionEnabled())) {
-							if (testIntersect2D(box, id1, otherAxis1, otherAxis2)) {
-								mPairManager.removePair(body.getID(), id1.getBody().getID());
-							}
-						}
-						id1.getMax()[axis] = indexEndPoint++;
-					} else {
-						id1.getMin()[axis] = indexEndPoint++;
-					}
-					startEndPointsCurrentAxis[currentMinEndPointIndex - 1] = currentMinEndPoint;
-				}
-				if (savedEndPointIndex != indexEndPoint) {
-					if (savedEndPoint.isMin()) {
-						mBoxes[savedEndPoint.getBoxID()].getMin()[axis] = indexEndPoint;
-					} else {
-						mBoxes[savedEndPoint.getBoxID()].getMax()[axis] = indexEndPoint;
-					}
-					startEndPointsCurrentAxis[indexEndPoint] = savedEndPoint;
-				}
-			}
-			// ------- Update the maximum end-point ------------ //
-			EndPoint currentMaxEndPoint = startEndPointsCurrentAxis[box.getMax()[axis]];
-			int currentMaxEndPointIndex = box.getMax()[axis];
-			if (currentMaxEndPoint.isMin()) {
-				throw new IllegalStateException("currentMinEndPoint must not be a minimum");
-			}
-			limit = aabbInt.getMax()[axis];
-			if (limit > currentMaxEndPoint.getValue()) {
-				final EndPoint savedEndPoint = currentMaxEndPoint;
-				int indexEndPoint = currentMaxEndPointIndex;
-				final int savedEndPointIndex = indexEndPoint;
-				currentMaxEndPoint.setValue(limit);
-				while ((currentMaxEndPoint = startEndPointsCurrentAxis[++currentMaxEndPointIndex]).getValue() < limit) {
-					final BoxAABB id1 = mBoxes[currentMaxEndPoint.getBoxID()];
-					final boolean isMin = currentMaxEndPoint.isMin();
-					if (isMin) {
-						if (!box.equals(id1) && (box.getBody().isMotionEnabled() || id1.getBody().isMotionEnabled())) {
-							if (testIntersect2D(box, id1, otherAxis1, otherAxis2) &&
-									testIntersect1DSortedAABBs(id1, aabbInt, startEndPointsCurrentAxis, axis)) {
-								mPairManager.addPair(body, id1.getBody());
-							}
-						}
-						id1.getMin()[axis] = indexEndPoint++;
-					} else {
-						id1.getMax()[axis] = indexEndPoint++;
-					}
-					startEndPointsCurrentAxis[currentMaxEndPointIndex - 1] = currentMaxEndPoint;
-				}
-				if (savedEndPointIndex != indexEndPoint) {
-					if (savedEndPoint.isMin()) {
-						mBoxes[savedEndPoint.getBoxID()].getMin()[axis] = indexEndPoint;
-					} else {
-						mBoxes[savedEndPoint.getBoxID()].getMax()[axis] = indexEndPoint;
-					}
-					startEndPointsCurrentAxis[indexEndPoint] = savedEndPoint;
-				}
-			} else if (limit < currentMaxEndPoint.getValue()) {
-				final EndPoint savedEndPoint = currentMaxEndPoint;
-				int indexEndPoint = currentMaxEndPointIndex;
-				final int savedEndPointIndex = indexEndPoint;
-				currentMaxEndPoint.setValue(limit);
-				while ((currentMaxEndPoint = startEndPointsCurrentAxis[--currentMaxEndPointIndex]).getValue() > limit) {
-					final BoxAABB id1 = mBoxes[currentMaxEndPoint.getBoxID()];
-					final boolean isMin = currentMaxEndPoint.isMin();
-					if (isMin) {
-						if (!box.equals(id1) && (box.getBody().isMotionEnabled() || id1.getBody().isMotionEnabled())) {
-							if (testIntersect2D(box, id1, otherAxis1, otherAxis2)) {
-								mPairManager.removePair(body.getID(), id1.getBody().getID());
-							}
-						}
-						id1.getMin()[axis] = indexEndPoint--;
-					} else {
-						id1.getMax()[axis] = indexEndPoint--;
-					}
-					startEndPointsCurrentAxis[currentMaxEndPointIndex + 1] = currentMaxEndPoint;
-				}
-				if (savedEndPointIndex != indexEndPoint) {
-					if (savedEndPoint.isMin()) {
-						mBoxes[savedEndPoint.getBoxID()].getMin()[axis] = indexEndPoint;
-					} else {
-						mBoxes[savedEndPoint.getBoxID()].getMax()[axis] = indexEndPoint;
-					}
-					startEndPointsCurrentAxis[indexEndPoint] = savedEndPoint;
-				}
-			}
-		}
-	}
+    @Override
+    public void updateObject(CollisionBody body, AABB aabb) {
+        final AABBInt aabbInt = new AABBInt(aabb);
+        final int boxIndex = mMapBodyToBoxIndex.get(body);
+        final BoxAABB box = mBoxes[boxIndex];
+        for (int axis = 0; axis < 3; axis++) {
+            final int otherAxis1 = (1 << axis) & 3;
+            final int otherAxis2 = (1 << otherAxis1) & 3;
+            final EndPoint[] startEndPointsCurrentAxis = mEndPoints[axis];
+            // -------- Update the minimum end-point ------------//
+            EndPoint currentMinEndPoint = startEndPointsCurrentAxis[box.getMin()[axis]];
+            int currentMinEndPointIndex = box.getMin()[axis];
+            if (!currentMinEndPoint.isMin()) {
+                throw new IllegalStateException("currentMinEndPoint must be a minimum");
+            }
+            long limit = aabbInt.getMin()[axis];
+            if (limit < currentMinEndPoint.getValue()) {
+                final EndPoint savedEndPoint = currentMinEndPoint;
+                int indexEndPoint = currentMinEndPointIndex;
+                final int savedEndPointIndex = indexEndPoint;
+                currentMinEndPoint.setValue(limit);
+                while ((currentMinEndPoint = startEndPointsCurrentAxis[--currentMinEndPointIndex]).getValue() > limit) {
+                    final BoxAABB id1 = mBoxes[currentMinEndPoint.getBoxID()];
+                    final boolean isMin = currentMinEndPoint.isMin();
+                    if (!isMin) {
+                        if (!box.equals(id1) && (box.getBody().isMotionEnabled() || id1.getBody().isMotionEnabled())) {
+                            if (testIntersect2D(box, id1, otherAxis1, otherAxis2) &&
+                                    testIntersect1DSortedAABBs(id1, aabbInt, startEndPointsCurrentAxis, axis)) {
+                                mPairManager.addPair(body, id1.getBody());
+                            }
+                        }
+                        id1.getMax()[axis] = indexEndPoint--;
+                    } else {
+                        id1.getMin()[axis] = indexEndPoint--;
+                    }
+                    startEndPointsCurrentAxis[currentMinEndPointIndex + 1] = currentMinEndPoint;
+                }
+                if (savedEndPointIndex != indexEndPoint) {
+                    if (savedEndPoint.isMin()) {
+                        mBoxes[savedEndPoint.getBoxID()].getMin()[axis] = indexEndPoint;
+                    } else {
+                        mBoxes[savedEndPoint.getBoxID()].getMax()[axis] = indexEndPoint;
+                    }
+                    startEndPointsCurrentAxis[indexEndPoint] = savedEndPoint;
+                }
+            } else if (limit > currentMinEndPoint.getValue()) {
+                final EndPoint savedEndPoint = currentMinEndPoint;
+                int indexEndPoint = currentMinEndPointIndex;
+                final int savedEndPointIndex = indexEndPoint;
+                currentMinEndPoint.setValue(limit);
+                while ((currentMinEndPoint = startEndPointsCurrentAxis[++currentMinEndPointIndex]).getValue() < limit) {
+                    final BoxAABB id1 = mBoxes[currentMinEndPoint.getBoxID()];
+                    final boolean isMin = currentMinEndPoint.isMin();
+                    if (!isMin) {
+                        if (!box.equals(id1) && (box.getBody().isMotionEnabled() || id1.getBody().isMotionEnabled())) {
+                            if (testIntersect2D(box, id1, otherAxis1, otherAxis2)) {
+                                mPairManager.removePair(body.getID(), id1.getBody().getID());
+                            }
+                        }
+                        id1.getMax()[axis] = indexEndPoint++;
+                    } else {
+                        id1.getMin()[axis] = indexEndPoint++;
+                    }
+                    startEndPointsCurrentAxis[currentMinEndPointIndex - 1] = currentMinEndPoint;
+                }
+                if (savedEndPointIndex != indexEndPoint) {
+                    if (savedEndPoint.isMin()) {
+                        mBoxes[savedEndPoint.getBoxID()].getMin()[axis] = indexEndPoint;
+                    } else {
+                        mBoxes[savedEndPoint.getBoxID()].getMax()[axis] = indexEndPoint;
+                    }
+                    startEndPointsCurrentAxis[indexEndPoint] = savedEndPoint;
+                }
+            }
+            // ------- Update the maximum end-point ------------ //
+            EndPoint currentMaxEndPoint = startEndPointsCurrentAxis[box.getMax()[axis]];
+            int currentMaxEndPointIndex = box.getMax()[axis];
+            if (currentMaxEndPoint.isMin()) {
+                throw new IllegalStateException("currentMinEndPoint must not be a minimum");
+            }
+            limit = aabbInt.getMax()[axis];
+            if (limit > currentMaxEndPoint.getValue()) {
+                final EndPoint savedEndPoint = currentMaxEndPoint;
+                int indexEndPoint = currentMaxEndPointIndex;
+                final int savedEndPointIndex = indexEndPoint;
+                currentMaxEndPoint.setValue(limit);
+                while ((currentMaxEndPoint = startEndPointsCurrentAxis[++currentMaxEndPointIndex]).getValue() < limit) {
+                    final BoxAABB id1 = mBoxes[currentMaxEndPoint.getBoxID()];
+                    final boolean isMin = currentMaxEndPoint.isMin();
+                    if (isMin) {
+                        if (!box.equals(id1) && (box.getBody().isMotionEnabled() || id1.getBody().isMotionEnabled())) {
+                            if (testIntersect2D(box, id1, otherAxis1, otherAxis2) &&
+                                    testIntersect1DSortedAABBs(id1, aabbInt, startEndPointsCurrentAxis, axis)) {
+                                mPairManager.addPair(body, id1.getBody());
+                            }
+                        }
+                        id1.getMin()[axis] = indexEndPoint++;
+                    } else {
+                        id1.getMax()[axis] = indexEndPoint++;
+                    }
+                    startEndPointsCurrentAxis[currentMaxEndPointIndex - 1] = currentMaxEndPoint;
+                }
+                if (savedEndPointIndex != indexEndPoint) {
+                    if (savedEndPoint.isMin()) {
+                        mBoxes[savedEndPoint.getBoxID()].getMin()[axis] = indexEndPoint;
+                    } else {
+                        mBoxes[savedEndPoint.getBoxID()].getMax()[axis] = indexEndPoint;
+                    }
+                    startEndPointsCurrentAxis[indexEndPoint] = savedEndPoint;
+                }
+            } else if (limit < currentMaxEndPoint.getValue()) {
+                final EndPoint savedEndPoint = currentMaxEndPoint;
+                int indexEndPoint = currentMaxEndPointIndex;
+                final int savedEndPointIndex = indexEndPoint;
+                currentMaxEndPoint.setValue(limit);
+                while ((currentMaxEndPoint = startEndPointsCurrentAxis[--currentMaxEndPointIndex]).getValue() > limit) {
+                    final BoxAABB id1 = mBoxes[currentMaxEndPoint.getBoxID()];
+                    final boolean isMin = currentMaxEndPoint.isMin();
+                    if (isMin) {
+                        if (!box.equals(id1) && (box.getBody().isMotionEnabled() || id1.getBody().isMotionEnabled())) {
+                            if (testIntersect2D(box, id1, otherAxis1, otherAxis2)) {
+                                mPairManager.removePair(body.getID(), id1.getBody().getID());
+                            }
+                        }
+                        id1.getMin()[axis] = indexEndPoint--;
+                    } else {
+                        id1.getMax()[axis] = indexEndPoint--;
+                    }
+                    startEndPointsCurrentAxis[currentMaxEndPointIndex + 1] = currentMaxEndPoint;
+                }
+                if (savedEndPointIndex != indexEndPoint) {
+                    if (savedEndPoint.isMin()) {
+                        mBoxes[savedEndPoint.getBoxID()].getMin()[axis] = indexEndPoint;
+                    } else {
+                        mBoxes[savedEndPoint.getBoxID()].getMax()[axis] = indexEndPoint;
+                    }
+                    startEndPointsCurrentAxis[indexEndPoint] = savedEndPoint;
+                }
+            }
+        }
+    }
 
-	// Re-sizes the boxes and end-points arrays when they are full.
-	private void resizeArrays() {
-		final int newNbMaxBoxes = mNbMaxBoxes != 0 ? 2 * mNbMaxBoxes : 100;
-		final int nbEndPoints = mNbBoxes * 2 + NB_SENTINELS;
-		final int newNbEndPoints = newNbMaxBoxes * 2 + NB_SENTINELS;
-		final BoxAABB[] newBoxesArray = new BoxAABB[newNbMaxBoxes];
-		final EndPoint[] newEndPointsXArray = new EndPoint[newNbEndPoints];
-		final EndPoint[] newEndPointsYArray = new EndPoint[newNbEndPoints];
-		final EndPoint[] newEndPointsZArray = new EndPoint[newNbEndPoints];
-		if (mNbBoxes > 0) {
-			System.arraycopy(mBoxes, 0, newBoxesArray, 0, mNbBoxes);
-			System.arraycopy(mEndPoints[0], 0, newEndPointsXArray, 0, nbEndPoints);
-			System.arraycopy(mEndPoints[1], 0, newEndPointsYArray, 0, nbEndPoints);
-			System.arraycopy(mEndPoints[2], 0, newEndPointsZArray, 0, nbEndPoints);
-		} else {
-			final long min = encodeFloatIntoInteger(-Float.MAX_VALUE);
-			final long max = encodeFloatIntoInteger(Float.MAX_VALUE);
-			newEndPointsXArray[0] = new EndPoint();
-			newEndPointsXArray[0].setValues(INVALID_INDEX, true, min);
-			newEndPointsXArray[1] = new EndPoint();
-			newEndPointsXArray[1].setValues(INVALID_INDEX, false, max);
-			newEndPointsYArray[0] = new EndPoint();
-			newEndPointsYArray[0].setValues(INVALID_INDEX, true, min);
-			newEndPointsYArray[1] = new EndPoint();
-			newEndPointsYArray[1].setValues(INVALID_INDEX, false, max);
-			newEndPointsZArray[0] = new EndPoint();
-			newEndPointsZArray[0].setValues(INVALID_INDEX, true, min);
-			newEndPointsZArray[1] = new EndPoint();
-			newEndPointsZArray[1].setValues(INVALID_INDEX, false, max);
-		}
-		mBoxes = newBoxesArray;
-		mEndPoints[0] = newEndPointsXArray;
-		mEndPoints[1] = newEndPointsYArray;
-		mEndPoints[2] = newEndPointsZArray;
-		mNbMaxBoxes = newNbMaxBoxes;
-	}
+    // Re-sizes the boxes and end-points arrays when they are full.
+    private void resizeArrays() {
+        final int newNbMaxBoxes = mNbMaxBoxes != 0 ? 2 * mNbMaxBoxes : 100;
+        final int nbEndPoints = mNbBoxes * 2 + NB_SENTINELS;
+        final int newNbEndPoints = newNbMaxBoxes * 2 + NB_SENTINELS;
+        final BoxAABB[] newBoxesArray = new BoxAABB[newNbMaxBoxes];
+        final EndPoint[] newEndPointsXArray = new EndPoint[newNbEndPoints];
+        final EndPoint[] newEndPointsYArray = new EndPoint[newNbEndPoints];
+        final EndPoint[] newEndPointsZArray = new EndPoint[newNbEndPoints];
+        if (mNbBoxes > 0) {
+            System.arraycopy(mBoxes, 0, newBoxesArray, 0, mNbBoxes);
+            System.arraycopy(mEndPoints[0], 0, newEndPointsXArray, 0, nbEndPoints);
+            System.arraycopy(mEndPoints[1], 0, newEndPointsYArray, 0, nbEndPoints);
+            System.arraycopy(mEndPoints[2], 0, newEndPointsZArray, 0, nbEndPoints);
+        } else {
+            final long min = encodeFloatIntoInteger(-Float.MAX_VALUE);
+            final long max = encodeFloatIntoInteger(Float.MAX_VALUE);
+            newEndPointsXArray[0] = new EndPoint();
+            newEndPointsXArray[0].setValues(INVALID_INDEX, true, min);
+            newEndPointsXArray[1] = new EndPoint();
+            newEndPointsXArray[1].setValues(INVALID_INDEX, false, max);
+            newEndPointsYArray[0] = new EndPoint();
+            newEndPointsYArray[0].setValues(INVALID_INDEX, true, min);
+            newEndPointsYArray[1] = new EndPoint();
+            newEndPointsYArray[1].setValues(INVALID_INDEX, false, max);
+            newEndPointsZArray[0] = new EndPoint();
+            newEndPointsZArray[0].setValues(INVALID_INDEX, true, min);
+            newEndPointsZArray[1] = new EndPoint();
+            newEndPointsZArray[1].setValues(INVALID_INDEX, false, max);
+        }
+        mBoxes = newBoxesArray;
+        mEndPoints[0] = newEndPointsXArray;
+        mEndPoints[1] = newEndPointsYArray;
+        mEndPoints[2] = newEndPointsZArray;
+        mNbMaxBoxes = newNbMaxBoxes;
+    }
 
-	// Encodes a floating value into a integer value in order to work with integer
-	// comparisons in the Sweep-And-Prune algorithm, for performance.
-	// The main issue when encoding a floating number into an integer is keeping
-	// the sorting order. This is a problem for negative float numbers.
-	// This article describes how to solve this issue: http://www.stereopsis.com/radix.html
-	private static long encodeFloatIntoInteger(float number) {
-		long intNumber = (long) Float.floatToIntBits(number) & 0xFFFFFFFFl;
-		if ((intNumber & 0x80000000l) == 0x80000000l) {
-			intNumber = ~intNumber & 0xFFFFFFFFl;
-		} else {
-			intNumber |= 0x80000000l;
-		}
-		return intNumber;
-	}
+    // Encodes a floating value into a integer value in order to work with integer
+    // comparisons in the Sweep-And-Prune algorithm, for performance.
+    // The main issue when encoding a floating number into an integer is keeping
+    // the sorting order. This is a problem for negative float numbers.
+    // This article describes how to solve this issue: http://www.stereopsis.com/radix.html
+    private static long encodeFloatIntoInteger(float number) {
+        long intNumber = (long) Float.floatToIntBits(number) & 0xFFFFFFFFl;
+        if ((intNumber & 0x80000000l) == 0x80000000l) {
+            intNumber = ~intNumber & 0xFFFFFFFFl;
+        } else {
+            intNumber |= 0x80000000l;
+        }
+        return intNumber;
+    }
 
-	// Checks for the intersection between two boxes that are sorted on the given axis in
-	// one dimension. Only one test is necessary here. We know that the minimum of box1 cannot be
-	// larger that the maximum of box2 on the axis.
-	private static boolean testIntersect1DSortedAABBs(BoxAABB box1, AABBInt box2, EndPoint[] endPointsArray, int axis) {
-		return !(endPointsArray[box1.getMax()[axis]].getValue() < box2.getMin()[axis]);
-	}
+    // Checks for the intersection between two boxes that are sorted on the given axis in
+    // one dimension. Only one test is necessary here. We know that the minimum of box1 cannot be
+    // larger that the maximum of box2 on the axis.
+    private static boolean testIntersect1DSortedAABBs(BoxAABB box1, AABBInt box2, EndPoint[] endPointsArray, int axis) {
+        return !(endPointsArray[box1.getMax()[axis]].getValue() < box2.getMin()[axis]);
+    }
 
-	// Checks for intersection between two boxes in two dimensions. This method is used when
-	// we know the that two boxes already overlap on one axis and when we want to test if they
-	// also overlap on the two others axes.
-	private static boolean testIntersect2D(BoxAABB box1, BoxAABB box2, int axis1, int axis2) {
-		return !(box2.getMax()[axis1] < box1.getMin()[axis1] || box1.getMax()[axis1] < box2.getMin()[axis1] ||
-				box2.getMax()[axis2] < box1.getMin()[axis2] || box1.getMax()[axis2] < box2.getMin()[axis2]);
-	}
+    // Checks for intersection between two boxes in two dimensions. This method is used when
+    // we know the that two boxes already overlap on one axis and when we want to test if they
+    // also overlap on the two others axes.
+    private static boolean testIntersect2D(BoxAABB box1, BoxAABB box2, int axis1, int axis2) {
+        return !(box2.getMax()[axis1] < box1.getMin()[axis1] || box1.getMax()[axis1] < box2.getMin()[axis1] ||
+                box2.getMax()[axis2] < box1.getMin()[axis2] || box1.getMax()[axis2] < box2.getMin()[axis2]);
+    }
 
-	// Represents an end-point of an AABB on one of the three x,y or z axis.
-	private static class EndPoint {
-		private int boxID;
-		private boolean isMin;
-		private long value;
+    // Represents an end-point of an AABB on one of the three x,y or z axis.
+    private static class EndPoint {
+        private int boxID;
+        private boolean isMin;
+        private long value;
 
-		private int getBoxID() {
-			return boxID;
-		}
+        private int getBoxID() {
+            return boxID;
+        }
 
-		private boolean isMin() {
-			return isMin;
-		}
+        private boolean isMin() {
+            return isMin;
+        }
 
-		private long getValue() {
-			return value;
-		}
+        private long getValue() {
+            return value;
+        }
 
-		private void setValue(long value) {
-			this.value = value;
-		}
+        private void setValue(long value) {
+            this.value = value;
+        }
 
-		private void setValues(int boxID, boolean isMin, long value) {
-			this.boxID = boxID;
-			this.isMin = isMin;
-			this.value = value;
-		}
+        private void setValues(int boxID, boolean isMin, long value) {
+            this.boxID = boxID;
+            this.isMin = isMin;
+            this.value = value;
+        }
 
-		@Override
-		public String toString() {
-			return "(" + value + "|" + isMin + "@" + boxID + ")";
-		}
-	}
+        @Override
+        public String toString() {
+            return "(" + value + "|" + isMin + "@" + boxID + ")";
+        }
+    }
 
-	// Represents an AABB in the Sweep-And-Prune algorithm
-	private static class BoxAABB {
-		private final int[] min = new int[3];
-		private final int[] max = new int[3];
-		private CollisionBody body;
+    // Represents an AABB in the Sweep-And-Prune algorithm
+    private static class BoxAABB {
+        private final int[] min = new int[3];
+        private final int[] max = new int[3];
+        private CollisionBody body;
 
-		private int[] getMin() {
-			return min;
-		}
+        private int[] getMin() {
+            return min;
+        }
 
-		private int[] getMax() {
-			return max;
-		}
+        private int[] getMax() {
+            return max;
+        }
 
-		private CollisionBody getBody() {
-			return body;
-		}
+        private CollisionBody getBody() {
+            return body;
+        }
 
-		private void setBody(CollisionBody body) {
-			this.body = body;
-		}
+        private void setBody(CollisionBody body) {
+            this.body = body;
+        }
 
-		@Override
-		public boolean equals(Object o) {
-			if (this == o) {
-				return true;
-			}
-			if (!(o instanceof BoxAABB)) {
-				return false;
-			}
-			final BoxAABB boxAABB = (BoxAABB) o;
-			return !(body != null ? !body.equals(boxAABB.getBody()) : boxAABB.getBody() != null);
-		}
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) {
+                return true;
+            }
+            if (!(o instanceof BoxAABB)) {
+                return false;
+            }
+            final BoxAABB boxAABB = (BoxAABB) o;
+            return !(body != null ? !body.equals(boxAABB.getBody()) : boxAABB.getBody() != null);
+        }
 
-		@Override
-		public int hashCode() {
-			return body != null ? body.hashCode() : 0;
-		}
+        @Override
+        public int hashCode() {
+            return body != null ? body.hashCode() : 0;
+        }
 
-		@Override
-		public String toString() {
-			return "(" + body.getID() + "@" + body.getTransform().getPosition() + ")";
-		}
-	}
+        @Override
+        public String toString() {
+            return "(" + body.getID() + "@" + body.getTransform().getPosition() + ")";
+        }
+    }
 
-	// Represents an AABB with integer coordinates.
-	private static class AABBInt {
-		private final long[] min = new long[3];
-		private final long[] max = new long[3];
+    // Represents an AABB with integer coordinates.
+    private static class AABBInt {
+        private final long[] min = new long[3];
+        private final long[] max = new long[3];
 
-		private long[] getMin() {
-			return min;
-		}
+        private long[] getMin() {
+            return min;
+        }
 
-		private long[] getMax() {
-			return max;
-		}
+        private long[] getMax() {
+            return max;
+        }
 
-		private AABBInt(AABB aabb) {
-			for (int axis = 0; axis < 3; axis++) {
-				min[axis] = encodeFloatIntoInteger(aabb.getMin().get(axis));
-				max[axis] = encodeFloatIntoInteger(aabb.getMax().get(axis));
-			}
-		}
-	}
+        private AABBInt(AABB aabb) {
+            for (int axis = 0; axis < 3; axis++) {
+                min[axis] = encodeFloatIntoInteger(aabb.getMin().get(axis));
+                max[axis] = encodeFloatIntoInteger(aabb.getMax().get(axis));
+            }
+        }
+    }
 }

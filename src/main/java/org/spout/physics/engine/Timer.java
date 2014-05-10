@@ -30,116 +30,116 @@ package org.spout.physics.engine;
  * This class takes care of the time in the physics engine. It uses {@link System#nanoTime()} to get the current time.
  */
 public class Timer {
-	private double mTimeStep;
-	private double mTime;
-	private double mLastUpdateTime;
-	private double mAccumulator;
-	private boolean mIsRunning = false;
+    private double mTimeStep;
+    private double mTime;
+    private double mLastUpdateTime;
+    private double mAccumulator;
+    private boolean mIsRunning = false;
 
-	/**
-	 * Constructs a new timer from the time step.
-	 *
-	 * @param timeStep The time step
-	 */
-	public Timer(double timeStep) {
-		if (timeStep <= 0) {
-			throw new IllegalArgumentException("time step cannot be smaller or equal to zero");
-		}
-		mTimeStep = timeStep;
-	}
+    /**
+     * Constructs a new timer from the time step.
+     *
+     * @param timeStep The time step
+     */
+    public Timer(double timeStep) {
+        if (timeStep <= 0) {
+            throw new IllegalArgumentException("time step cannot be smaller or equal to zero");
+        }
+        mTimeStep = timeStep;
+    }
 
-	/**
-	 * Gets the time step of the physics engine.
-	 *
-	 * @return The time step
-	 */
-	public double getTimeStep() {
-		return mTimeStep;
-	}
+    /**
+     * Gets the time step of the physics engine.
+     *
+     * @return The time step
+     */
+    public double getTimeStep() {
+        return mTimeStep;
+    }
 
-	/**
-	 * Sets the time step of the physics engine.
-	 *
-	 * @param timeStep The time step to set
-	 */
-	public void setTimeStep(double timeStep) {
-		if (timeStep <= 0) {
-			throw new IllegalArgumentException("time step must be greater than zero");
-		}
-		mTimeStep = timeStep;
-	}
+    /**
+     * Sets the time step of the physics engine.
+     *
+     * @param timeStep The time step to set
+     */
+    public void setTimeStep(double timeStep) {
+        if (timeStep <= 0) {
+            throw new IllegalArgumentException("time step must be greater than zero");
+        }
+        mTimeStep = timeStep;
+    }
 
-	/**
-	 * Gets the current time.
-	 *
-	 * @return The current time
-	 */
-	public double getTime() {
-		return mTime;
-	}
+    /**
+     * Gets the current time.
+     *
+     * @return The current time
+     */
+    public double getTime() {
+        return mTime;
+    }
 
-	/**
-	 * Returns true if the timer is running, false if not.
-	 *
-	 * @return Whether or not the timer is running
-	 */
-	public boolean isRunning() {
-		return mIsRunning;
-	}
+    /**
+     * Returns true if the timer is running, false if not.
+     *
+     * @return Whether or not the timer is running
+     */
+    public boolean isRunning() {
+        return mIsRunning;
+    }
 
-	/**
-	 * Start the timer.
-	 */
-	public void start() {
-		mTime = 0;
-		mLastUpdateTime = System.nanoTime() / 1000000000d;
-		mAccumulator = 0;
-		mIsRunning = true;
-	}
+    /**
+     * Start the timer.
+     */
+    public void start() {
+        mTime = 0;
+        mLastUpdateTime = System.nanoTime() / 1000000000d;
+        mAccumulator = 0;
+        mIsRunning = true;
+    }
 
-	/**
-	 * Stop the timer.
-	 */
-	public void stop() {
-		mIsRunning = false;
-	}
+    /**
+     * Stop the timer.
+     */
+    public void stop() {
+        mIsRunning = false;
+    }
 
-	/**
-	 * Returns true if it's possible to take a new step, false if not.
-	 *
-	 * @return Whether or not a new step is possible
-	 */
-	public boolean isPossibleToTakeStep() {
-		return mAccumulator >= mTimeStep;
-	}
+    /**
+     * Returns true if it's possible to take a new step, false if not.
+     *
+     * @return Whether or not a new step is possible
+     */
+    public boolean isPossibleToTakeStep() {
+        return mAccumulator >= mTimeStep;
+    }
 
-	/**
-	 * Takes a new step: updates the timer by adding the timeStep value to the current time.
-	 */
-	public void nextStep() {
-		if (!mIsRunning) {
-			throw new IllegalStateException("Timer is not running");
-		}
-		mTime += mTimeStep;
-		mAccumulator -= mTimeStep;
-	}
+    /**
+     * Takes a new step: updates the timer by adding the timeStep value to the current time.
+     */
+    public void nextStep() {
+        if (!mIsRunning) {
+            throw new IllegalStateException("Timer is not running");
+        }
+        mTime += mTimeStep;
+        mAccumulator -= mTimeStep;
+    }
 
-	/**
-	 * Compute the interpolation factor for the time step.
-	 *
-	 * @return The interpolation factor
-	 */
-	public float computeInterpolationFactor() {
-		return (float) (mAccumulator / mTimeStep);
-	}
+    /**
+     * Compute the interpolation factor for the time step.
+     *
+     * @return The interpolation factor
+     */
+    public float computeInterpolationFactor() {
+        return (float) (mAccumulator / mTimeStep);
+    }
 
-	/**
-	 * Compute the time since the last update call and add it to the accumulator.
-	 */
-	public void update() {
-		final double currentTime = System.nanoTime() / 1000000000d;
-		final double mDeltaTime = currentTime - mLastUpdateTime;
-		mLastUpdateTime = currentTime;
-		mAccumulator += mDeltaTime;
-	}
+    /**
+     * Compute the time since the last update call and add it to the accumulator.
+     */
+    public void update() {
+        final double currentTime = System.nanoTime() / 1000000000d;
+        final double mDeltaTime = currentTime - mLastUpdateTime;
+        mLastUpdateTime = currentTime;
+        mAccumulator += mDeltaTime;
+    }
 }

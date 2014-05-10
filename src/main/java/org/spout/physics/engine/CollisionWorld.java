@@ -48,118 +48,118 @@ import org.spout.physics.math.Vector3;
  * Represents a world where it is possible to move bodies by hand and to test collisions between them. In this kind of world the body movement is not computed using the laws of physics.
  */
 public abstract class CollisionWorld {
-	protected final CollisionDetection mCollisionDetection;
-	protected final Set<CollisionBody> mBodies = new HashSet<CollisionBody>();
-	protected final Map<IntPair, OverlappingPair> mOverlappingPairs = new HashMap<IntPair, OverlappingPair>();
-	protected int mCurrentBodyID = 0;
-	protected final TIntStack mFreeBodiesIDs = new TIntArrayStack();
+    protected final CollisionDetection mCollisionDetection;
+    protected final Set<CollisionBody> mBodies = new HashSet<>();
+    protected final Map<IntPair, OverlappingPair> mOverlappingPairs = new HashMap<>();
+    protected int mCurrentBodyID = 0;
+    protected final TIntStack mFreeBodiesIDs = new TIntArrayStack();
 
-	/**
-	 * Constructs a new empty collision world.
-	 */
-	protected CollisionWorld() {
-		mCollisionDetection = new CollisionDetection(this);
-	}
+    /**
+     * Constructs a new empty collision world.
+     */
+    protected CollisionWorld() {
+        mCollisionDetection = new CollisionDetection(this);
+    }
 
-	/**
-	 * Notifies the world about a new broad-phase overlapping pair.
-	 *
-	 * @param addedPair The pair that was added
-	 */
-	public abstract void notifyAddedOverlappingPair(BroadPhasePair addedPair);
+    /**
+     * Notifies the world about a new broad-phase overlapping pair.
+     *
+     * @param addedPair The pair that was added
+     */
+    public abstract void notifyAddedOverlappingPair(BroadPhasePair addedPair);
 
-	/**
-	 * Notifies the world about a removed broad-phase overlapping pair.
-	 *
-	 * @param removedPair The pair that was removed
-	 */
-	public abstract void notifyRemovedOverlappingPair(BroadPhasePair removedPair);
+    /**
+     * Notifies the world about a removed broad-phase overlapping pair.
+     *
+     * @param removedPair The pair that was removed
+     */
+    public abstract void notifyRemovedOverlappingPair(BroadPhasePair removedPair);
 
-	/**
-	 * Notifies the world about a new narrow-phase contact.
-	 *
-	 * @param pair The pair of bodies in contact
-	 * @param contactInfo The information for the contact
-	 */
-	public abstract void notifyNewContact(BroadPhasePair pair, ContactInfo contactInfo);
+    /**
+     * Notifies the world about a new narrow-phase contact.
+     *
+     * @param pair The pair of bodies in contact
+     * @param contactInfo The information for the contact
+     */
+    public abstract void notifyNewContact(BroadPhasePair pair, ContactInfo contactInfo);
 
-	/**
-	 * Updates the overlapping pair.
-	 *
-	 * @param pair The pair to update
-	 */
-	public abstract void updateOverlappingPair(BroadPhasePair pair);
+    /**
+     * Updates the overlapping pair.
+     *
+     * @param pair The pair to update
+     */
+    public abstract void updateOverlappingPair(BroadPhasePair pair);
 
-	/**
-	 * Adds a collision listener for the collision detection.
-	 *
-	 * @param listener The listener to use
-	 */
-	public void addListener(CollisionListener listener) {
-		mCollisionDetection.addListener(listener);
-	}
+    /**
+     * Adds a collision listener for the collision detection.
+     *
+     * @param listener The listener to use
+     */
+    public void addListener(CollisionListener listener) {
+        mCollisionDetection.addListener(listener);
+    }
 
-	/**
-	 * Gets the set of the bodies of the physics world.
-	 *
-	 * @return The {@link java.util.Set} of {@link org.spout.physics.body.CollisionBody}
-	 */
-	public Set<CollisionBody> getBodies() {
-		return mBodies;
-	}
+    /**
+     * Gets the set of the bodies of the physics world.
+     *
+     * @return The {@link java.util.Set} of {@link org.spout.physics.body.CollisionBody}
+     */
+    public Set<CollisionBody> getBodies() {
+        return mBodies;
+    }
 
-	/**
-	 * Finds the closest of the bodies in the world intersecting with the ray to the ray start. The ray is defined by a starting point and a direction. This method returns an {@link IntersectedBody}
-	 * object containing the body and the intersection point.
-	 *
-	 * @param rayStart The ray starting point
-	 * @param rayDir The ray direction
-	 * @return The closest body to the ray start and its intersection point
-	 */
-	public IntersectedBody findClosestIntersectingBody(Vector3 rayStart, Vector3 rayDir) {
-		return RayCaster.findClosestIntersectingBody(rayStart, rayDir, mBodies);
-	}
+    /**
+     * Finds the closest of the bodies in the world intersecting with the ray to the ray start. The ray is defined by a starting point and a direction. This method returns an {@link IntersectedBody}
+     * object containing the body and the intersection point.
+     *
+     * @param rayStart The ray starting point
+     * @param rayDir The ray direction
+     * @return The closest body to the ray start and its intersection point
+     */
+    public IntersectedBody findClosestIntersectingBody(Vector3 rayStart, Vector3 rayDir) {
+        return RayCaster.findClosestIntersectingBody(rayStart, rayDir, mBodies);
+    }
 
-	/**
-	 * Finds the furthest of the bodies in the world intersecting with the ray from the ray start. The ray is defined by a starting point and a direction. This method returns an {@link IntersectedBody}
-	 * object containing the body and the intersection point.
-	 *
-	 * @param rayStart The ray starting point
-	 * @param rayDir The ray direction
-	 * @return The furthest body from the ray start and its intersection point
-	 */
-	public IntersectedBody findFurthestIntersectingBody(Vector3 rayStart, Vector3 rayDir) {
-		return RayCaster.findFurthestIntersectingBody(rayStart, rayDir, mBodies);
-	}
+    /**
+     * Finds the furthest of the bodies in the world intersecting with the ray from the ray start. The ray is defined by a starting point and a direction. This method returns an {@link
+     * IntersectedBody} object containing the body and the intersection point.
+     *
+     * @param rayStart The ray starting point
+     * @param rayDir The ray direction
+     * @return The furthest body from the ray start and its intersection point
+     */
+    public IntersectedBody findFurthestIntersectingBody(Vector3 rayStart, Vector3 rayDir) {
+        return RayCaster.findFurthestIntersectingBody(rayStart, rayDir, mBodies);
+    }
 
-	/**
-	 * Finds all of the bodies in the world intersecting with the ray. The ray is defined by a starting point and a direction. The bodies are returned mapped with the closest intersection point.
-	 *
-	 * @param rayStart The ray starting point
-	 * @param rayDir The ray direction
-	 * @return All of the intersection bodies, in no particular order, mapped to the distance vector
-	 */
-	public Map<CollisionBody, Vector3> findIntersectingBodies(Vector3 rayStart, Vector3 rayDir) {
-		return RayCaster.findIntersectingBodies(rayStart, rayDir, mBodies);
-	}
+    /**
+     * Finds all of the bodies in the world intersecting with the ray. The ray is defined by a starting point and a direction. The bodies are returned mapped with the closest intersection point.
+     *
+     * @param rayStart The ray starting point
+     * @param rayDir The ray direction
+     * @return All of the intersection bodies, in no particular order, mapped to the distance vector
+     */
+    public Map<CollisionBody, Vector3> findIntersectingBodies(Vector3 rayStart, Vector3 rayDir) {
+        return RayCaster.findIntersectingBodies(rayStart, rayDir, mBodies);
+    }
 
-	/**
-	 * Returns the next available body ID for this world.
-	 *
-	 * @return The next available id
-	 * @throws IllegalStateException If the id for the body is greater than Integer.MAX_VALUE
-	 */
-	public int getNextFreeID() {
-		final int bodyID;
-		if (mFreeBodiesIDs.size() != 0) {
-			bodyID = mFreeBodiesIDs.pop();
-		} else {
-			bodyID = mCurrentBodyID;
-			mCurrentBodyID++;
-		}
-		if (bodyID >= Integer.MAX_VALUE) {
-			throw new IllegalStateException("body id cannot be larger or equal to the largest integer");
-		}
-		return bodyID;
-	}
+    /**
+     * Returns the next available body ID for this world.
+     *
+     * @return The next available id
+     * @throws IllegalStateException If the id for the body is greater than Integer.MAX_VALUE
+     */
+    public int getNextFreeID() {
+        final int bodyID;
+        if (mFreeBodiesIDs.size() != 0) {
+            bodyID = mFreeBodiesIDs.pop();
+        } else {
+            bodyID = mCurrentBodyID;
+            mCurrentBodyID++;
+        }
+        if (bodyID >= Integer.MAX_VALUE) {
+            throw new IllegalStateException("body id cannot be larger or equal to the largest integer");
+        }
+        return bodyID;
+    }
 }

@@ -36,11 +36,8 @@ import org.spout.physics.body.GhostMobileRigidBody;
  * occurred (and call this method in the superclass while doing so).
  */
 public class GhostCollisionListener implements CollisionListener {
-	@Override
-	public boolean onCollide(CollisionBody body1, CollisionBody body2, ContactInfo contactInfo) {
-		if (body1 instanceof GhostMobileRigidBody || body1 instanceof GhostImmobileRigidBody || body2 instanceof GhostImmobileRigidBody || body2 instanceof GhostMobileRigidBody) {
-			return true;
-		}
-		return false;
-	}
+    @Override
+    public boolean onCollide(CollisionBody body1, CollisionBody body2, ContactInfo contactInfo) {
+        return body1 instanceof GhostMobileRigidBody || body1 instanceof GhostImmobileRigidBody || body2 instanceof GhostImmobileRigidBody || body2 instanceof GhostMobileRigidBody;
+    }
 }

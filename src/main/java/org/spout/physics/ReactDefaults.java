@@ -30,44 +30,44 @@ package org.spout.physics;
  * Physics engine constants
  */
 public class ReactDefaults {
-	/**
-	 * The machine epsilon. Default: 1.1920929E-7
-	 */
-	public static final float MACHINE_EPSILON = 1.1920929E-7f;
-	/**
-	 * Default internal constant timestep in seconds. Default: 1/60s
-	 */
-	public static final float DEFAULT_TIMESTEP = 1f / 60;
-	/**
-	 * Default restitution coefficient for a rigid body. Default: 0.5
-	 */
-	public static final float DEFAULT_RESTITUTION_COEFFICIENT = 0.5f;
-	/**
-	 * Default friction coefficient for a rigid body. Default: 0.3
-	 */
-	public static final float DEFAULT_FRICTION_COEFFICIENT = 0.3f;
-	/**
-	 * True if the deactivation (sleeping) of inactive bodies is enabled. Default: true
-	 */
-	public static final boolean DEACTIVATION_ENABLED = true;
-	/**
-	 * Object margin for collision detection in cm. Default: 0.04
-	 */
-	public static final float OBJECT_MARGIN = 0.04f;
-	/**
-	 * Distance threshold for two contact points for a valid persistent contact. Default: 0.02
-	 */
-	public static final float PERSISTENT_CONTACT_DIST_THRESHOLD = 0.02f;
-	/**
-	 * Velocity threshold for contact velocity restitution. Default: 1
-	 */
-	public static final float RESTITUTION_VELOCITY_THRESHOLD = 1;
-	/**
-	 * Number of iterations when solving a LCP problem. Default: 15
-	 */
-	public static final int DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS = 15;
-	/**
-	 * The linked phase AABB scaling factor. Default: 2
-	 */
-	public static final float LINKED_PHASE_AABB_SCALING = 2;
+    /**
+     * The machine epsilon. Default: 1.1920929E-7
+     */
+    public static final float MACHINE_EPSILON = 1.1920929E-7f;
+    /**
+     * Default internal constant timestep in seconds. Default: 1/60s
+     */
+    public static final float DEFAULT_TIMESTEP = 1f / 60;
+    /**
+     * Default restitution coefficient for a rigid body. Default: 0.5
+     */
+    public static final float DEFAULT_RESTITUTION_COEFFICIENT = 0.5f;
+    /**
+     * Default friction coefficient for a rigid body. Default: 0.3
+     */
+    public static final float DEFAULT_FRICTION_COEFFICIENT = 0.3f;
+    /**
+     * True if the deactivation (sleeping) of inactive bodies is enabled. Default: true
+     */
+    public static final boolean DEACTIVATION_ENABLED = true;
+    /**
+     * Object margin for collision detection in cm. Default: 0.04
+     */
+    public static final float OBJECT_MARGIN = 0.04f;
+    /**
+     * Distance threshold for two contact points for a valid persistent contact. Default: 0.02
+     */
+    public static final float PERSISTENT_CONTACT_DIST_THRESHOLD = 0.02f;
+    /**
+     * Velocity threshold for contact velocity restitution. Default: 1
+     */
+    public static final float RESTITUTION_VELOCITY_THRESHOLD = 1;
+    /**
+     * Number of iterations when solving a LCP problem. Default: 15
+     */
+    public static final int DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS = 15;
+    /**
+     * The linked phase AABB scaling factor. Default: 2
+     */
+    public static final float LINKED_PHASE_AABB_SCALING = 2;
 }

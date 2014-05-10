@@ -35,87 +35,87 @@ import org.spout.physics.math.Vector3;
  * orientation and a position to the box.
  */
 public class BoxShape extends CollisionShape {
-	private final Vector3 mExtent = new Vector3();
+    private final Vector3 mExtent = new Vector3();
 
-	/**
-	 * Constructs a box shape from its extents which is half the vector between the two opposing corners that are the furthest away.
-	 *
-	 * @param x x extent
-	 * @param y y extent
-	 * @param z z extent
-	 */
-	public BoxShape(float x, float y, float z) {
-		super(CollisionShapeType.BOX);
-		mExtent.setAllValues(x, y, z);
-	}
+    /**
+     * Constructs a box shape from its extents which is half the vector between the two opposing corners that are the furthest away.
+     *
+     * @param x x extent
+     * @param y y extent
+     * @param z z extent
+     */
+    public BoxShape(float x, float y, float z) {
+        super(CollisionShapeType.BOX);
+        mExtent.setAllValues(x, y, z);
+    }
 
-	/**
-	 * Constructs a box shape from its extents which is half the vector between the two opposing corners that are the furthest away.
-	 *
-	 * @param extent The extent vector
-	 */
-	public BoxShape(Vector3 extent) {
-		super(CollisionShapeType.BOX);
-		mExtent.set(extent);
-	}
+    /**
+     * Constructs a box shape from its extents which is half the vector between the two opposing corners that are the furthest away.
+     *
+     * @param extent The extent vector
+     */
+    public BoxShape(Vector3 extent) {
+        super(CollisionShapeType.BOX);
+        mExtent.set(extent);
+    }
 
-	/**
-	 * Gets the extent vector, which is half the vector between the two opposing corners that are the furthest away.
-	 *
-	 * @return The extents vector
-	 */
-	public Vector3 getExtent() {
-		return mExtent;
-	}
+    /**
+     * Gets the extent vector, which is half the vector between the two opposing corners that are the furthest away.
+     *
+     * @return The extents vector
+     */
+    public Vector3 getExtent() {
+        return mExtent;
+    }
 
-	/**
-	 * Sets the extent vector, which is half the vector between the two opposing corners that are the furthest away.
-	 *
-	 * @param extent The extents vector
-	 */
-	public void setExtent(Vector3 extent) {
-		mExtent.set(extent);
-	}
+    /**
+     * Sets the extent vector, which is half the vector between the two opposing corners that are the furthest away.
+     *
+     * @param extent The extents vector
+     */
+    public void setExtent(Vector3 extent) {
+        mExtent.set(extent);
+    }
 
-	@Override
-	public Vector3 getLocalSupportPointWithMargin(Vector3 direction) {
-		final float margin = getMargin();
-		if (margin < 0) {
-			throw new IllegalStateException("margin must be greater than zero");
-		}
-		return new Vector3(
-				direction.getX() < 0 ? -mExtent.getX() - margin : mExtent.getX() + margin,
-				direction.getY() < 0 ? -mExtent.getY() - margin : mExtent.getY() + margin,
-				direction.getZ() < 0 ? -mExtent.getZ() - margin : mExtent.getZ() + margin);
-	}
+    @Override
+    public Vector3 getLocalSupportPointWithMargin(Vector3 direction) {
+        final float margin = getMargin();
+        if (margin < 0) {
+            throw new IllegalStateException("margin must be greater than zero");
+        }
+        return new Vector3(
+                direction.getX() < 0 ? -mExtent.getX() - margin : mExtent.getX() + margin,
+                direction.getY() < 0 ? -mExtent.getY() - margin : mExtent.getY() + margin,
+                direction.getZ() < 0 ? -mExtent.getZ() - margin : mExtent.getZ() + margin);
+    }
 
-	@Override
-	public Vector3 getLocalSupportPointWithoutMargin(Vector3 direction) {
-		return new Vector3(
-				direction.getX() < 0 ? -mExtent.getX() : mExtent.getX(),
-				direction.getY() < 0 ? -mExtent.getY() : mExtent.getY(),
-				direction.getZ() < 0 ? -mExtent.getZ() : mExtent.getZ());
-	}
+    @Override
+    public Vector3 getLocalSupportPointWithoutMargin(Vector3 direction) {
+        return new Vector3(
+                direction.getX() < 0 ? -mExtent.getX() : mExtent.getX(),
+                direction.getY() < 0 ? -mExtent.getY() : mExtent.getY(),
+                direction.getZ() < 0 ? -mExtent.getZ() : mExtent.getZ());
+    }
 
-	@Override
-	public Vector3 getLocalExtents(float margin) {
-		return Vector3.add(mExtent, new Vector3(margin, margin, margin));
-	}
+    @Override
+    public Vector3 getLocalExtents(float margin) {
+        return Vector3.add(mExtent, new Vector3(margin, margin, margin));
+    }
 
-	@Override
-	public float getMargin() {
-		return ReactDefaults.OBJECT_MARGIN;
-	}
+    @Override
+    public float getMargin() {
+        return ReactDefaults.OBJECT_MARGIN;
+    }
 
-	@Override
-	public void computeLocalInertiaTensor(Matrix3x3 tensor, float mass) {
-		final float factor = (1f / 3) * mass;
-		final float xSquare = mExtent.getX() * mExtent.getX();
-		final float ySquare = mExtent.getY() * mExtent.getY();
-		final float zSquare = mExtent.getZ() * mExtent.getZ();
-		tensor.setAllValues(
-				factor * (ySquare + zSquare), 0, 0,
-				0, factor * (xSquare + zSquare), 0,
-				0, 0, factor * (xSquare + ySquare));
-	}
+    @Override
+    public void computeLocalInertiaTensor(Matrix3x3 tensor, float mass) {
+        final float factor = (1f / 3) * mass;
+        final float xSquare = mExtent.getX() * mExtent.getX();
+        final float ySquare = mExtent.getY() * mExtent.getY();
+        final float zSquare = mExtent.getZ() * mExtent.getZ();
+        tensor.setAllValues(
+                factor * (ySquare + zSquare), 0, 0,
+                0, factor * (xSquare + zSquare), 0,
+                0, 0, factor * (xSquare + ySquare));
+    }
 }
