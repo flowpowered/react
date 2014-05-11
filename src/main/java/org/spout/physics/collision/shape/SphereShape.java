@@ -48,6 +48,16 @@ public class SphereShape extends CollisionShape {
     }
 
     /**
+     * Copy constructor.
+     *
+     * @param shape The shape to copy
+     */
+    public SphereShape(SphereShape shape) {
+        super(shape);
+        mRadius = shape.mRadius;
+    }
+
+    /**
      * Gets the radius.
      *
      * @return The radius
@@ -105,5 +115,16 @@ public class SphereShape extends CollisionShape {
         final Vector3 maxCoordinates = Vector3.add(transform.getPosition(), extents);
         aabb.setMin(minCoordinates);
         aabb.setMax(maxCoordinates);
+    }
+
+    @Override
+    public SphereShape clone() {
+        return new SphereShape(this);
+    }
+
+    @Override
+    public boolean isEqualTo(CollisionShape otherCollisionShape) {
+        final SphereShape otherShape = (SphereShape) otherCollisionShape;
+        return mRadius == otherShape.mRadius;
     }
 }

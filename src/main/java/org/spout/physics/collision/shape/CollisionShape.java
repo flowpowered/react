@@ -36,6 +36,7 @@ import org.spout.physics.math.Vector3;
  */
 public abstract class CollisionShape {
     protected final CollisionShapeType mType;
+    private int mNbSimilarCreatedShapes;
 
     /**
      * Constructs a new collision shape from its type.
@@ -44,6 +45,12 @@ public abstract class CollisionShape {
      */
     protected CollisionShape(CollisionShapeType type) {
         mType = type;
+        mNbSimilarCreatedShapes = 0;
+    }
+
+    protected CollisionShape(CollisionShape shape) {
+        mType = shape.getType();
+        mNbSimilarCreatedShapes = shape.mNbSimilarCreatedShapes;
     }
 
     /**
@@ -95,6 +102,21 @@ public abstract class CollisionShape {
     public abstract void computeLocalInertiaTensor(Matrix3x3 tensor, float mass);
 
     /**
+     * Allocates and returns a copy of the object.
+     *
+     * @return A copy of the objects
+     */
+    @Override
+    public abstract CollisionShape clone();
+
+    /**
+     * Tests equality between two collision shapes of the same type (same derived classes).
+     *
+     * @param otherCollisionShape The shape to test for equality
+     */
+    public abstract boolean isEqualTo(CollisionShape otherCollisionShape);
+
+    /**
      * Update the AABB of a body using its collision shape.
      *
      * @param aabb The AABB to update
@@ -111,6 +133,53 @@ public abstract class CollisionShape {
         final Vector3 maxCoordinates = Vector3.add(transform.getPosition(), worldExtents);
         aabb.setMin(minCoordinates);
         aabb.setMax(maxCoordinates);
+    }
+
+    /**
+     * Returns the number of similar created shapes.
+     *
+     * @return The number of similar created shapes
+     */
+    public int getNbSimilarCreatedShapes() {
+        return mNbSimilarCreatedShapes;
+    }
+
+    /**
+     * Increments the number of similar allocated collision shapes.
+     */
+    public void incrementNbSimilarCreatedShapes() {
+        mNbSimilarCreatedShapes++;
+    }
+
+    /**
+     * Decrements the number of similar allocated collision shapes.
+     */
+    public void decrementNbSimilarCreatedShapes() {
+        mNbSimilarCreatedShapes--;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+        if (!(o instanceof CollisionShape)) {
+            return false;
+        }
+        final CollisionShape that = (CollisionShape) o;
+        return mType == that.mType && that.isEqualTo(this);
+    }
+
+    @Override
+    protected void finalize() throws Throwable {
+        try {
+            if (mNbSimilarCreatedShapes != 0) {
+                // Thrown exceptions are ignored, so we need to print instead
+                System.err.println("The number of similar created shapes should be 0");
+            }
+        } finally {
+            super.finalize();
+        }
     }
 
     /**

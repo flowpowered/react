@@ -59,6 +59,18 @@ public class ConeShape extends CollisionShape {
     }
 
     /**
+     * Copy constructor.
+     *
+     * @param shape The shape to copy
+     */
+    public ConeShape(ConeShape shape) {
+        super(shape);
+        mRadius = shape.mRadius;
+        mHalfHeight = shape.mHalfHeight;
+        mSinTheta = shape.mSinTheta;
+    }
+
+    /**
      * Gets the radius of the base.
      *
      * @return The radius
@@ -146,5 +158,16 @@ public class ConeShape extends CollisionShape {
                 diagXZ, 0, 0,
                 0, 0.3f * mass * rSquare, 0,
                 0, 0, diagXZ);
+    }
+
+    @Override
+    public ConeShape clone() {
+        return new ConeShape(this);
+    }
+
+    @Override
+    public boolean isEqualTo(CollisionShape otherCollisionShape) {
+        final ConeShape otherShape = (ConeShape) otherCollisionShape;
+        return mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight;
     }
 }

@@ -60,6 +60,16 @@ public class BoxShape extends CollisionShape {
     }
 
     /**
+     * Copy constructor.
+     *
+     * @param shape The shape to copy
+     */
+    public BoxShape(BoxShape shape) {
+        super(shape);
+        mExtent.set(shape.mExtent);
+    }
+
+    /**
      * Gets the extent vector, which is half the vector between the two opposing corners that are the furthest away.
      *
      * @return The extents vector
@@ -117,5 +127,16 @@ public class BoxShape extends CollisionShape {
                 factor * (ySquare + zSquare), 0, 0,
                 0, factor * (xSquare + zSquare), 0,
                 0, 0, factor * (xSquare + ySquare));
+    }
+
+    @Override
+    public BoxShape clone() {
+        return new BoxShape(this);
+    }
+
+    @Override
+    public boolean isEqualTo(CollisionShape otherCollisionShape) {
+        final BoxShape otherShape = (BoxShape) otherCollisionShape;
+        return mExtent == otherShape.mExtent;
     }
 }

@@ -26,8 +26,10 @@
  */
 package org.spout.physics.engine;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -42,6 +44,7 @@ import org.spout.physics.collision.CollisionListener;
 import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.RayCaster;
 import org.spout.physics.collision.RayCaster.IntersectedBody;
+import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.math.Vector3;
 
 /**
@@ -50,6 +53,7 @@ import org.spout.physics.math.Vector3;
 public abstract class CollisionWorld {
     protected final CollisionDetection mCollisionDetection;
     protected final Set<CollisionBody> mBodies = new HashSet<>();
+    protected final List<CollisionShape> mCollisionShapes = new ArrayList<>();
     protected final Map<IntPair, OverlappingPair> mOverlappingPairs = new HashMap<>();
     protected int mCurrentBodyID = 0;
     protected final TIntStack mFreeBodiesIDs = new TIntArrayStack();
@@ -161,5 +165,41 @@ public abstract class CollisionWorld {
             throw new IllegalStateException("body id cannot be larger or equal to the largest integer");
         }
         return bodyID;
+    }
+
+    /**
+     * Creates a new collision shape. First, this methods checks that the new collision shape does not exist yet in the world. If it already exists, we do not allocate memory for a new one but instead
+     * we reuse the existing one. The goal is to only allocate memory for a single collision shape if this one is used for several bodies in the world.
+     *
+     * @param collisionShape The collision shape to create
+     * @return The desired collision shape
+     */
+    protected CollisionShape createCollisionShape(CollisionShape collisionShape) {
+        for (CollisionShape shape : mCollisionShapes) {
+            if (collisionShape.equals(shape)) {
+                shape.incrementNbSimilarCreatedShapes();
+                return shape;
+            }
+        }
+        final CollisionShape newCollisionShape = collisionShape.clone();
+        mCollisionShapes.add(newCollisionShape);
+        newCollisionShape.incrementNbSimilarCreatedShapes();
+        return newCollisionShape;
+    }
+
+    /**
+     * Removes a collision shape. First, we check if another body is still using the same collision shape. If so, we keep the allocated collision shape. If it is not the case, we can deallocate the
+     * memory associated with the collision shape.
+     *
+     * @param collisionShape The collision shape to remove
+     */
+    protected void removeCollisionShape(CollisionShape collisionShape) {
+        if (collisionShape.getNbSimilarCreatedShapes() == 0) {
+            throw new IllegalStateException("Expected at least one similar collision shape remaining");
+        }
+        collisionShape.decrementNbSimilarCreatedShapes();
+        if (collisionShape.getNbSimilarCreatedShapes() == 0) {
+            mCollisionShapes.remove(collisionShape);
+        }
     }
 }

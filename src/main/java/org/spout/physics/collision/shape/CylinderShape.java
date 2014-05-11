@@ -51,6 +51,17 @@ public class CylinderShape extends CollisionShape {
     }
 
     /**
+     * Copy constructor.
+     *
+     * @param shape The shape to copy
+     */
+    public CylinderShape(CylinderShape shape) {
+        super(shape);
+        mRadius = shape.mRadius;
+        mHalfHeight = shape.mHalfHeight;
+    }
+
+    /**
      * Gets the radius of the base.
      *
      * @return The radius
@@ -140,5 +151,16 @@ public class CylinderShape extends CollisionShape {
                 diag, 0, 0,
                 0, 0.5f * mass * mRadius * mRadius, 0,
                 0, 0, diag);
+    }
+
+    @Override
+    public CylinderShape clone() {
+        return new CylinderShape(this);
+    }
+
+    @Override
+    public boolean isEqualTo(CollisionShape otherCollisionShape) {
+        final CylinderShape otherShape = (CylinderShape) otherCollisionShape;
+        return mRadius == otherShape.mRadius && mHalfHeight == otherShape.mHalfHeight;
     }
 }

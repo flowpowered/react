@@ -36,8 +36,6 @@ import gnu.trove.map.hash.TObjectIntHashMap;
 
 import org.spout.physics.ReactDefaults;
 import org.spout.physics.Utilities.IntPair;
-import org.spout.physics.body.GhostImmobileRigidBody;
-import org.spout.physics.body.GhostMobileRigidBody;
 import org.spout.physics.body.ImmobileRigidBody;
 import org.spout.physics.body.MobileRigidBody;
 import org.spout.physics.body.RigidBody;
@@ -411,7 +409,8 @@ public class DynamicsWorld extends CollisionWorld {
      * @return The new rigid body
      */
     public ImmobileRigidBody createImmobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape) {
-        final ImmobileRigidBody immobileBody = new ImmobileRigidBody(transform, mass, inertiaTensorLocal, collisionShape, getNextFreeID());
+        final CollisionShape newCollisionShape = createCollisionShape(collisionShape);
+        final ImmobileRigidBody immobileBody = new ImmobileRigidBody(transform, mass, inertiaTensorLocal, newCollisionShape, getNextFreeID());
         addRigidBody(immobileBody);
         return immobileBody;
     }
@@ -440,76 +439,28 @@ public class DynamicsWorld extends CollisionWorld {
      * @return The new rigid body
      */
     public MobileRigidBody createMobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape) {
-        final MobileRigidBody mobileBody = new MobileRigidBody(transform, mass, inertiaTensorLocal, collisionShape, getNextFreeID());
+        final CollisionShape newCollisionShape = createCollisionShape(collisionShape);
+        final MobileRigidBody mobileBody = new MobileRigidBody(transform, mass, inertiaTensorLocal, newCollisionShape, getNextFreeID());
         addRigidBody(mobileBody);
         return mobileBody;
     }
 
     /**
-     * Creates a ghost immobile rigid body and adds it to the physics world. The inertia tensor will be computed from the shape and mass.
+     * Adds a rigid body to the body collections and the collision detection, even if a tick is in progress.
      *
-     * @param transform The transform (position and orientation) of the body
-     * @param mass The mass of the body
-     * @param collisionShape The collision shape
-     * @return The new rigid body
+     * @param body The body to add
      */
-    public GhostImmobileRigidBody createGhostImmobileRigidBody(Transform transform, float mass, CollisionShape collisionShape) {
-        final Matrix3x3 inertiaTensor = new Matrix3x3();
-        collisionShape.computeLocalInertiaTensor(inertiaTensor, mass);
-        return createGhostImmobileRigidBody(transform, mass, inertiaTensor, collisionShape);
-    }
-
-    /**
-     * Creates a ghost immobile rigid body and adds it to the physics world.
-     *
-     * @param transform The transform (position and orientation) of the body
-     * @param mass The mass of the body
-     * @param inertiaTensorLocal The local inertia tensor
-     * @param collisionShape The collision shape
-     * @return The new rigid body
-     */
-    public GhostImmobileRigidBody createGhostImmobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape) {
-        final GhostImmobileRigidBody ghostBody = new GhostImmobileRigidBody(transform, mass, inertiaTensorLocal, collisionShape, getNextFreeID());
-        addRigidBody(ghostBody);
-        return ghostBody;
-    }
-
-    /**
-     * Creates a ghost mobile rigid body and adds it to the physics world. The inertia tensor will be computed from the shape and mass.
-     *
-     * @param transform The transform (position and orientation) of the body
-     * @param mass The mass of the body
-     * @param collisionShape The collision shape
-     * @return The new rigid body
-     */
-    public GhostMobileRigidBody createGhostMobileRigidBody(Transform transform, float mass, CollisionShape collisionShape) {
-        final Matrix3x3 inertiaTensor = new Matrix3x3();
-        collisionShape.computeLocalInertiaTensor(inertiaTensor, mass);
-        return createGhostMobileRigidBody(transform, mass, inertiaTensor, collisionShape);
-    }
-
-    /**
-     * Creates a ghost mobile rigid body and adds it to the physics world.
-     *
-     * @param transform The transform (position and orientation) of the body
-     * @param mass The mass of the body
-     * @param inertiaTensorLocal The local inertia tensor
-     * @param collisionShape The collision shape
-     * @return The new rigid body
-     */
-    public GhostMobileRigidBody createGhostMobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape) {
-        final GhostMobileRigidBody ghostBody = new GhostMobileRigidBody(transform, mass, inertiaTensorLocal, collisionShape, getNextFreeID());
-        addRigidBody(ghostBody);
-        return ghostBody;
-    }
-
     protected void addRigidBodyIgnoreTick(RigidBody body) {
         mBodies.add(body);
         mRigidBodies.add(body);
         mCollisionDetection.addBody(body);
     }
 
-    // Adds a rigid body to the body collections and the collision detection.
+    /**
+     * Adds a rigid body to the body collections and the collision detection. If a tick is in progress, the body is added at the end.
+     *
+     * @param body The body to add
+     */
     public void addRigidBody(RigidBody body) {
         if (!isTicking) {
             mBodies.add(body);
@@ -531,6 +482,7 @@ public class DynamicsWorld extends CollisionWorld {
             mFreeBodiesIDs.push(rigidBody.getID());
             mBodies.remove(rigidBody);
             mRigidBodies.remove(rigidBody);
+            removeCollisionShape(rigidBody.getCollisionShape());
         } else {
             mRigidBodiesToDeleteCache.add(rigidBody);
         }
@@ -601,15 +553,12 @@ public class DynamicsWorld extends CollisionWorld {
     public void disperseCache() {
         //Only add bodies that aren't being removed
         mRigidBodiesToAddCache.removeAll(mRigidBodiesToDeleteCache);
-
         for (RigidBody body : mRigidBodiesToDeleteCache) {
             destroyRigidBody(body);
         }
-
         for (RigidBody body : mRigidBodiesToAddCache) {
             addRigidBody(body);
         }
-
         mRigidBodiesToAddCache.clear();
         mRigidBodiesToDeleteCache.clear();
     }

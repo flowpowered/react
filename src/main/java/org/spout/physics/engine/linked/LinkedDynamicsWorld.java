@@ -84,7 +84,7 @@ public class LinkedDynamicsWorld extends DynamicsWorld {
      *
      * @param bodies The bodies to add
      */
-    public void addLinkedBodies(final Collection<ImmobileRigidBody> bodies) {
+    public void addLinkedBodies(Collection<ImmobileRigidBody> bodies) {
         linkedBodies.addAll(bodies);
         for (ImmobileRigidBody body : bodies) {
             addRigidBodyIgnoreTick(body);
