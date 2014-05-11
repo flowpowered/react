@@ -29,70 +29,18 @@ package org.spout.physics.constraint;
 import org.spout.physics.body.RigidBody;
 
 /**
- * This is the base class of a constraint in the physics engine. A constraint can be a collision contact or a joint for instance.
+ * This class represents a ball-and-socket joint that allows arbitrary rotation between two bodies.
  */
-public class Constraint {
-    protected final RigidBody mBody1;
-    protected final RigidBody mBody2;
-    protected final boolean mActive;
-    protected final ConstraintType mType;
-
+public class BallAndSocketJoint extends Constraint {
     /**
-     * Constructs a new constraint from the two bodies, the activity status and the type of constraint.
+     * Constructs a new ball and socket joint from the two bodies, the activity status and the type of constraint.
      *
      * @param body1 The first body
      * @param body2 The second body
      * @param active True if this constraint is active, false if not
      * @param type The type of this constraint
      */
-    public Constraint(RigidBody body1, RigidBody body2, boolean active, ConstraintType type) {
-        mBody1 = body1;
-        mBody2 = body2;
-        mActive = active;
-        mType = type;
-    }
-
-    /**
-     * Gets the first body.
-     *
-     * @return The first body
-     */
-    public RigidBody getBody1() {
-        return mBody1;
-    }
-
-    /**
-     * Gets the second body.
-     *
-     * @return The second body
-     */
-    public RigidBody getBody2() {
-        return mBody2;
-    }
-
-    /**
-     * Returns true if the constraint is active, false if not.
-     *
-     * @return Whether or not the constraint is active
-     */
-    public boolean isActive() {
-        return mActive;
-    }
-
-    /**
-     * Gets the type of constraint.
-     *
-     * @return The constraint type
-     */
-    public ConstraintType getType() {
-        return mType;
-    }
-
-    /**
-     * An enumeration of the possible constraint types (contact).
-     */
-    public static enum ConstraintType {
-        CONTACT,
-        BALL_SOCKET_JOINT
+    public BallAndSocketJoint(RigidBody body1, RigidBody body2, boolean active, ConstraintType type) {
+        super(body1, body2, active, type);
     }
 }

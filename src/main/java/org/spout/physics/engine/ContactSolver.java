@@ -369,9 +369,9 @@ public class ContactSolver {
                     contactPoint.restitutionBias = manifold.restitutionFactor * deltaVDotN;
                 }
                 if (WARM_STARTING_ACTIVE) {
-                    contactPoint.penetrationImpulse = externalContact.getCachedLambda(0);
-                    contactPoint.friction1Impulse = externalContact.getCachedLambda(1);
-                    contactPoint.friction2Impulse = externalContact.getCachedLambda(2);
+                    contactPoint.penetrationImpulse = externalContact.getPenetrationImpulse();
+                    contactPoint.friction1Impulse = externalContact.getFirstFrictionImpulse();
+                    contactPoint.friction2Impulse = externalContact.getSecondFrictionImpulse();
                 }
                 contactPoint.penetrationSplitImpulse = 0;
                 if (mIsSolveFrictionAtContactManifoldCenterActive) {
@@ -653,9 +653,9 @@ public class ContactSolver {
             final ContactManifoldSolver manifold = mContactConstraints[c];
             for (int i = 0; i < manifold.nbContacts; i++) {
                 final ContactPointSolver contactPoint = manifold.contacts[i];
-                contactPoint.externalContact.setCachedLambda(0, contactPoint.penetrationImpulse);
-                contactPoint.externalContact.setCachedLambda(1, contactPoint.friction1Impulse);
-                contactPoint.externalContact.setCachedLambda(2, contactPoint.friction2Impulse);
+                contactPoint.externalContact.setPenetrationImpulse(contactPoint.penetrationImpulse);
+                contactPoint.externalContact.setFirstFrictionImpulse(contactPoint.friction1Impulse);
+                contactPoint.externalContact.setSecondFrictionImpulse(contactPoint.friction2Impulse);
                 contactPoint.externalContact.setFirstFrictionVector(contactPoint.frictionVector1);
                 contactPoint.externalContact.setSecondFrictionVector(contactPoint.frictionVector2);
             }

@@ -35,15 +35,18 @@ import org.spout.physics.math.Vector3;
  * Represents a collision contact point between two bodies in the physics engine. The ContactPoint class inherits from the Constraint class.
  */
 public class ContactPoint extends Constraint {
-    private final Vector3 mNormal = new Vector3();
+    private final Vector3 mNormal;
     private float mPenetrationDepth;
-    private final Vector3 mLocalPointOnBody1 = new Vector3();
-    private final Vector3 mLocalPointOnBody2 = new Vector3();
-    private final Vector3 mWorldPointOnBody1 = new Vector3();
-    private final Vector3 mWorldPointOnBody2 = new Vector3();
-    private boolean mIsRestingContact = false;
-    private final Vector3 mFrictionVector1 = new Vector3();
-    private final Vector3 mFrictionVector2 = new Vector3();
+    private final Vector3 mLocalPointOnBody1;
+    private final Vector3 mLocalPointOnBody2;
+    private final Vector3 mWorldPointOnBody1;
+    private final Vector3 mWorldPointOnBody2;
+    private boolean mIsRestingContact;
+    private final Vector3 mFrictionVector1;
+    private final Vector3 mFrictionVector2;
+    private float mPenetrationImpulse;
+    private float mFrictionImpulse1;
+    private float mFrictionImpulse2;
 
     /**
      * Constructs a new contact point from the first and second body, and the contact info.
@@ -53,16 +56,19 @@ public class ContactPoint extends Constraint {
      * @param contactInfo The contact info
      */
     public ContactPoint(RigidBody body1, RigidBody body2, ContactInfo contactInfo) {
-        super(body1, body2, 3, true, ConstraintType.CONTACT);
+        super(body1, body2, true, ConstraintType.CONTACT);
         if (contactInfo.getPenetrationDepth() <= 0) {
-            throw new IllegalArgumentException("penetraionDepth must be greater than zero");
+            throw new IllegalArgumentException("Penetration depth must be greater than zero");
         }
-        mNormal.set(contactInfo.getNormal());
+        mNormal = new Vector3(contactInfo.getNormal());
         mPenetrationDepth = contactInfo.getPenetrationDepth();
-        mLocalPointOnBody1.set(contactInfo.getFirstLocalPoint());
-        mLocalPointOnBody2.set(contactInfo.getSecondLocalPoint());
-        mWorldPointOnBody1.set(Transform.multiply(body1.getTransform(), contactInfo.getFirstLocalPoint()));
-        mWorldPointOnBody2.set(Transform.multiply(body2.getTransform(), contactInfo.getSecondLocalPoint()));
+        mLocalPointOnBody1 = new Vector3(contactInfo.getFirstLocalPoint());
+        mLocalPointOnBody2 = new Vector3(contactInfo.getSecondLocalPoint());
+        mWorldPointOnBody1 = Transform.multiply(body1.getTransform(), contactInfo.getFirstLocalPoint());
+        mWorldPointOnBody2 = Transform.multiply(body2.getTransform(), contactInfo.getSecondLocalPoint());
+        mIsRestingContact = false;
+        mFrictionVector1 = new Vector3(0, 0, 0);
+        mFrictionVector2 = new Vector3(0, 0, 0);
     }
 
     /**
@@ -198,5 +204,59 @@ public class ContactPoint extends Constraint {
      */
     public void setSecondFrictionVector(Vector3 secondFrictionVector) {
         mFrictionVector2.set(secondFrictionVector);
+    }
+
+    /**
+     * Returns the cached penetration impulse.
+     *
+     * @return the penetration impulse
+     */
+    public float getPenetrationImpulse() {
+        return mPenetrationImpulse;
+    }
+
+    /**
+     * Returns the cached first friction impulse.
+     *
+     * @return the first friction impulse
+     */
+    public float getFirstFrictionImpulse() {
+        return mFrictionImpulse1;
+    }
+
+    /**
+     * Returns the cached second friction impulse.
+     *
+     * @return the second friction impulse
+     */
+    public float getSecondFrictionImpulse() {
+        return mFrictionImpulse2;
+    }
+
+    /**
+     * Sets the cached penetration impulse.
+     *
+     * @param impulse the penetration impulse
+     */
+    public void setPenetrationImpulse(float impulse) {
+        mPenetrationImpulse = impulse;
+    }
+
+    /**
+     * Sets the first cached friction impulse.
+     *
+     * @param impulse the first friction impulse
+     */
+    public void setFirstFrictionImpulse(float impulse) {
+        mFrictionImpulse1 = impulse;
+    }
+
+    /**
+     * Sets the second cached friction impulse.
+     *
+     * @param impulse the second friction impulse
+     */
+    public void setSecondFrictionImpulse(float impulse) {
+        mFrictionImpulse2 = impulse;
     }
 }
