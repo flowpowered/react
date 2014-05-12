@@ -175,7 +175,7 @@ public abstract class CollisionShape {
         try {
             if (mNbSimilarCreatedShapes != 0) {
                 // Thrown exceptions are ignored, so we need to print instead
-                System.err.println("The number of similar created shapes should be 0");
+                System.err.println("The number of similar created shapes should be 0, is " + mNbSimilarCreatedShapes + " instead");
             }
         } finally {
             super.finalize();

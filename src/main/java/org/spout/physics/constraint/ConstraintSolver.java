@@ -93,4 +93,12 @@ public class ConstraintSolver {
         mConstrainedAngularVelocities = constrainedAngularVelocities;
         mMapBodyToConstrainedVelocityIndex = mapBodyToConstrainedVelocityIndex;
     }
+
+    public void initialize(float dt) {
+        mTimeStep = dt;
+    }
+
+    public void solve() {
+
+    }
 }

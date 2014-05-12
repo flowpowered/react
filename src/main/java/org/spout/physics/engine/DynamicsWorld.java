@@ -60,10 +60,11 @@ public class DynamicsWorld extends CollisionWorld {
     private final Timer mTimer;
     private final ContactSolver mContactSolver;
     private final ConstraintSolver mConstraintSolver;
+    private int mNbSolverIterations;
+    private boolean mIsDeactivationActive;
     private final Set<RigidBody> mRigidBodies = new HashSet<>();
     private final List<ContactManifold> mContactManifolds = new ArrayList<>();
     private final Set<Constraint> mJoints = new HashSet<>();
-    private final Set<RigidBody> mConstrainedBodies = new HashSet<>();
     private final Vector3 mGravity;
     private boolean mIsGravityOn = true;
     private final ArrayList<Vector3> mConstrainedLinearVelocities = new ArrayList<>();
@@ -94,6 +95,8 @@ public class DynamicsWorld extends CollisionWorld {
         mGravity = gravity;
         mContactSolver = new ContactSolver(mContactManifolds, mConstrainedLinearVelocities, mConstrainedAngularVelocities, mMapBodyToConstrainedVelocityIndex);
         mConstraintSolver = new ConstraintSolver(mJoints, mConstrainedLinearVelocities, mConstrainedAngularVelocities, mMapBodyToConstrainedVelocityIndex);
+        mNbSolverIterations = ReactDefaults.DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS;
+        mIsDeactivationActive = ReactDefaults.DEACTIVATION_ENABLED;
     }
 
     /**
@@ -116,7 +119,7 @@ public class DynamicsWorld extends CollisionWorld {
      * @param nbIterations The number of iterations to do
      */
     public void setNbIterationsSolver(int nbIterations) {
-        mContactSolver.setNbIterationsSolver(nbIterations);
+        mNbSolverIterations = nbIterations;
     }
 
     /**
@@ -229,13 +232,11 @@ public class DynamicsWorld extends CollisionWorld {
         isTicking = true;
         mContactManifolds.clear();
         mCollisionDetection.computeCollisionDetection();
-        initConstrainedVelocitiesArray(dt);
-        if (!mContactManifolds.isEmpty()) {
-            mContactSolver.solve(dt);
-        }
+        integrateRigidBodiesVelocities(dt);
+        solveContactsAndConstraints();
         mTimer.nextStep();
         resetBodiesMovementVariable();
-        updateRigidBodiesPositionAndOrientation(dt);
+        integrateRigidBodiesPositions(dt);
         mContactSolver.cleanup();
         cleanupConstrainedVelocitiesArray();
         isTicking = false;
@@ -248,8 +249,8 @@ public class DynamicsWorld extends CollisionWorld {
         }
     }
 
-    // Updates the position and orientation of the rigid bodies using the provided time delta.
-    private void updateRigidBodiesPositionAndOrientation(float dt) {
+    // Integrates the position and orientation of the rigid bodies using the provided time delta.
+    private void integrateRigidBodiesPositions(float dt) {
         for (RigidBody rigidBody : getRigidBodies()) {
             if (!(rigidBody instanceof MobileRigidBody)) {
                 continue;
@@ -305,8 +306,8 @@ public class DynamicsWorld extends CollisionWorld {
         }
     }
 
-    // Initializes the constrained velocities array using the provided time delta.
-    private void initConstrainedVelocitiesArray(float dt) {
+    // Integrates the constrained velocities array using the provided time delta.
+    private void integrateRigidBodiesVelocities(float dt) {
         mConstrainedLinearVelocities.clear();
         mConstrainedLinearVelocities.ensureCapacity(mRigidBodies.size());
         mConstrainedAngularVelocities.clear();
@@ -330,11 +331,38 @@ public class DynamicsWorld extends CollisionWorld {
         }
     }
 
+    // Solves the contacts and constraints
+    private void solveContactsAndConstraints() {
+        final float dt = (float) mTimer.getTimeStep();
+        final boolean isConstraintsToSolve = !mJoints.isEmpty();
+        final boolean isContactsToSolve = !mContactManifolds.isEmpty();
+        if (!isConstraintsToSolve && !isContactsToSolve) {
+            return;
+        }
+        if (isContactsToSolve) {
+            mContactSolver.initialize(dt);
+            mContactSolver.warmStart();
+        }
+        if (isConstraintsToSolve) {
+            mConstraintSolver.initialize(dt);
+        }
+        for (int i = 0; i < mNbSolverIterations; i++) {
+            if (isConstraintsToSolve) {
+                mConstraintSolver.solve();
+            }
+            if (isContactsToSolve) {
+                mContactSolver.solve();
+            }
+        }
+        if (isContactsToSolve) {
+            mContactSolver.storeImpulses();
+        }
+    }
+
     // Cleans up the constrained velocities array at each step.
     private void cleanupConstrainedVelocitiesArray() {
         mConstrainedLinearVelocities.clear();
         mConstrainedAngularVelocities.clear();
-        mConstrainedBodies.clear();
         mMapBodyToConstrainedVelocityIndex.clear();
     }
 

@@ -57,16 +57,17 @@ public class DynamicsWorldTest {
             final float boxMass = 5;
             boxShape.computeLocalInertiaTensor(boxInertia, boxMass);
             final MobileRigidBody box = world.createMobileRigidBody(boxTransform, boxMass, boxInertia, boxShape);
-            box.setMotionEnabled(true);
-            world.start();
             final int stepCount = Math.round((1 / timeStep) * RUN_TIME);
             final int sleepTime = Math.round(timeStep * 1000);
+            world.start();
             for (int i = 0; i < stepCount; i++) {
                 final long start = System.nanoTime();
                 world.update();
                 final long delta = Math.round((System.nanoTime() - start) / 1000000d);
                 Thread.sleep(Math.max(sleepTime - delta, 0));
             }
+            world.destroyRigidBody(floor);
+            world.destroyRigidBody(box);
             world.stop();
         } catch (Exception ex) {
             ex.printStackTrace();
