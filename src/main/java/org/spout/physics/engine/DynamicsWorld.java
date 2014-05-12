@@ -250,6 +250,7 @@ public class DynamicsWorld extends CollisionWorld {
     }
 
     // Integrates the position and orientation of the rigid bodies using the provided time delta.
+    // The positions and orientations of the bodies are integrated using the symplectic Euler time stepping scheme.
     private void integrateRigidBodiesPositions(float dt) {
         for (RigidBody rigidBody : getRigidBodies()) {
             if (!(rigidBody instanceof MobileRigidBody)) {
@@ -307,6 +308,10 @@ public class DynamicsWorld extends CollisionWorld {
     }
 
     // Integrates the constrained velocities array using the provided time delta.
+    // This method only sets the temporary velocities and does not update
+    // the actual velocities of the bodies. The velocities updated in this method
+    // might violate the constraints and will be corrected in the constraint and
+    // contact solver.
     private void integrateRigidBodiesVelocities(float dt) {
         mConstrainedLinearVelocities.clear();
         mConstrainedLinearVelocities.ensureCapacity(mRigidBodies.size());
