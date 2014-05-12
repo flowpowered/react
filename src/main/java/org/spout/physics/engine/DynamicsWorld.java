@@ -320,15 +320,20 @@ public class DynamicsWorld extends CollisionWorld {
         int i = 0;
         for (RigidBody rigidBody : mRigidBodies) {
             mMapBodyToConstrainedVelocityIndex.put(rigidBody, i);
-            mConstrainedLinearVelocities.add(i, Vector3.add(
-                    rigidBody.getLinearVelocity(),
-                    Vector3.multiply(dt * rigidBody.getMassInverse(), rigidBody.getExternalForce())));
-            mConstrainedAngularVelocities.add(i, Vector3.add(
-                    rigidBody.getAngularVelocity(),
-                    Matrix3x3.multiply(
-                            Matrix3x3.multiply(dt, rigidBody.getInertiaTensorInverseWorld()),
-                            rigidBody.getExternalTorque())
-            ));
+            if (rigidBody.isMotionEnabled()) {
+                mConstrainedLinearVelocities.add(i, Vector3.add(
+                        rigidBody.getLinearVelocity(),
+                        Vector3.multiply(dt * rigidBody.getMassInverse(), rigidBody.getExternalForce())));
+                mConstrainedAngularVelocities.add(i, Vector3.add(
+                        rigidBody.getAngularVelocity(),
+                        Matrix3x3.multiply(
+                                Matrix3x3.multiply(dt, rigidBody.getInertiaTensorInverseWorld()),
+                                rigidBody.getExternalTorque())
+                ));
+            } else {
+                mConstrainedLinearVelocities.add(i, new Vector3(0, 0, 0));
+                mConstrainedAngularVelocities.add(i, new Vector3(0, 0, 0));
+            }
             i++;
         }
         if (mMapBodyToConstrainedVelocityIndex.size() != mRigidBodies.size()) {

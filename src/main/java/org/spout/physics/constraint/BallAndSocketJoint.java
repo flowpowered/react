@@ -100,11 +100,11 @@ public class BallAndSocketJoint extends Constraint {
         final Matrix3x3 inverseInertiaTensorBody1 = mBody1.getInertiaTensorInverseWorld();
         final Matrix3x3 inverseInertiaTensorBody2 = mBody2.getInertiaTensorInverseWorld();
         final Vector3 Jv = Vector3.add(Vector3.negate(v1), Vector3.add(mU1World.cross(w1), Vector3.subtract(v2, mU2World.cross(w2))));
-        final float beta = 0.8f;     // TODO : Use a constant here
+        final float beta = 0.7f;     // TODO : Use a constant here
         final float biasFactor = -beta / constraintSolverData.getTimeStep();
         Vector3 b = Vector3.multiply(biasFactor, Vector3.subtract(Vector3.subtract(Vector3.add(x2, mU2World), x1), mU1World));
         final Vector3 deltaLambda = Matrix3x3.multiply(mInverseMassMatrix, Vector3.subtract(Vector3.negate(Jv), b));
-        mImpulse.set(Vector3.add(mImpulse, deltaLambda));
+        mImpulse.add(deltaLambda);
         final Vector3 linearImpulseBody1 = Vector3.negate(deltaLambda);
         final Vector3 angularImpulseBody1 = mU1World.cross(deltaLambda);
         final Vector3 linearImpulseBody2 = deltaLambda;
