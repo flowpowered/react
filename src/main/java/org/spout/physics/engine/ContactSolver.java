@@ -72,8 +72,8 @@ public class ContactSolver {
     private ContactManifoldSolver[] mContactConstraints = null;
     private int mNbContactManifolds;
     private final Set<RigidBody> mConstraintBodies = new HashSet<>();
-    private final List<Vector3> mConstrainedLinearVelocities;
-    private final List<Vector3> mConstrainedAngularVelocities;
+    private final List<Vector3> mLinearVelocities;
+    private final List<Vector3> mAngularVelocities;
     private final TObjectIntMap<RigidBody> mMapBodyToConstrainedVelocityIndex;
     private boolean mIsSplitImpulseActive = true;
     private boolean mIsSolveFrictionAtContactManifoldCenterActive = true;
@@ -89,8 +89,8 @@ public class ContactSolver {
     public ContactSolver(List<ContactManifold> contactManifolds, List<Vector3> constrainedLinearVelocities,
                          List<Vector3> constrainedAngularVelocities, TObjectIntMap<RigidBody> mapBodyToVelocityIndex) {
         mContactManifolds = contactManifolds;
-        mConstrainedLinearVelocities = constrainedLinearVelocities;
-        mConstrainedAngularVelocities = constrainedAngularVelocities;
+        mLinearVelocities = constrainedLinearVelocities;
+        mAngularVelocities = constrainedAngularVelocities;
         mMapBodyToConstrainedVelocityIndex = mapBodyToVelocityIndex;
     }
 
@@ -189,7 +189,11 @@ public class ContactSolver {
                 Vector3.multiply(contactPoint.r2CrossT2, deltaLambda));
     }
 
-    // Initializes the constraint solver.
+    /**
+     * Initializes the constraint solver.
+     *
+     * @param dt The time delta
+     */
     public void initialize(float dt) {
         mTimeStep = dt;
         mContactConstraints = new ContactManifoldSolver[mContactManifolds.size()];
@@ -202,8 +206,8 @@ public class ContactSolver {
             if (externalManifold.getNbContactPoints() <= 0) {
                 throw new IllegalStateException("external manifold must have at least one contact point");
             }
-            final RigidBody body1 = externalManifold.getContactPoint(0).getBody1();
-            final RigidBody body2 = externalManifold.getContactPoint(0).getBody2();
+            final RigidBody body1 = externalManifold.getContactPoint(0).getFirstBody();
+            final RigidBody body2 = externalManifold.getContactPoint(0).getSecondBody();
             mConstraintBodies.add(body1);
             mConstraintBodies.add(body2);
             final Vector3 x1 = body1.getTransform().getPosition();
@@ -277,11 +281,11 @@ public class ContactSolver {
             throw new IllegalStateException("the number of constrained velocities must be greater"
                     + " or equal to the number of constraint bodies");
         }
-        if (mConstrainedLinearVelocities.size() < mConstraintBodies.size()) {
+        if (mLinearVelocities.size() < mConstraintBodies.size()) {
             throw new IllegalStateException("the number of constrained linear velocities must be greater"
                     + " or equal to the number of constraint bodies");
         }
-        if (mConstrainedAngularVelocities.size() < mConstraintBodies.size()) {
+        if (mAngularVelocities.size() < mConstraintBodies.size()) {
             throw new IllegalStateException("the number of constrained angular velocities must be greater"
                     + " or equal to the number of constraint bodies");
         }
@@ -310,10 +314,10 @@ public class ContactSolver {
             if (mIsSolveFrictionAtContactManifoldCenterActive) {
                 manifold.normal.setAllValues(0, 0, 0);
             }
-            final Vector3 v1 = mConstrainedLinearVelocities.get(manifold.indexBody1);
-            final Vector3 w1 = mConstrainedAngularVelocities.get(manifold.indexBody1);
-            final Vector3 v2 = mConstrainedLinearVelocities.get(manifold.indexBody2);
-            final Vector3 w2 = mConstrainedAngularVelocities.get(manifold.indexBody2);
+            final Vector3 v1 = mLinearVelocities.get(manifold.indexBody1);
+            final Vector3 w1 = mAngularVelocities.get(manifold.indexBody1);
+            final Vector3 v2 = mLinearVelocities.get(manifold.indexBody2);
+            final Vector3 w2 = mAngularVelocities.get(manifold.indexBody2);
             for (int i = 0; i < manifold.nbContacts; i++) {
                 final ContactPointSolver contactPoint = manifold.contacts[i];
                 final ContactPoint externalContact = contactPoint.externalContact;
@@ -404,9 +408,10 @@ public class ContactSolver {
         }
     }
 
-    // Warm start the solver.
-    // For each constraint, we apply the previous impulse (from the previous step) at the beginning.
-    // With this technique, we will converge faster towards the solution for the linear system.
+    /**
+     * Warm start the solver. For each constraint, we apply the previous impulse (from the previous step) at the beginning. With this technique, we will converge faster towards the solution for the
+     * linear system.
+     */
     public void warmStart() {
         if (!mIsWarmStartingActive) {
             return;
@@ -481,17 +486,19 @@ public class ContactSolver {
         }
     }
 
-    // Solves the contact constraints by applying sequential impulses.
+    /**
+     * Solves the contact constraints by applying sequential impulses.
+     */
     public void solve() {
         float deltaLambda;
         float lambdaTemp;
         for (int c = 0; c < mNbContactManifolds; c++) {
             ContactManifoldSolver contactManifold = mContactConstraints[c];
             float sumPenetrationImpulse = 0;
-            final Vector3 v1 = mConstrainedLinearVelocities.get(contactManifold.indexBody1);
-            final Vector3 w1 = mConstrainedAngularVelocities.get(contactManifold.indexBody1);
-            final Vector3 v2 = mConstrainedLinearVelocities.get(contactManifold.indexBody2);
-            final Vector3 w2 = mConstrainedAngularVelocities.get(contactManifold.indexBody2);
+            final Vector3 v1 = mLinearVelocities.get(contactManifold.indexBody1);
+            final Vector3 w1 = mAngularVelocities.get(contactManifold.indexBody1);
+            final Vector3 v2 = mLinearVelocities.get(contactManifold.indexBody2);
+            final Vector3 w2 = mAngularVelocities.get(contactManifold.indexBody2);
             for (int i = 0; i < contactManifold.nbContacts; i++) {
                 final ContactPointSolver contactPoint = contactManifold.contacts[i];
                 // --------- Penetration --------- //
@@ -624,7 +631,9 @@ public class ContactSolver {
         }
     }
 
-    // Stores the computed impulses to use them to warm-start the solver for the next iteration.
+    /**
+     * Stores the computed impulses to use them to warm-start the solver for the next iteration.
+     */
     public void storeImpulses() {
         for (int c = 0; c < mNbContactManifolds; c++) {
             final ContactManifoldSolver manifold = mContactConstraints[c];
@@ -647,24 +656,24 @@ public class ContactSolver {
     // Applies an impulse to the two bodies of a constraint.
     private void applyImpulse(Impulse impulse, ContactManifoldSolver manifold) {
         if (manifold.isBody1Moving) {
-            mConstrainedLinearVelocities.get(manifold.indexBody1).add(Vector3.multiply(manifold.massInverseBody1, impulse.linearImpulseBody1));
-            mConstrainedAngularVelocities.get(manifold.indexBody1).add(Matrix3x3.multiply(manifold.inverseInertiaTensorBody1, impulse.angularImpulseBody1));
+            mLinearVelocities.get(manifold.indexBody1).add(Vector3.multiply(manifold.massInverseBody1, impulse.getLinearImpulseFirstBody()));
+            mAngularVelocities.get(manifold.indexBody1).add(Matrix3x3.multiply(manifold.inverseInertiaTensorBody1, impulse.getAngularImpulseFirstBody()));
         }
         if (manifold.isBody2Moving) {
-            mConstrainedLinearVelocities.get(manifold.indexBody2).add(Vector3.multiply(manifold.massInverseBody2, impulse.linearImpulseBody2));
-            mConstrainedAngularVelocities.get(manifold.indexBody2).add(Matrix3x3.multiply(manifold.inverseInertiaTensorBody2, impulse.angularImpulseBody2));
+            mLinearVelocities.get(manifold.indexBody2).add(Vector3.multiply(manifold.massInverseBody2, impulse.getLinearImpulseSecondBody()));
+            mAngularVelocities.get(manifold.indexBody2).add(Matrix3x3.multiply(manifold.inverseInertiaTensorBody2, impulse.getAngularImpulseSecondBody()));
         }
     }
 
     // Applies an impulse to the two bodies of a constraint.
     private void applySplitImpulse(Impulse impulse, ContactManifoldSolver manifold) {
         if (manifold.isBody1Moving) {
-            mSplitLinearVelocities[manifold.indexBody1].add(Vector3.multiply(manifold.massInverseBody1, impulse.linearImpulseBody1));
-            mSplitAngularVelocities[manifold.indexBody1].add(Matrix3x3.multiply(manifold.inverseInertiaTensorBody1, impulse.angularImpulseBody1));
+            mSplitLinearVelocities[manifold.indexBody1].add(Vector3.multiply(manifold.massInverseBody1, impulse.getLinearImpulseFirstBody()));
+            mSplitAngularVelocities[manifold.indexBody1].add(Matrix3x3.multiply(manifold.inverseInertiaTensorBody1, impulse.getAngularImpulseFirstBody()));
         }
         if (manifold.isBody2Moving) {
-            mSplitLinearVelocities[manifold.indexBody2].add(Vector3.multiply(manifold.massInverseBody2, impulse.linearImpulseBody2));
-            mSplitAngularVelocities[manifold.indexBody2].add(Matrix3x3.multiply(manifold.inverseInertiaTensorBody2, impulse.angularImpulseBody2));
+            mSplitLinearVelocities[manifold.indexBody2].add(Vector3.multiply(manifold.massInverseBody2, impulse.getLinearImpulseSecondBody()));
+            mSplitAngularVelocities[manifold.indexBody2].add(Matrix3x3.multiply(manifold.inverseInertiaTensorBody2, impulse.getAngularImpulseSecondBody()));
         }
     }
 
@@ -715,23 +724,6 @@ public class ContactSolver {
         }
         if (mSplitAngularVelocities != null) {
             mSplitAngularVelocities = null;
-        }
-    }
-
-    // Represents an impulse that we can apply to bodies in the contact or constraint solver.
-    private static class Impulse {
-        private final Vector3 linearImpulseBody1;
-        private final Vector3 linearImpulseBody2;
-        private final Vector3 angularImpulseBody1;
-        private final Vector3 angularImpulseBody2;
-
-        private Impulse(
-                Vector3 linearImpulseBody1, Vector3 angularImpulseBody1,
-                Vector3 linearImpulseBody2, Vector3 angularImpulseBody2) {
-            this.linearImpulseBody1 = linearImpulseBody1;
-            this.angularImpulseBody1 = angularImpulseBody1;
-            this.linearImpulseBody2 = linearImpulseBody2;
-            this.angularImpulseBody2 = angularImpulseBody2;
         }
     }
 

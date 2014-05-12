@@ -123,7 +123,7 @@ public class RayCaster {
     private static boolean intersects(Vector3 rayStart, Vector3 rayDir,
                                       CollisionShape shape, Transform transform,
                                       Vector3 intersectionPoint) {
-        final Transform worldToObject = transform.inverse();
+        final Transform worldToObject = transform.getInverse();
         final Vector3 objRayStart = Transform.multiply(worldToObject, rayStart);
         final Vector3 objRayDir = Matrix3x3.multiply(worldToObject.getOrientation().getMatrix(), rayDir);
         final boolean intersects;

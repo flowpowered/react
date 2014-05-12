@@ -130,7 +130,7 @@ public class Transform {
      *
      * @return The transform which is the inverse of this one
      */
-    public Transform inverse() {
+    public Transform getInverse() {
         final Quaternion invQuaternion = mOrientation.getInverse();
         final Matrix3x3 invMatrix = invQuaternion.getMatrix();
         return new Transform(Matrix3x3.multiply(invMatrix, Vector3.negate(mPosition)), invQuaternion);

@@ -26,6 +26,7 @@
  */
 package org.spout.physics.constraint;
 
+import org.spout.physics.constraint.ConstraintSolver.ConstraintSolverData;
 import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
 
@@ -65,6 +66,14 @@ public class ContactPoint extends Constraint {
         mIsRestingContact = false;
         mFrictionVector1 = new Vector3(0, 0, 0);
         mFrictionVector2 = new Vector3(0, 0, 0);
+    }
+
+    @Override
+    public void initBeforeSolve(ConstraintSolverData constraintSolverData) {
+    }
+
+    @Override
+    public void solve(ConstraintSolverData constraintSolverData) {
     }
 
     /**

@@ -74,7 +74,7 @@ public class EPAAlgorithm {
         final Vector3[] points = new Vector3[MAX_SUPPORT_POINTS];
         final TrianglesStore triangleStore = new TrianglesStore();
         final Queue<TriangleEPA> triangleHeap = new PriorityQueue<>(MAX_FACETS, new TriangleComparison());
-        final Transform body2Tobody1 = Transform.multiply(transform1.inverse(), transform2);
+        final Transform body2Tobody1 = Transform.multiply(transform1.getInverse(), transform2);
         final Matrix3x3 rotateToBody2 = Matrix3x3.multiply(transform2.getOrientation().getMatrix().getTranspose(), transform1.getOrientation().getMatrix());
         int nbVertices = simplex.getSimplex(suppPointsA, suppPointsB, points);
         final float tolerance = ReactDefaults.MACHINE_EPSILON * simplex.getMaxLengthSquareOfAPoint();
@@ -244,7 +244,7 @@ public class EPAAlgorithm {
         while (nbTriangles > 0 && triangleHeap.element().getDistSquare() <= upperBoundSquarePenDepth);
         v.set(Matrix3x3.multiply(transform1.getOrientation().getMatrix(), triangle.getClosestPoint()));
         final Vector3 pALocal = triangle.computeClosestPointOfObject(suppPointsA);
-        final Vector3 pBLocal = Transform.multiply(body2Tobody1.inverse(), triangle.computeClosestPointOfObject(suppPointsB));
+        final Vector3 pBLocal = Transform.multiply(body2Tobody1.getInverse(), triangle.computeClosestPointOfObject(suppPointsB));
         final Vector3 normal = v.getUnit();
         final float penetrationDepth = v.length();
         if (penetrationDepth <= 0) {

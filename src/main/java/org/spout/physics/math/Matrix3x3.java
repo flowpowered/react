@@ -478,4 +478,16 @@ public class Matrix3x3 {
                 matrix.get(1, 0) * vector.getX() + matrix.get(1, 1) * vector.getY() + matrix.get(1, 2) * vector.getZ(),
                 matrix.get(2, 0) * vector.getX() + matrix.get(2, 1) * vector.getY() + matrix.get(2, 2) * vector.getZ());
     }
+
+    /**
+     * Returns a skew-symmetric matrix using a given vector that can be used to compute cross product with another vector using matrix multiplication,
+     *
+     * @return A skew-symmetric matrix for cross product
+     */
+    public static Matrix3x3 computeSkewSymmetricMatrixForCrossProduct(Vector3 vector) {
+        return new Matrix3x3(
+                0, -vector.getZ(), vector.getY(),
+                vector.getZ(), 0, -vector.getX(),
+                -vector.getY(), vector.getX(), 0);
+    }
 }

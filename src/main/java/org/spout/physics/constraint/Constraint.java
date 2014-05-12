@@ -27,15 +27,18 @@
 package org.spout.physics.constraint;
 
 import org.spout.physics.body.RigidBody;
+import org.spout.physics.constraint.ConstraintSolver.ConstraintSolverData;
 
 /**
  * This is the base class of a constraint in the physics engine. A constraint can be a collision contact or a joint for instance.
  */
-public class Constraint {
+public abstract class Constraint {
     protected final RigidBody mBody1;
     protected final RigidBody mBody2;
     protected final boolean mActive;
     protected final ConstraintType mType;
+    protected int mIndexBody1;
+    protected int mIndexBody2;
 
     /**
      * Constructs a new constraint from the provided constraint info.
@@ -56,11 +59,25 @@ public class Constraint {
     }
 
     /**
+     * Initializes before solving the constraint.
+     *
+     * @param constraintSolverData The related data
+     */
+    public abstract void initBeforeSolve(ConstraintSolverData constraintSolverData);
+
+    /**
+     * Solves the constraint
+     *
+     * @param constraintSolverData The related data
+     */
+    public abstract void solve(ConstraintSolverData constraintSolverData);
+
+    /**
      * Gets the first body.
      *
      * @return The first body
      */
-    public RigidBody getBody1() {
+    public RigidBody getFirstBody() {
         return mBody1;
     }
 
@@ -69,7 +86,7 @@ public class Constraint {
      *
      * @return The second body
      */
-    public RigidBody getBody2() {
+    public RigidBody getSecondBody() {
         return mBody2;
     }
 

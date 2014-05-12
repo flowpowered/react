@@ -58,7 +58,7 @@ public class GJKAlgorithm extends NarrowPhaseAlgorithm {
         final Vector3 pB = new Vector3();
         float vDotw;
         float prevDistSquare;
-        final Transform body2ToBody1 = Transform.multiply(transform1.inverse(), transform2);
+        final Transform body2ToBody1 = Transform.multiply(transform1.getInverse(), transform2);
         final Matrix3x3 rotateToBody2 = Matrix3x3.multiply(
                 transform2.getOrientation().getMatrix().getTranspose(),
                 transform1.getOrientation().getMatrix());
@@ -86,7 +86,7 @@ public class GJKAlgorithm extends NarrowPhaseAlgorithm {
                     throw new IllegalStateException("dist must be greater than zero");
                 }
                 pA.set(Vector3.subtract(pA, Vector3.multiply(collisionShape1.getMargin() / dist, v)));
-                pB.set(Transform.multiply(body2ToBody1.inverse(), Vector3.add(pB, Vector3.multiply(collisionShape2.getMargin() / dist, v))));
+                pB.set(Transform.multiply(body2ToBody1.getInverse(), Vector3.add(pB, Vector3.multiply(collisionShape2.getMargin() / dist, v))));
                 final Vector3 normal = Matrix3x3.multiply(transform1.getOrientation().getMatrix(), Vector3.negate(v.getUnit()));
                 final float penetrationDepth = margin - dist;
                 if (penetrationDepth <= 0) {
@@ -103,7 +103,7 @@ public class GJKAlgorithm extends NarrowPhaseAlgorithm {
                     throw new IllegalStateException("dist must be greater than zero");
                 }
                 pA.set(Vector3.subtract(pA, Vector3.multiply(collisionShape1.getMargin() / dist, v)));
-                pB.set(Transform.multiply(body2ToBody1.inverse(), Vector3.add(pB, Vector3.multiply(collisionShape2.getMargin() / dist, v))));
+                pB.set(Transform.multiply(body2ToBody1.getInverse(), Vector3.add(pB, Vector3.multiply(collisionShape2.getMargin() / dist, v))));
                 final Vector3 normal = Matrix3x3.multiply(transform1.getOrientation().getMatrix(), Vector3.negate(v.getUnit()));
                 final float penetrationDepth = margin - dist;
                 if (penetrationDepth <= 0) {
@@ -119,7 +119,7 @@ public class GJKAlgorithm extends NarrowPhaseAlgorithm {
                     throw new IllegalStateException("dist must be greater than zero");
                 }
                 pA.set(Vector3.subtract(pA, Vector3.multiply(collisionShape1.getMargin() / dist, v)));
-                pB.set(Transform.multiply(body2ToBody1.inverse(), Vector3.add(pB, Vector3.multiply(collisionShape2.getMargin() / dist, v))));
+                pB.set(Transform.multiply(body2ToBody1.getInverse(), Vector3.add(pB, Vector3.multiply(collisionShape2.getMargin() / dist, v))));
                 final Vector3 normal = Matrix3x3.multiply(transform1.getOrientation().getMatrix(), Vector3.negate(v.getUnit()));
                 final float penetrationDepth = margin - dist;
                 if (penetrationDepth <= 0) {
@@ -139,7 +139,7 @@ public class GJKAlgorithm extends NarrowPhaseAlgorithm {
                     throw new IllegalStateException("dist must be greater than zero");
                 }
                 pA.set(Vector3.subtract(pA, Vector3.multiply(collisionShape1.getMargin() / dist, v)));
-                pB.set(Transform.multiply(body2ToBody1.inverse(), Vector3.add(pB, Vector3.multiply(collisionShape2.getMargin() / dist, v))));
+                pB.set(Transform.multiply(body2ToBody1.getInverse(), Vector3.add(pB, Vector3.multiply(collisionShape2.getMargin() / dist, v))));
                 final Vector3 normal = Matrix3x3.multiply(transform1.getOrientation().getMatrix(), Vector3.negate(v.getUnit()));
                 final float penetrationDepth = margin - dist;
                 if (penetrationDepth <= 0) {
@@ -168,7 +168,7 @@ public class GJKAlgorithm extends NarrowPhaseAlgorithm {
         float vDotw;
         float distSquare = Float.MAX_VALUE;
         float prevDistSquare;
-        final Transform body2ToBody1 = Transform.multiply(transform1.inverse(), transform2);
+        final Transform body2ToBody1 = Transform.multiply(transform1.getInverse(), transform2);
         final Matrix3x3 rotateToBody2 = Matrix3x3.multiply(
                 transform2.getOrientation().getMatrix().getTranspose(),
                 transform1.getOrientation().getMatrix());

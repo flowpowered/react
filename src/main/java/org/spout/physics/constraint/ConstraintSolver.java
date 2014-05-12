@@ -26,6 +26,7 @@
  */
 package org.spout.physics.constraint;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -80,25 +81,133 @@ import org.spout.physics.math.Vector3;
  * contact manifold, we need two constraints for tangential friction but also another twist friction constraint to prevent spin of the body around the contact manifold center.
  */
 public class ConstraintSolver {
-    private Set<Constraint> mJoints;
-    private List<Vector3> mConstrainedLinearVelocities;
-    private List<Vector3> mConstrainedAngularVelocities;
-    private TObjectIntMap<RigidBody> mMapBodyToConstrainedVelocityIndex;
-    private int mNbIterations;
+    private final Set<Constraint> mJoints;
+    private final Set<RigidBody> mConstraintBodies = new HashSet<>();
+    private final List<Vector3> mLinearVelocities;
+    private final List<Vector3> mAngularVelocities;
+    private final TObjectIntMap<RigidBody> mMapBodyToConstrainedVelocityIndex;
     private float mTimeStep;
+    private boolean mIsWarmStartingActive;
+    private final ConstraintSolverData mConstraintSolverData;
 
-    public ConstraintSolver(Set<Constraint> joints, List<Vector3> constrainedLinearVelocities, List<Vector3> constrainedAngularVelocities, TObjectIntMap<RigidBody> mapBodyToConstrainedVelocityIndex) {
+    /**
+     * Constructs a new constraint solver from the joints, linear and angular velocities and body to constrained velocity index map.
+     *
+     * @param joints The joints
+     * @param linearVelocities The linear velocities
+     * @param angularVelocities The angular velocities
+     * @param mapBodyToConstrainedVelocityIndex The map from body to constrained velocity
+     */
+    public ConstraintSolver(Set<Constraint> joints, List<Vector3> linearVelocities, List<Vector3> angularVelocities, TObjectIntMap<RigidBody> mapBodyToConstrainedVelocityIndex) {
         mJoints = joints;
-        mConstrainedLinearVelocities = constrainedLinearVelocities;
-        mConstrainedAngularVelocities = constrainedAngularVelocities;
+        mLinearVelocities = linearVelocities;
+        mAngularVelocities = angularVelocities;
         mMapBodyToConstrainedVelocityIndex = mapBodyToConstrainedVelocityIndex;
+        mConstraintSolverData = new ConstraintSolverData(linearVelocities, angularVelocities, mapBodyToConstrainedVelocityIndex);
     }
 
+    /**
+     * Initializes the constraint solver.
+     *
+     * @param dt The time delta
+     */
     public void initialize(float dt) {
         mTimeStep = dt;
+        mConstraintSolverData.setTimeStep(mTimeStep);
+        mConstraintSolverData.setWarmStartingActive(mIsWarmStartingActive);
+        for (Constraint joint : mJoints) {
+            final RigidBody body1 = joint.getFirstBody();
+            final RigidBody body2 = joint.getSecondBody();
+            mConstraintBodies.add(body1);
+            mConstraintBodies.add(body2);
+            joint.initBeforeSolve(mConstraintSolverData);
+        }
     }
 
+    /**
+     * Solves the constraints.
+     */
     public void solve() {
+        for (Constraint joint : mJoints) {
+            joint.solve(mConstraintSolverData);
+        }
+    }
 
+    /**
+     * This structure contains data from the constraint solver that is used to solve each joint constraint.
+     */
+    public static class ConstraintSolverData {
+        private float timeStep;
+        private final List<Vector3> linearVelocities;
+        private final List<Vector3> angularVelocities;
+        private final TObjectIntMap<RigidBody> mapBodyToConstrainedVelocityIndex;
+        private boolean isWarmStartingActive;
+
+        /**
+         * Constructs a new constraint solver data from the linear and angular velocities and the map from body to constrained velocity index.
+         *
+         * @param refLinearVelocities The linear velocities
+         * @param refAngularVelocities The angular velocities
+         * @param refMapBodyToConstrainedVelocityIndex The map from body to constrained velocity index
+         */
+        public ConstraintSolverData(List<Vector3> refLinearVelocities, List<Vector3> refAngularVelocities, TObjectIntMap<RigidBody> refMapBodyToConstrainedVelocityIndex) {
+            this.linearVelocities = refLinearVelocities;
+            this.angularVelocities = refAngularVelocities;
+            this.mapBodyToConstrainedVelocityIndex = refMapBodyToConstrainedVelocityIndex;
+        }
+
+        /**
+         * Returns the time step.
+         *
+         * @return The time step
+         */
+        public float getTimeStep() {
+            return timeStep;
+        }
+
+        /**
+         * Sets the time step.
+         *
+         * @param timeStep The time step
+         */
+        public void setTimeStep(float timeStep) {
+            this.timeStep = timeStep;
+        }
+
+        /**
+         * Returns the list of linear velocities.
+         *
+         * @return The linear velocities
+         */
+        public List<Vector3> getLinearVelocities() {
+            return linearVelocities;
+        }
+
+        /**
+         * Returns the list of angular velocities.
+         *
+         * @return The angular velocities
+         */
+        public List<Vector3> getAngularVelocities() {
+            return angularVelocities;
+        }
+
+        /**
+         * Returns the map from body to constrained velocity index.
+         *
+         * @return A map with a really long name that I'm tired of writing down
+         */
+        public TObjectIntMap<RigidBody> getMapBodyToConstrainedVelocityIndex() {
+            return mapBodyToConstrainedVelocityIndex;
+        }
+
+        /**
+         * Sets whether or not warm starting is active.
+         *
+         * @param isWarmStartingActive Whether or not to warm start
+         */
+        public void setWarmStartingActive(boolean isWarmStartingActive) {
+            this.isWarmStartingActive = isWarmStartingActive;
+        }
     }
 }
