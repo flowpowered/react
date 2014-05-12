@@ -32,13 +32,13 @@ import org.spout.physics.body.CollisionBody;
 import org.spout.physics.body.MobileRigidBody;
 import org.spout.physics.collision.BroadPhasePair;
 import org.spout.physics.collision.CollisionDetection;
-import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.shape.AABB;
 import org.spout.physics.collision.shape.BoxShape;
 import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.collision.shape.ConeShape;
 import org.spout.physics.collision.shape.CylinderShape;
 import org.spout.physics.collision.shape.SphereShape;
+import org.spout.physics.constraint.ContactPoint.ContactPointInfo;
 import org.spout.physics.engine.CollisionWorld;
 import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Quaternion;
@@ -145,7 +145,7 @@ public class Dummies {
         }
 
         @Override
-        public void notifyNewContact(BroadPhasePair pair, ContactInfo contactInfo) {
+        public void notifyNewContact(BroadPhasePair pair, ContactPointInfo contactInfo) {
         }
 
         @Override

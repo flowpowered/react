@@ -65,7 +65,7 @@ public class ContactSolver {
     private static final float BETA_SPLIT_IMPULSE = 0.2f;
     private static final float SLOP = 0.01f;
     private static final boolean WARM_STARTING_ACTIVE = true;
-    private final DynamicsWorld mWorld;
+    private final List<ContactManifold> mContactManifolds;
     private int mNbIterations = ReactDefaults.DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS;
     private Vector3[] mSplitLinearVelocities = null;
     private Vector3[] mSplitAngularVelocities = null;
@@ -82,14 +82,14 @@ public class ContactSolver {
     /**
      * Constructs a new contact solver from the dynamics world, the constrained linear and angular velocities, and the body to velocity index map.
      *
-     * @param world The dynamics world
+     * @param contactManifolds The contact manifolds
      * @param constrainedLinearVelocities The constrained linear velocities
      * @param constrainedAngularVelocities The constrained angular velocities
      * @param mapBodyToVelocityIndex The body to velocity index map
      */
-    public ContactSolver(DynamicsWorld world, List<Vector3> constrainedLinearVelocities,
+    public ContactSolver(List<ContactManifold> contactManifolds, List<Vector3> constrainedLinearVelocities,
                          List<Vector3> constrainedAngularVelocities, TObjectIntMap<RigidBody> mapBodyToVelocityIndex) {
-        mWorld = world;
+        mContactManifolds = contactManifolds;
         mConstrainedLinearVelocities = constrainedLinearVelocities;
         mConstrainedAngularVelocities = constrainedAngularVelocities;
         mMapBodyToConstrainedVelocityIndex = mapBodyToVelocityIndex;
@@ -201,9 +201,9 @@ public class ContactSolver {
 
     // Initializes the constraint solver.
     private void initialize() {
-        mContactConstraints = new ContactManifoldSolver[mWorld.getNbContactManifolds()];
+        mContactConstraints = new ContactManifoldSolver[mContactManifolds.size()];
         mNbContactManifolds = 0;
-        for (ContactManifold externalManifold : mWorld.getContactManifolds()) {
+        for (ContactManifold externalManifold : mContactManifolds) {
             if (mContactConstraints[mNbContactManifolds] == null) {
                 mContactConstraints[mNbContactManifolds] = new ContactManifoldSolver();
             }
@@ -277,8 +277,8 @@ public class ContactSolver {
             }
             mNbContactManifolds++;
         }
-        mSplitLinearVelocities = new Vector3[mWorld.getNbRigidBodies()];
-        mSplitAngularVelocities = new Vector3[mWorld.getNbRigidBodies()];
+        mSplitLinearVelocities = new Vector3[mMapBodyToConstrainedVelocityIndex.size()];
+        mSplitAngularVelocities = new Vector3[mMapBodyToConstrainedVelocityIndex.size()];
         if (mConstraintBodies.size() <= 0) {
             throw new IllegalStateException("the number of constraint bodies must be greater than zero");
         }

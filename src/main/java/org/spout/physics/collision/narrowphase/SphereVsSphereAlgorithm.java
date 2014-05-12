@@ -26,9 +26,9 @@
  */
 package org.spout.physics.collision.narrowphase;
 
-import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.collision.shape.SphereShape;
+import org.spout.physics.constraint.ContactPoint.ContactPointInfo;
 import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
 
@@ -39,7 +39,7 @@ public class SphereVsSphereAlgorithm extends NarrowPhaseAlgorithm {
     @Override
     public boolean testCollision(CollisionShape collisionShape1, Transform transform1,
                                  CollisionShape collisionShape2, Transform transform2,
-                                 ContactInfo contactInfo) {
+                                 ContactPointInfo contactInfo) {
         final SphereShape sphereShape1 = (SphereShape) collisionShape1;
         final SphereShape sphereShape2 = (SphereShape) collisionShape2;
         final Vector3 vectorBetweenCenters = Vector3.subtract(transform2.getPosition(), transform1.getPosition());

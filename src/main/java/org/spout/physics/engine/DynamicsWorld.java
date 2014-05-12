@@ -40,10 +40,14 @@ import org.spout.physics.body.ImmobileRigidBody;
 import org.spout.physics.body.MobileRigidBody;
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.BroadPhasePair;
-import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.shape.CollisionShape;
+import org.spout.physics.constraint.BallAndSocketJoint;
+import org.spout.physics.constraint.BallAndSocketJoint.BallAndSocketJointInfo;
 import org.spout.physics.constraint.Constraint;
+import org.spout.physics.constraint.Constraint.ConstraintInfo;
+import org.spout.physics.constraint.ConstraintSolver;
 import org.spout.physics.constraint.ContactPoint;
+import org.spout.physics.constraint.ContactPoint.ContactPointInfo;
 import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Quaternion;
 import org.spout.physics.math.Transform;
@@ -55,16 +59,18 @@ import org.spout.physics.math.Vector3;
 public class DynamicsWorld extends CollisionWorld {
     private final Timer mTimer;
     private final ContactSolver mContactSolver;
+    private final ConstraintSolver mConstraintSolver;
     private final Set<RigidBody> mRigidBodies = new HashSet<>();
     private final List<ContactManifold> mContactManifolds = new ArrayList<>();
-    private final List<Constraint> mConstraints = new ArrayList<>();
+    private final Set<Constraint> mJoints = new HashSet<>();
+    private final Set<RigidBody> mConstrainedBodies = new HashSet<>();
     private final Vector3 mGravity;
     private boolean mIsGravityOn = true;
     private final ArrayList<Vector3> mConstrainedLinearVelocities = new ArrayList<>();
     private final ArrayList<Vector3> mConstrainedAngularVelocities = new ArrayList<>();
     private final TObjectIntMap<RigidBody> mMapBodyToConstrainedVelocityIndex = new TObjectIntHashMap<>();
     private boolean isTicking = false;
-    //Tick cache
+    // Tick cache
     private final Set<RigidBody> mRigidBodiesToAddCache = new HashSet<>();
     private final Set<RigidBody> mRigidBodiesToDeleteCache = new HashSet<>();
 
@@ -86,11 +92,8 @@ public class DynamicsWorld extends CollisionWorld {
     public DynamicsWorld(Vector3 gravity, float timeStep) {
         mTimer = new Timer(timeStep);
         mGravity = gravity;
-        mContactSolver = new ContactSolver(
-                this,
-                mConstrainedLinearVelocities,
-                mConstrainedAngularVelocities,
-                mMapBodyToConstrainedVelocityIndex);
+        mContactSolver = new ContactSolver(mContactManifolds, mConstrainedLinearVelocities, mConstrainedAngularVelocities, mMapBodyToConstrainedVelocityIndex);
+        mConstraintSolver = new ConstraintSolver(mJoints, mConstrainedLinearVelocities, mConstrainedAngularVelocities, mMapBodyToConstrainedVelocityIndex);
     }
 
     /**
@@ -132,30 +135,6 @@ public class DynamicsWorld extends CollisionWorld {
      */
     public void setSolveFrictionAtContactManifoldCenterActive(boolean isActive) {
         mContactSolver.setSolveFrictionAtContactManifoldCenterActive(isActive);
-    }
-
-    /**
-     * Adds a constraint in the physics world.
-     *
-     * @param constraint The constraint to add
-     */
-    public void addConstraint(Constraint constraint) {
-        if (constraint == null) {
-            throw new IllegalArgumentException("constraint cannot be null");
-        }
-        mConstraints.add(constraint);
-    }
-
-    /**
-     * Removes a constraint.
-     *
-     * @param constraint The constraint to remove
-     */
-    public void removeConstraint(Constraint constraint) {
-        if (constraint == null) {
-            throw new IllegalArgumentException("constraint cannot be null");
-        }
-        mConstraints.remove(constraint);
     }
 
     /**
@@ -210,24 +189,6 @@ public class DynamicsWorld extends CollisionWorld {
      */
     public int getNbContactManifolds() {
         return mContactManifolds.size();
-    }
-
-    /**
-     * Gets the constraint list.
-     *
-     * @return The constraints
-     */
-    public List<Constraint> getConstraints() {
-        return mConstraints;
-    }
-
-    /**
-     * Gets the contact manifolds list.
-     *
-     * @return The contact manifolds
-     */
-    public List<ContactManifold> getContactManifolds() {
-        return mContactManifolds;
     }
 
     /**
@@ -364,12 +325,16 @@ public class DynamicsWorld extends CollisionWorld {
             ));
             i++;
         }
+        if (mMapBodyToConstrainedVelocityIndex.size() != mRigidBodies.size()) {
+            throw new IllegalStateException("The size of the map from body to constrained velocity index should be the same as the number of rigid bodies");
+        }
     }
 
     // Cleans up the constrained velocities array at each step.
     private void cleanupConstrainedVelocitiesArray() {
         mConstrainedLinearVelocities.clear();
         mConstrainedAngularVelocities.clear();
+        mConstrainedBodies.clear();
         mMapBodyToConstrainedVelocityIndex.clear();
     }
 
@@ -489,10 +454,35 @@ public class DynamicsWorld extends CollisionWorld {
     }
 
     /**
-     * Removes all constraints in the physics world.
+     * Creates a joint between two bodies in the world and returns the new joint.
+     *
+     * @param jointInfo The information to use for creating the joint
+     * @return The new joint
      */
-    public void removeAllConstraints() {
-        mConstraints.clear();
+    public Constraint createJoint(ConstraintInfo jointInfo) {
+        final Constraint newJoint;
+        switch (jointInfo.getType()) {
+            case BALLSOCKETJOINT:
+                final BallAndSocketJointInfo info = (BallAndSocketJointInfo) jointInfo;
+                newJoint = new BallAndSocketJoint(info);
+                break;
+            default:
+                throw new IllegalArgumentException("Unsupported joint type +" + jointInfo.getType());
+        }
+        mJoints.add(newJoint);
+        return newJoint;
+    }
+
+    /**
+     * Destroys a joint.
+     *
+     * @param joint The joint to destroy
+     */
+    public void destroyJoint(Constraint joint) {
+        if (joint == null) {
+            throw new IllegalArgumentException("Joint cannot be null");
+        }
+        mJoints.remove(joint);
     }
 
     @Override
@@ -519,20 +509,12 @@ public class DynamicsWorld extends CollisionWorld {
     }
 
     @Override
-    public void notifyNewContact(BroadPhasePair broadPhasePair, ContactInfo contactInfo) {
-        final RigidBody rigidBody1 = (RigidBody) broadPhasePair.getFirstBody();
-        final RigidBody rigidBody2 = (RigidBody) broadPhasePair.getSecondBody();
-        if (rigidBody1 == null) {
-            throw new IllegalArgumentException("first body of the broad phase pair cannot be null");
-        }
-        if (rigidBody2 == null) {
-            throw new IllegalArgumentException("second body of the broad phase pair cannot be null");
-        }
-        final ContactPoint contact = new ContactPoint(rigidBody1, rigidBody2, contactInfo);
+    public void notifyNewContact(BroadPhasePair broadPhasePair, ContactPointInfo contactInfo) {
+        final ContactPoint contact = new ContactPoint(contactInfo);
         final IntPair indexPair = broadPhasePair.getBodiesIndexPair();
         final OverlappingPair overlappingPair = mOverlappingPairs.get(indexPair);
         if (overlappingPair == null) {
-            throw new IllegalArgumentException("broadphase pair is not in the overlapping pairs");
+            throw new IllegalArgumentException("broad phase pair is not in the overlapping pairs");
         }
         overlappingPair.addContact(contact);
         mContactManifolds.add(overlappingPair.getContactManifold());

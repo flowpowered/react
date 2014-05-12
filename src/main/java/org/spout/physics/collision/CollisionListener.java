@@ -27,10 +27,11 @@
 package org.spout.physics.collision;
 
 import org.spout.physics.body.CollisionBody;
+import org.spout.physics.constraint.ContactPoint.ContactPointInfo;
 
 /**
  * Reports the collisions between two bodies as they are occurring during the narrow-phase and allows for cancellation of the collision. Each collision will result in a call of {@link
- * #onCollide(org.spout.physics.body.CollisionBody, org.spout.physics.body.CollisionBody, ContactInfo)}. Implement this interface to listen to them. Use {@link
+ * #onCollide(org.spout.physics.body.CollisionBody, org.spout.physics.body.CollisionBody, ContactPointInfo)}. Implement this interface to listen to them. Use {@link
  * org.spout.physics.engine.CollisionWorld#addListener(CollisionListener)} to add a listener.
  */
 public interface CollisionListener {
@@ -43,5 +44,5 @@ public interface CollisionListener {
      * @param contactInfo The contact information
      * @return Whether or not the collision should be canceled
      */
-    public boolean onCollide(CollisionBody body1, CollisionBody body2, ContactInfo contactInfo);
+    public boolean onCollide(CollisionBody body1, CollisionBody body2, ContactPointInfo contactInfo);
 }

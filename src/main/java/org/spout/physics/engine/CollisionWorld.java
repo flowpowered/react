@@ -41,10 +41,10 @@ import org.spout.physics.body.CollisionBody;
 import org.spout.physics.collision.BroadPhasePair;
 import org.spout.physics.collision.CollisionDetection;
 import org.spout.physics.collision.CollisionListener;
-import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.RayCaster;
 import org.spout.physics.collision.RayCaster.IntersectedBody;
 import org.spout.physics.collision.shape.CollisionShape;
+import org.spout.physics.constraint.ContactPoint.ContactPointInfo;
 import org.spout.physics.math.Vector3;
 
 /**
@@ -85,7 +85,7 @@ public abstract class CollisionWorld {
      * @param pair The pair of bodies in contact
      * @param contactInfo The information for the contact
      */
-    public abstract void notifyNewContact(BroadPhasePair pair, ContactInfo contactInfo);
+    public abstract void notifyNewContact(BroadPhasePair pair, ContactPointInfo contactInfo);
 
     /**
      * Updates the overlapping pair.

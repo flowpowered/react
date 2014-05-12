@@ -38,18 +38,21 @@ public class Constraint {
     protected final ConstraintType mType;
 
     /**
-     * Constructs a new constraint from the two bodies, the activity status and the type of constraint.
+     * Constructs a new constraint from the provided constraint info.
      *
-     * @param body1 The first body
-     * @param body2 The second body
-     * @param active True if this constraint is active, false if not
-     * @param type The type of this constraint
+     * @param constraintInfo The constraint info for this constraint
      */
-    public Constraint(RigidBody body1, RigidBody body2, boolean active, ConstraintType type) {
-        mBody1 = body1;
-        mBody2 = body2;
-        mActive = active;
-        mType = type;
+    public Constraint(ConstraintInfo constraintInfo) {
+        if (constraintInfo.body1 == null) {
+            throw new IllegalArgumentException("First body cannot be null");
+        }
+        if (constraintInfo.body2 == null) {
+            throw new IllegalArgumentException("Second body cannot be null");
+        }
+        mBody1 = constraintInfo.body1;
+        mBody2 = constraintInfo.body2;
+        mActive = true;
+        mType = constraintInfo.type;
     }
 
     /**
@@ -93,6 +96,84 @@ public class Constraint {
      */
     public static enum ConstraintType {
         CONTACT,
-        BALL_SOCKET_JOINT
+        BALLSOCKETJOINT
+    }
+
+    /**
+     * This structure is used to gather the information needed to create a constraint.
+     */
+    public static class ConstraintInfo {
+        private RigidBody body1;
+        private RigidBody body2;
+        private ConstraintType type;
+
+        /**
+         * Constructs a new constraint info from the constraint type.
+         *
+         * @param type The type of this constraint
+         */
+        public ConstraintInfo(ConstraintType type) {
+            body1 = null;
+            body2 = null;
+            this.type = type;
+        }
+
+        /**
+         * Constructs a new constraint info from the constraint type and the two bodies involved.
+         *
+         * @param body1 The first involved body
+         * @param body2 The second involved body
+         * @param type The type of this constraint
+         */
+        public ConstraintInfo(RigidBody body1, RigidBody body2, ConstraintType type) {
+            this.body1 = body1;
+            this.body2 = body2;
+            this.type = type;
+        }
+
+        /**
+         * Returns the constraint type.
+         *
+         * @return The type
+         */
+        public ConstraintType getType() {
+            return type;
+        }
+
+        /**
+         * Returns the first body involved in the constraint.
+         *
+         * @return The first body
+         */
+        public RigidBody getFirstBody() {
+            return body1;
+        }
+
+        /**
+         * Returns the second body involved in the constraint.
+         *
+         * @return The second body
+         */
+        public RigidBody getSecondBody() {
+            return body2;
+        }
+
+        /**
+         * Sets the first body involved in the contact.
+         *
+         * @param body1 The The first involved body
+         */
+        public void setFirstBody(RigidBody body1) {
+            this.body1 = body1;
+        }
+
+        /**
+         * Sets the second body involved in the contact.
+         *
+         * @param body2 The second involved body
+         */
+        public void setSecondBody(RigidBody body2) {
+            this.body2 = body2;
+        }
     }
 }

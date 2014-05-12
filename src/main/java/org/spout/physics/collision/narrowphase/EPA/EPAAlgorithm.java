@@ -31,10 +31,10 @@ import java.util.PriorityQueue;
 import java.util.Queue;
 
 import org.spout.physics.ReactDefaults;
-import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.narrowphase.GJK.GJKAlgorithm;
 import org.spout.physics.collision.narrowphase.GJK.Simplex;
 import org.spout.physics.collision.shape.CollisionShape;
+import org.spout.physics.constraint.ContactPoint.ContactPointInfo;
 import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Quaternion;
 import org.spout.physics.math.Transform;
@@ -68,7 +68,7 @@ public class EPAAlgorithm {
     public boolean computePenetrationDepthAndContactPoints(Simplex simplex,
                                                            CollisionShape collisionShape1, Transform transform1,
                                                            CollisionShape collisionShape2, Transform transform2,
-                                                           Vector3 v, ContactInfo contactInfo) {
+                                                           Vector3 v, ContactPointInfo contactInfo) {
         final Vector3[] suppPointsA = new Vector3[MAX_SUPPORT_POINTS];
         final Vector3[] suppPointsB = new Vector3[MAX_SUPPORT_POINTS];
         final Vector3[] points = new Vector3[MAX_SUPPORT_POINTS];

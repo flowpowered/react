@@ -27,10 +27,10 @@
 package org.spout.physics.collision.narrowphase.GJK;
 
 import org.spout.physics.ReactDefaults;
-import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.narrowphase.EPA.EPAAlgorithm;
 import org.spout.physics.collision.narrowphase.NarrowPhaseAlgorithm;
 import org.spout.physics.collision.shape.CollisionShape;
+import org.spout.physics.constraint.ContactPoint.ContactPointInfo;
 import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
@@ -50,7 +50,7 @@ public class GJKAlgorithm extends NarrowPhaseAlgorithm {
     @Override
     public boolean testCollision(CollisionShape collisionShape1, Transform transform1,
                                  CollisionShape collisionShape2, Transform transform2,
-                                 ContactInfo contactInfo) {
+                                 ContactPointInfo contactInfo) {
         final Vector3 suppA = new Vector3();
         final Vector3 suppB = new Vector3();
         final Vector3 w = new Vector3();
@@ -160,7 +160,7 @@ public class GJKAlgorithm extends NarrowPhaseAlgorithm {
     // the enlarged objects.
     private boolean computePenetrationDepthForEnlargedObjects(CollisionShape collisionShape1, Transform transform1,
                                                               CollisionShape collisionShape2, Transform transform2,
-                                                              ContactInfo contactInfo, Vector3 v) {
+                                                              ContactPointInfo contactInfo, Vector3 v) {
         final Simplex simplex = new Simplex();
         final Vector3 suppA = new Vector3();
         final Vector3 suppB = new Vector3();

@@ -31,9 +31,9 @@ import java.util.Random;
 import org.junit.Assert;
 import org.junit.Test;
 
-import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.narrowphase.SphereVsSphereAlgorithm;
 import org.spout.physics.collision.shape.SphereShape;
+import org.spout.physics.constraint.ContactPoint.ContactPointInfo;
 import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
 
@@ -50,10 +50,10 @@ public class SphereVsSphereAlgorithmTest {
             final Transform t2 = Dummies.newTransform();
             if (i < 50) {
                 nonCollideSpheres(s1, t1, s2, t2);
-                Assert.assertFalse(sphereVsSphere.testCollision(s1, t1, s2, t2, new ContactInfo()));
+                Assert.assertFalse(sphereVsSphere.testCollision(s1, t1, s2, t2, new ContactPointInfo()));
             } else {
                 collideSpheres(s1, t1, s2, t2);
-                Assert.assertTrue(sphereVsSphere.testCollision(s1, t1, s2, t2, new ContactInfo()));
+                Assert.assertTrue(sphereVsSphere.testCollision(s1, t1, s2, t2, new ContactPointInfo()));
             }
         }
     }

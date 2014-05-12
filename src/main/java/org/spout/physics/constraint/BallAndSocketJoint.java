@@ -26,21 +26,29 @@
  */
 package org.spout.physics.constraint;
 
-import org.spout.physics.body.RigidBody;
+import org.spout.physics.math.Vector3;
 
 /**
  * This class represents a ball-and-socket joint that allows arbitrary rotation between two bodies.
  */
 public class BallAndSocketJoint extends Constraint {
+    private Vector3 mFirstLocalAnchorPoint;
+    private Vector3 mSecondLocalAnchorPoint;
+
     /**
-     * Constructs a new ball and socket joint from the two bodies, the activity status and the type of constraint.
+     * Constructs a new ball and socket joint from provided ball and socket joint info.
      *
-     * @param body1 The first body
-     * @param body2 The second body
-     * @param active True if this constraint is active, false if not
-     * @param type The type of this constraint
+     * @param jointInfo The joint info
      */
-    public BallAndSocketJoint(RigidBody body1, RigidBody body2, boolean active, ConstraintType type) {
-        super(body1, body2, active, type);
+    public BallAndSocketJoint(BallAndSocketJointInfo jointInfo) {
+        super(jointInfo);
+    }
+
+    public static class BallAndSocketJointInfo extends ConstraintInfo {
+        private Vector3 anchorPoint;
+
+        public BallAndSocketJointInfo() {
+            super(ConstraintType.BALLSOCKETJOINT);
+        }
     }
 }

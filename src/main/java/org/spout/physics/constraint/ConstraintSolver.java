@@ -26,6 +26,14 @@
  */
 package org.spout.physics.constraint;
 
+import java.util.List;
+import java.util.Set;
+
+import gnu.trove.map.TObjectIntMap;
+
+import org.spout.physics.body.RigidBody;
+import org.spout.physics.math.Vector3;
+
 /**
  * This class represents the constraint solver that is used to solve constraints between the rigid bodies. The constraint solver is based on the "Sequential Impulse" technique described by Erin Catto
  * in his GDC slides (http://code.google.com/p/box2d/downloads/list).
@@ -72,6 +80,17 @@ package org.spout.physics.constraint;
  * contact manifold, we need two constraints for tangential friction but also another twist friction constraint to prevent spin of the body around the contact manifold center.
  */
 public class ConstraintSolver {
+    private Set<Constraint> mJoints;
+    private List<Vector3> mConstrainedLinearVelocities;
+    private List<Vector3> mConstrainedAngularVelocities;
+    private TObjectIntMap<RigidBody> mMapBodyToConstrainedVelocityIndex;
     private int mNbIterations;
     private float mTimeStep;
+
+    public ConstraintSolver(Set<Constraint> joints, List<Vector3> constrainedLinearVelocities, List<Vector3> constrainedAngularVelocities, TObjectIntMap<RigidBody> mapBodyToConstrainedVelocityIndex) {
+        mJoints = joints;
+        mConstrainedLinearVelocities = constrainedLinearVelocities;
+        mConstrainedAngularVelocities = constrainedAngularVelocities;
+        mMapBodyToConstrainedVelocityIndex = mapBodyToConstrainedVelocityIndex;
+    }
 }

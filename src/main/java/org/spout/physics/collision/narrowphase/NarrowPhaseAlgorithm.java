@@ -27,8 +27,8 @@
 package org.spout.physics.collision.narrowphase;
 
 import org.spout.physics.collision.BroadPhasePair;
-import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.shape.CollisionShape;
+import org.spout.physics.constraint.ContactPoint.ContactPointInfo;
 import org.spout.physics.math.Transform;
 
 /**
@@ -61,5 +61,5 @@ public abstract class NarrowPhaseAlgorithm {
     public abstract boolean testCollision(
             CollisionShape collisionShape1, Transform transform1,
             CollisionShape collisionShape2, Transform transform2,
-            ContactInfo contactInfo);
+            ContactPointInfo contactInfo);
 }

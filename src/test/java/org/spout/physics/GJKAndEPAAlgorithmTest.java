@@ -34,13 +34,13 @@ import org.junit.Test;
 import org.spout.physics.body.CollisionBody;
 import org.spout.physics.body.MobileRigidBody;
 import org.spout.physics.collision.BroadPhasePair;
-import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.collision.narrowphase.GJK.GJKAlgorithm;
 import org.spout.physics.collision.shape.BoxShape;
 import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.collision.shape.ConeShape;
 import org.spout.physics.collision.shape.CylinderShape;
 import org.spout.physics.collision.shape.SphereShape;
+import org.spout.physics.constraint.ContactPoint.ContactPointInfo;
 import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
@@ -63,14 +63,14 @@ public class GJKAndEPAAlgorithmTest {
                 collideShapes(s1, t1, s2, t2);
                 final BroadPhasePair pair = pair(s1, t1, s2, t2);
                 gjkAlgorithm.setCurrentOverlappingPair(pair);
-                if (!gjkAlgorithm.testCollision(s1, t1, s2, t2, new ContactInfo())) {
+                if (!gjkAlgorithm.testCollision(s1, t1, s2, t2, new ContactPointInfo())) {
                     collideFails++;
                 }
             } else {
                 nonCollideShapes(s1, t1, s2, t2);
                 final BroadPhasePair pair = pair(s1, t1, s2, t2);
                 gjkAlgorithm.setCurrentOverlappingPair(pair);
-                if (gjkAlgorithm.testCollision(s1, t1, s2, t2, new ContactInfo())) {
+                if (gjkAlgorithm.testCollision(s1, t1, s2, t2, new ContactPointInfo())) {
                     nonCollideFails++;
                 }
             }

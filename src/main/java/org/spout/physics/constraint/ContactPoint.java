@@ -26,8 +26,6 @@
  */
 package org.spout.physics.constraint;
 
-import org.spout.physics.body.RigidBody;
-import org.spout.physics.collision.ContactInfo;
 import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
 
@@ -49,14 +47,12 @@ public class ContactPoint extends Constraint {
     private float mFrictionImpulse2;
 
     /**
-     * Constructs a new contact point from the first and second body, and the contact info.
+     * Constructs a new contact point from the contact info.
      *
-     * @param body1 The first body
-     * @param body2 The second body
      * @param contactInfo The contact info
      */
-    public ContactPoint(RigidBody body1, RigidBody body2, ContactInfo contactInfo) {
-        super(body1, body2, true, ConstraintType.CONTACT);
+    public ContactPoint(ContactPointInfo contactInfo) {
+        super(contactInfo);
         if (contactInfo.getPenetrationDepth() <= 0) {
             throw new IllegalArgumentException("Penetration depth must be greater than zero");
         }
@@ -64,8 +60,8 @@ public class ContactPoint extends Constraint {
         mPenetrationDepth = contactInfo.getPenetrationDepth();
         mLocalPointOnBody1 = new Vector3(contactInfo.getFirstLocalPoint());
         mLocalPointOnBody2 = new Vector3(contactInfo.getSecondLocalPoint());
-        mWorldPointOnBody1 = Transform.multiply(body1.getTransform(), contactInfo.getFirstLocalPoint());
-        mWorldPointOnBody2 = Transform.multiply(body2.getTransform(), contactInfo.getSecondLocalPoint());
+        mWorldPointOnBody1 = Transform.multiply(contactInfo.getFirstBody().getTransform(), contactInfo.getFirstLocalPoint());
+        mWorldPointOnBody2 = Transform.multiply(contactInfo.getSecondBody().getTransform(), contactInfo.getSecondLocalPoint());
         mIsRestingContact = false;
         mFrictionVector1 = new Vector3(0, 0, 0);
         mFrictionVector2 = new Vector3(0, 0, 0);
@@ -258,5 +254,126 @@ public class ContactPoint extends Constraint {
      */
     public void setSecondFrictionImpulse(float impulse) {
         mFrictionImpulse2 = impulse;
+    }
+
+    /**
+     * This structure contains information about a collision contact computed during the narrow-phase collision detection. This information is used to compute the contact set for a contact between two
+     * bodies.
+     */
+    public static class ContactPointInfo extends ConstraintInfo {
+        private final Vector3 normal = new Vector3();
+        private float penetrationDepth;
+        private final Vector3 localPoint1 = new Vector3();
+        private final Vector3 localPoint2 = new Vector3();
+
+        /**
+         * Constructs a new empty contact point info.
+         */
+        public ContactPointInfo() {
+            super(ConstraintType.CONTACT);
+        }
+
+        /**
+         * Constructs a new contact point info from the contact normal, penetration depth and local contact points on both bodies.
+         *
+         * @param normal The contact normal
+         * @param penetrationDepth The penetration depth
+         * @param localPoint1 The contact point on the first body
+         * @param localPoint2 The contact point on the second body
+         */
+        public ContactPointInfo(Vector3 normal, float penetrationDepth, Vector3 localPoint1, Vector3 localPoint2) {
+            super(ConstraintType.CONTACT);
+            this.normal.set(normal);
+            this.penetrationDepth = penetrationDepth;
+            this.localPoint1.set(localPoint1);
+            this.localPoint2.set(localPoint2);
+        }
+
+        /**
+         * Gets the normal vector of the contact.
+         *
+         * @return The contact's normal vector
+         */
+        public Vector3 getNormal() {
+            return normal;
+        }
+
+        /**
+         * Gets the penetration depth of the contact.
+         *
+         * @return The penetration depth
+         */
+        public float getPenetrationDepth() {
+            return penetrationDepth;
+        }
+
+        /**
+         * Gets the contact point on the first body.
+         *
+         * @return The contact point
+         */
+        public Vector3 getFirstLocalPoint() {
+            return localPoint1;
+        }
+
+        /**
+         * Gets the contact point on the second body.
+         *
+         * @return The contact point
+         */
+        public Vector3 getSecondLocalPoint() {
+            return localPoint2;
+        }
+
+        /**
+         * Sets the normal vector of the contact.
+         *
+         * @param normal The contact normal
+         */
+        public void setNormal(Vector3 normal) {
+            this.normal.set(normal);
+        }
+
+        /**
+         * Sets the penetration depth of the contact.
+         *
+         * @param penetrationDepth The penetration depth
+         */
+        public void setPenetrationDepth(float penetrationDepth) {
+            this.penetrationDepth = penetrationDepth;
+        }
+
+        /**
+         * Sets the contact point on the first body.
+         *
+         * @param localPoint1 The contact point on the first body
+         */
+        public void setFirstLocalPoint(Vector3 localPoint1) {
+            this.localPoint1.set(localPoint1);
+        }
+
+        /**
+         * Sets the contact point on the second body.
+         *
+         * @param localPoint2 The contact point on the second body
+         */
+        public void setSecondLocalPoint(Vector3 localPoint2) {
+            this.localPoint2.set(localPoint2);
+        }
+
+        /**
+         * Sets all the values of this contact point info.
+         *
+         * @param normal The contact normal
+         * @param penetrationDepth The penetration depth
+         * @param localPoint1 The contact point on the first body
+         * @param localPoint2 The contact point on the second body
+         */
+        public void set(Vector3 normal, float penetrationDepth, Vector3 localPoint1, Vector3 localPoint2) {
+            setNormal(normal);
+            setPenetrationDepth(penetrationDepth);
+            setFirstLocalPoint(localPoint1);
+            setSecondLocalPoint(localPoint2);
+        }
     }
 }

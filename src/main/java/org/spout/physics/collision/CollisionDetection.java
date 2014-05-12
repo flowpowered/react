@@ -36,6 +36,7 @@ import org.spout.physics.Utilities.IntPair;
 import org.spout.physics.body.CollisionBody;
 import org.spout.physics.body.ImmobileRigidBody;
 import org.spout.physics.body.MobileRigidBody;
+import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.broadphase.BroadPhaseAlgorithm;
 import org.spout.physics.collision.broadphase.PairManager.BodyPair;
 import org.spout.physics.collision.broadphase.SweepAndPruneAlgorithm;
@@ -45,6 +46,7 @@ import org.spout.physics.collision.narrowphase.NarrowPhaseAlgorithm;
 import org.spout.physics.collision.narrowphase.SphereVsSphereAlgorithm;
 import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.collision.shape.CollisionShape.CollisionShapeType;
+import org.spout.physics.constraint.ContactPoint.ContactPointInfo;
 import org.spout.physics.engine.CollisionWorld;
 import org.spout.physics.engine.linked.LinkedDynamicsWorld;
 
@@ -150,7 +152,7 @@ public class CollisionDetection {
     // Computes the narrow-phase collision detection.
     private void computeNarrowPhase() {
         for (Entry<IntPair, BroadPhasePair> entry : mOverlappingPairs.entrySet()) {
-            final ContactInfo contactInfo = new ContactInfo();
+            final ContactPointInfo contactInfo = new ContactPointInfo();
             final BroadPhasePair pair = entry.getValue();
             if (pair == null) {
                 throw new IllegalStateException("pair cannot be null");
@@ -161,13 +163,20 @@ public class CollisionDetection {
             final NarrowPhaseAlgorithm narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(body1.getCollisionShape(), body2.getCollisionShape());
             narrowPhaseAlgorithm.setCurrentOverlappingPair(pair);
             if (narrowPhaseAlgorithm.testCollision(body1.getCollisionShape(), body1.getTransform(), body2.getCollisionShape(), body2.getTransform(), contactInfo)) {
+                contactInfo.setFirstBody((RigidBody) body1);
+                contactInfo.setSecondBody((RigidBody) body2);
                 if (mCallBacks.isEmpty()) {
                     mWorld.notifyNewContact(pair, contactInfo);
                 } else {
+                    boolean cancel = false;
                     for (CollisionListener listener : mCallBacks) {
-                        if (!listener.onCollide(body1, body2, contactInfo)) {
-                            mWorld.notifyNewContact(pair, contactInfo);
+                        if (listener.onCollide(body1, body2, contactInfo)) {
+                            cancel = true;
+                            break;
                         }
+                    }
+                    if (!cancel) {
+                        mWorld.notifyNewContact(pair, contactInfo);
                     }
                 }
             }
