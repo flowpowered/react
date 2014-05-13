@@ -289,7 +289,7 @@ public class DynamicsWorld extends CollisionWorld {
                 continue;
             }
             final MobileRigidBody mobileBody = (MobileRigidBody) rigidBody;
-            if (mobileBody.isMotionEnabled()) {
+            if (mobileBody.getIsMotionEnabled()) {
                 mobileBody.snapshotTransform();
                 final int indexArray = mMapBodyToConstrainedVelocityIndex.get(mobileBody);
                 final Vector3 newLinVelocity = mConstrainedLinearVelocities.get(indexArray);
@@ -352,7 +352,7 @@ public class DynamicsWorld extends CollisionWorld {
         int i = 0;
         for (RigidBody rigidBody : mRigidBodies) {
             mMapBodyToConstrainedVelocityIndex.put(rigidBody, i);
-            if (rigidBody.isMotionEnabled()) {
+            if (rigidBody.getIsMotionEnabled()) {
                 mConstrainedLinearVelocities.add(i, Vector3.add(
                         rigidBody.getLinearVelocity(),
                         Vector3.multiply(dt * rigidBody.getMassInverse(), rigidBody.getExternalForce())));

@@ -86,6 +86,30 @@ public class BallAndSocketJoint extends Constraint {
     }
 
     @Override
+    public void warmstart(ConstraintSolverData constraintSolverData) {
+        final Vector3 v1 = constraintSolverData.getLinearVelocities().get(mIndexBody1);
+        final Vector3 v2 = constraintSolverData.getLinearVelocities().get(mIndexBody2);
+        final Vector3 w1 = constraintSolverData.getAngularVelocities().get(mIndexBody1);
+        final Vector3 w2 = constraintSolverData.getAngularVelocities().get(mIndexBody2);
+        final float inverseMassBody1 = mBody1.getMassInverse();
+        final float inverseMassBody2 = mBody2.getMassInverse();
+        final Matrix3x3 I1 = mBody1.getInertiaTensorInverseWorld();
+        final Matrix3x3 I2 = mBody2.getInertiaTensorInverseWorld();
+        final Vector3 linearImpulseBody1 = Vector3.negate(mImpulse);
+        final Vector3 angularImpulseBody1 = mImpulse.cross(mU1World);
+        final Vector3 linearImpulseBody2 = mImpulse;
+        final Vector3 angularImpulseBody2 = Vector3.negate(mImpulse.cross(mU2World));
+        if (mBody1.getIsMotionEnabled()) {
+            v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
+            w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
+        }
+        if (mBody2.getIsMotionEnabled()) {
+            v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
+            w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
+        }
+    }
+
+    @Override
     public void solveVelocityConstraint(ConstraintSolverData constraintSolverData) {
         final Vector3 x1 = mBody1.getTransform().getPosition();
         final Vector3 x2 = mBody2.getTransform().getPosition();
@@ -95,8 +119,8 @@ public class BallAndSocketJoint extends Constraint {
         final Vector3 w2 = constraintSolverData.getAngularVelocities().get(mIndexBody2);
         float inverseMassBody1 = mBody1.getMassInverse();
         float inverseMassBody2 = mBody2.getMassInverse();
-        final Matrix3x3 inverseInertiaTensorBody1 = mBody1.getInertiaTensorInverseWorld();
-        final Matrix3x3 inverseInertiaTensorBody2 = mBody2.getInertiaTensorInverseWorld();
+        final Matrix3x3 I1 = mBody1.getInertiaTensorInverseWorld();
+        final Matrix3x3 I2 = mBody2.getInertiaTensorInverseWorld();
         final Vector3 Jv = Vector3.add(Vector3.negate(v1), Vector3.add(mU1World.cross(w1), Vector3.subtract(v2, mU2World.cross(w2))));
         final Vector3 b = new Vector3(0, 0, 0);
         if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
@@ -110,13 +134,13 @@ public class BallAndSocketJoint extends Constraint {
         final Vector3 angularImpulseBody1 = deltaLambda.cross(mU1World);
         final Vector3 linearImpulseBody2 = deltaLambda;
         final Vector3 angularImpulseBody2 = Vector3.negate(deltaLambda.cross(mU2World));
-        if (mBody1.isMotionEnabled()) {
+        if (mBody1.getIsMotionEnabled()) {
             v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
-            w1.add(Matrix3x3.multiply(inverseInertiaTensorBody1, angularImpulseBody1));
+            w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
         }
-        if (mBody2.isMotionEnabled()) {
+        if (mBody2.getIsMotionEnabled()) {
             v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
-            w2.add(Matrix3x3.multiply(inverseInertiaTensorBody2, angularImpulseBody2));
+            w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
         }
     }
 

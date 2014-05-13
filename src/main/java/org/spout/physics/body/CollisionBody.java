@@ -169,7 +169,7 @@ public abstract class CollisionBody extends Body {
      *
      * @return Whether or not the body can move
      */
-    public abstract boolean isMotionEnabled();
+    public abstract boolean getIsMotionEnabled();
 
     /**
      * Return true if the body can collide with others bodies.

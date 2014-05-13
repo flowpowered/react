@@ -51,7 +51,7 @@ public class NoBroadPhaseAlgorithm extends BroadPhaseAlgorithm {
     @Override
     public void addObject(CollisionBody body, AABB aabb) {
         for (CollisionBody collisionBody : mBodies) {
-            if (body.isMotionEnabled() || collisionBody.isMotionEnabled()) {
+            if (body.getIsMotionEnabled() || collisionBody.getIsMotionEnabled()) {
                 mPairManager.addPair(collisionBody, body);
             }
         }

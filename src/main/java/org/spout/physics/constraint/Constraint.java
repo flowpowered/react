@@ -69,6 +69,13 @@ public abstract class Constraint {
     public abstract void initBeforeSolve(ConstraintSolverData constraintSolverData);
 
     /**
+     * Warm-starts the constraint (apply the previous impulse at the beginning of the step).
+     *
+     * @param constraintSolverData The related data
+     */
+    public abstract void warmstart(ConstraintSolverData constraintSolverData);
+
+    /**
      * Solves the velocity constraint.
      *
      * @param constraintSolverData The related data

@@ -169,7 +169,7 @@ public class ImmobileRigidBody extends RigidBody {
      * @return False, always
      */
     @Override
-    public boolean isMotionEnabled() {
+    public boolean getIsMotionEnabled() {
         return false;
     }
 

@@ -173,7 +173,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
                     final BoxAABB id1 = mBoxes[currentMinEndPoint.getBoxID()];
                     final boolean isMin = currentMinEndPoint.isMin();
                     if (!isMin) {
-                        if (!box.equals(id1) && (box.getBody().isMotionEnabled() || id1.getBody().isMotionEnabled())) {
+                        if (!box.equals(id1) && (box.getBody().getIsMotionEnabled() || id1.getBody().getIsMotionEnabled())) {
                             if (testIntersect2D(box, id1, otherAxis1, otherAxis2) &&
                                     testIntersect1DSortedAABBs(id1, aabbInt, startEndPointsCurrentAxis, axis)) {
                                 mPairManager.addPair(body, id1.getBody());
@@ -202,7 +202,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
                     final BoxAABB id1 = mBoxes[currentMinEndPoint.getBoxID()];
                     final boolean isMin = currentMinEndPoint.isMin();
                     if (!isMin) {
-                        if (!box.equals(id1) && (box.getBody().isMotionEnabled() || id1.getBody().isMotionEnabled())) {
+                        if (!box.equals(id1) && (box.getBody().getIsMotionEnabled() || id1.getBody().getIsMotionEnabled())) {
                             if (testIntersect2D(box, id1, otherAxis1, otherAxis2)) {
                                 mPairManager.removePair(body.getID(), id1.getBody().getID());
                             }
@@ -238,7 +238,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
                     final BoxAABB id1 = mBoxes[currentMaxEndPoint.getBoxID()];
                     final boolean isMin = currentMaxEndPoint.isMin();
                     if (isMin) {
-                        if (!box.equals(id1) && (box.getBody().isMotionEnabled() || id1.getBody().isMotionEnabled())) {
+                        if (!box.equals(id1) && (box.getBody().getIsMotionEnabled() || id1.getBody().getIsMotionEnabled())) {
                             if (testIntersect2D(box, id1, otherAxis1, otherAxis2) &&
                                     testIntersect1DSortedAABBs(id1, aabbInt, startEndPointsCurrentAxis, axis)) {
                                 mPairManager.addPair(body, id1.getBody());
@@ -267,7 +267,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
                     final BoxAABB id1 = mBoxes[currentMaxEndPoint.getBoxID()];
                     final boolean isMin = currentMaxEndPoint.isMin();
                     if (isMin) {
-                        if (!box.equals(id1) && (box.getBody().isMotionEnabled() || id1.getBody().isMotionEnabled())) {
+                        if (!box.equals(id1) && (box.getBody().getIsMotionEnabled() || id1.getBody().getIsMotionEnabled())) {
                             if (testIntersect2D(box, id1, otherAxis1, otherAxis2)) {
                                 mPairManager.removePair(body.getID(), id1.getBody().getID());
                             }

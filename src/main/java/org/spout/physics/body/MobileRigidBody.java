@@ -66,7 +66,7 @@ public class MobileRigidBody extends ImmobileRigidBody {
      * Set the linear velocity for this body, but only if it can move.
      *
      * @param linearVelocity The linear velocity to set
-     * @see #isMotionEnabled()
+     * @see #getIsMotionEnabled()
      * @see #setMotionEnabled(boolean)
      */
     public void setLinearVelocity(Vector3 linearVelocity) {
@@ -100,7 +100,7 @@ public class MobileRigidBody extends ImmobileRigidBody {
      * @return Whether or not the body can move
      */
     @Override
-    public boolean isMotionEnabled() {
+    public boolean getIsMotionEnabled() {
         return mIsMotionEnabled;
     }
 
