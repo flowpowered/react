@@ -137,7 +137,7 @@ public class ContactSolver {
      *
      * @param isActive True if the split impulses are active, false if not
      */
-    public void setSplitImpulseActive(boolean isActive) {
+    public void setIsSplitImpulseActive(boolean isActive) {
         mIsSplitImpulseActive = isActive;
     }
 

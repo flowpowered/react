@@ -26,6 +26,7 @@
  */
 package org.spout.physics.constraint;
 
+import org.spout.physics.ReactDefaults.JointsPositionCorrectionTechnique;
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.constraint.ConstraintSolver.ConstraintSolverData;
 
@@ -39,6 +40,7 @@ public abstract class Constraint {
     protected final ConstraintType mType;
     protected int mIndexBody1;
     protected int mIndexBody2;
+    protected final JointsPositionCorrectionTechnique mPositionCorrectionTechnique;
 
     /**
      * Constructs a new constraint from the provided constraint info.
@@ -46,16 +48,17 @@ public abstract class Constraint {
      * @param constraintInfo The constraint info for this constraint
      */
     public Constraint(ConstraintInfo constraintInfo) {
-        if (constraintInfo.body1 == null) {
+        mBody1 = constraintInfo.getFirstBody();
+        mBody2 = constraintInfo.getSecondBody();
+        if (mBody1 == null) {
             throw new IllegalArgumentException("First body cannot be null");
         }
-        if (constraintInfo.body2 == null) {
+        if (mBody2 == null) {
             throw new IllegalArgumentException("Second body cannot be null");
         }
-        mBody1 = constraintInfo.body1;
-        mBody2 = constraintInfo.body2;
         mActive = true;
-        mType = constraintInfo.type;
+        mType = constraintInfo.getType();
+        mPositionCorrectionTechnique = constraintInfo.getPositionCorrectionTechnique();
     }
 
     /**
@@ -66,11 +69,18 @@ public abstract class Constraint {
     public abstract void initBeforeSolve(ConstraintSolverData constraintSolverData);
 
     /**
-     * Solves the constraint
+     * Solves the velocity constraint.
      *
      * @param constraintSolverData The related data
      */
-    public abstract void solve(ConstraintSolverData constraintSolverData);
+    public abstract void solveVelocityConstraint(ConstraintSolverData constraintSolverData);
+
+    /**
+     * Solves the position constraint.
+     *
+     * @param constraintSolverData The related data
+     */
+    public abstract void solvePositionConstraint(ConstraintSolverData constraintSolverData);
 
     /**
      * Gets the first body.
@@ -113,7 +123,8 @@ public abstract class Constraint {
      */
     public static enum ConstraintType {
         CONTACT,
-        BALLSOCKETJOINT
+        BALLSOCKETJOINT,
+        SLIDERJOINT
     }
 
     /**
@@ -122,7 +133,8 @@ public abstract class Constraint {
     public static class ConstraintInfo {
         private RigidBody body1;
         private RigidBody body2;
-        private ConstraintType type;
+        private final ConstraintType type;
+        private JointsPositionCorrectionTechnique positionCorrectionTechnique;
 
         /**
          * Constructs a new constraint info from the constraint type.
@@ -133,6 +145,7 @@ public abstract class Constraint {
             body1 = null;
             body2 = null;
             this.type = type;
+            positionCorrectionTechnique = JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS;
         }
 
         /**
@@ -146,6 +159,7 @@ public abstract class Constraint {
             this.body1 = body1;
             this.body2 = body2;
             this.type = type;
+            positionCorrectionTechnique = JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS;
         }
 
         /**
@@ -191,6 +205,15 @@ public abstract class Constraint {
          */
         public void setSecondBody(RigidBody body2) {
             this.body2 = body2;
+        }
+
+        /**
+         * Returns the joints position correction technique.
+         *
+         * @return The correction technique
+         */
+        public JointsPositionCorrectionTechnique getPositionCorrectionTechnique() {
+            return positionCorrectionTechnique;
         }
     }
 }

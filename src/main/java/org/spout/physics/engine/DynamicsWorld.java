@@ -35,6 +35,8 @@ import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
 
 import org.spout.physics.ReactDefaults;
+import org.spout.physics.ReactDefaults.ContactsPositionCorrectionTechnique;
+import org.spout.physics.ReactDefaults.JointsPositionCorrectionTechnique;
 import org.spout.physics.Utilities.IntPair;
 import org.spout.physics.body.ImmobileRigidBody;
 import org.spout.physics.body.MobileRigidBody;
@@ -48,6 +50,8 @@ import org.spout.physics.constraint.Constraint.ConstraintInfo;
 import org.spout.physics.constraint.ConstraintSolver;
 import org.spout.physics.constraint.ContactPoint;
 import org.spout.physics.constraint.ContactPoint.ContactPointInfo;
+import org.spout.physics.constraint.SliderJoint;
+import org.spout.physics.constraint.SliderJoint.SliderJointInfo;
 import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Quaternion;
 import org.spout.physics.math.Transform;
@@ -60,7 +64,8 @@ public class DynamicsWorld extends CollisionWorld {
     private final Timer mTimer;
     private final ContactSolver mContactSolver;
     private final ConstraintSolver mConstraintSolver;
-    private int mNbSolverIterations;
+    private int mNbVelocitySolverIterations;
+    private int mNbPositionSolverIterations;
     private boolean mIsDeactivationActive;
     private final Set<RigidBody> mRigidBodies = new HashSet<>();
     private final List<ContactManifold> mContactManifolds = new ArrayList<>();
@@ -95,7 +100,8 @@ public class DynamicsWorld extends CollisionWorld {
         mGravity = gravity;
         mContactSolver = new ContactSolver(mContactManifolds, mConstrainedLinearVelocities, mConstrainedAngularVelocities, mMapBodyToConstrainedVelocityIndex);
         mConstraintSolver = new ConstraintSolver(mJoints, mConstrainedLinearVelocities, mConstrainedAngularVelocities, mMapBodyToConstrainedVelocityIndex);
-        mNbSolverIterations = ReactDefaults.DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS;
+        mNbVelocitySolverIterations = ReactDefaults.DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS;
+        mNbPositionSolverIterations = ReactDefaults.DEFAULT_POSITION_SOLVER_NB_ITERATIONS;
         mIsDeactivationActive = ReactDefaults.DEACTIVATION_ENABLED;
     }
 
@@ -114,21 +120,47 @@ public class DynamicsWorld extends CollisionWorld {
     }
 
     /**
-     * Sets the number of iterations for the constraint solver.
+     * Sets the number of iterations for the velocity constraint solver.
      *
      * @param nbIterations The number of iterations to do
      */
-    public void setNbIterationsSolver(int nbIterations) {
-        mNbSolverIterations = nbIterations;
+    public void setNbIterationsVelocitySolver(int nbIterations) {
+        mNbVelocitySolverIterations = nbIterations;
     }
 
     /**
-     * Activates or deactivates the split impulses for contacts.
+     * Sets the number of iterations for the position constraint solver.
      *
-     * @param isActive True if the split impulses are active, false if not
+     * @param nbIterations The number of iterations to do
      */
-    public void setSplitImpulseActive(boolean isActive) {
-        mContactSolver.setSplitImpulseActive(isActive);
+    public void setNbIterationsPositionSolver(int nbIterations) {
+        mNbPositionSolverIterations = nbIterations;
+    }
+
+    /**
+     * Sets the position correction technique used for contacts.
+     *
+     * @param technique The technique to use
+     */
+    public void setContactsPositionCorrectionTechnique(ContactsPositionCorrectionTechnique technique) {
+        if (technique == ContactsPositionCorrectionTechnique.BAUMGARTE_CONTACTS) {
+            mContactSolver.setIsSplitImpulseActive(false);
+        } else {
+            mContactSolver.setIsSplitImpulseActive(true);
+        }
+    }
+
+    /**
+     * Sets the position correction technique used for joints.
+     *
+     * @param technique The technique to use
+     */
+    public void setJointsPositionCorrectionTechnique(JointsPositionCorrectionTechnique technique) {
+        if (technique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
+            mConstraintSolver.setIsNonLinearGaussSeidelPositionCorrectionActive(false);
+        } else {
+            mConstraintSolver.setIsNonLinearGaussSeidelPositionCorrectionActive(true);
+        }
     }
 
     /**
@@ -356,9 +388,9 @@ public class DynamicsWorld extends CollisionWorld {
         if (isConstraintsToSolve) {
             mConstraintSolver.initialize(dt);
         }
-        for (int i = 0; i < mNbSolverIterations; i++) {
+        for (int i = 0; i < mNbVelocitySolverIterations; i++) {
             if (isConstraintsToSolve) {
-                mConstraintSolver.solve();
+                mConstraintSolver.solveVelocityConstraints();
             }
             if (isContactsToSolve) {
                 mContactSolver.solve();
@@ -366,6 +398,14 @@ public class DynamicsWorld extends CollisionWorld {
         }
         if (isContactsToSolve) {
             mContactSolver.storeImpulses();
+        }
+        // TODO : Integrate the bodies positions here
+        if (mConstraintSolver.getIsNonLinearGaussSeidelPositionCorrectionActive()) {
+            for (int i = 0; i < mNbPositionSolverIterations; i++) {
+                if (isConstraintsToSolve) {
+                    mConstraintSolver.solvePositionConstraints();
+                }
+            }
         }
     }
 
@@ -500,10 +540,16 @@ public class DynamicsWorld extends CollisionWorld {
     public Constraint createJoint(ConstraintInfo jointInfo) {
         final Constraint newJoint;
         switch (jointInfo.getType()) {
-            case BALLSOCKETJOINT:
+            case BALLSOCKETJOINT: {
                 final BallAndSocketJointInfo info = (BallAndSocketJointInfo) jointInfo;
                 newJoint = new BallAndSocketJoint(info);
                 break;
+            }
+            case SLIDERJOINT: {
+                final SliderJointInfo info = (SliderJointInfo) jointInfo;
+                newJoint = new SliderJoint(info);
+                break;
+            }
             default:
                 throw new IllegalArgumentException("Unsupported joint type +" + jointInfo.getType());
         }

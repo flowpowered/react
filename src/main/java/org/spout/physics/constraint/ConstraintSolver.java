@@ -88,6 +88,7 @@ public class ConstraintSolver {
     private final TObjectIntMap<RigidBody> mMapBodyToConstrainedVelocityIndex;
     private float mTimeStep;
     private boolean mIsWarmStartingActive;
+    private boolean mIsNonLinearGaussSeidelPositionCorrectionActive;
     private final ConstraintSolverData mConstraintSolverData;
 
     /**
@@ -103,6 +104,7 @@ public class ConstraintSolver {
         mLinearVelocities = linearVelocities;
         mAngularVelocities = angularVelocities;
         mMapBodyToConstrainedVelocityIndex = mapBodyToConstrainedVelocityIndex;
+        mIsNonLinearGaussSeidelPositionCorrectionActive = false;
         mConstraintSolverData = new ConstraintSolverData(linearVelocities, angularVelocities, mapBodyToConstrainedVelocityIndex);
     }
 
@@ -125,12 +127,39 @@ public class ConstraintSolver {
     }
 
     /**
-     * Solves the constraints.
+     * Solves the velocity constraints.
      */
-    public void solve() {
+    public void solveVelocityConstraints() {
         for (Constraint joint : mJoints) {
-            joint.solve(mConstraintSolverData);
+            joint.solveVelocityConstraint(mConstraintSolverData);
         }
+    }
+
+    /**
+     * Solves the position constraints.
+     */
+    public void solvePositionConstraints() {
+        for (Constraint joint : mJoints) {
+            joint.solvePositionConstraint(mConstraintSolverData);
+        }
+    }
+
+    /**
+     * Returns true if the Non-Linear-Gauss-Seidel position correction technique is active.
+     *
+     * @return Whether or not the position correction technique is active
+     */
+    public boolean getIsNonLinearGaussSeidelPositionCorrectionActive() {
+        return mIsNonLinearGaussSeidelPositionCorrectionActive;
+    }
+
+    /**
+     * Enables or disables the Non-Linear-Gauss-Seidel position correction technique.
+     *
+     * @param isNonLinearGaussSeidelPositionCorrectionActive The new state
+     */
+    public void setIsNonLinearGaussSeidelPositionCorrectionActive(boolean isNonLinearGaussSeidelPositionCorrectionActive) {
+        this.mIsNonLinearGaussSeidelPositionCorrectionActive = isNonLinearGaussSeidelPositionCorrectionActive;
     }
 
     /**

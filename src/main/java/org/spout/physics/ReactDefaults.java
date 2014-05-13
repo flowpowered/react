@@ -63,11 +63,51 @@ public class ReactDefaults {
      */
     public static final float RESTITUTION_VELOCITY_THRESHOLD = 1;
     /**
-     * Number of iterations when solving a LCP problem. Default: 15
+     * Number of iterations when solving the velocity constraints of the Sequential Impulse technique. Default: 15
      */
-    public static final int DEFAULT_CONSTRAINTS_SOLVER_NB_ITERATIONS = 15;
+    public static final int DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS = 15;
+    /**
+     * Number of iterations when solving the position constraints of the Sequential Impulse technique. Default: 3
+     */
+    public static final int DEFAULT_POSITION_SOLVER_NB_ITERATIONS = 3;  // TODO : Maybe we can use less iterations here
     /**
      * The linked phase AABB scaling factor. Default: 2
      */
     public static final float LINKED_PHASE_AABB_SCALING = 2;
+
+    /**
+     * Position correction technique used in the constraint solver (for joints). Default: BAUMGARTE
+     * <p/>
+     * BAUMGARTE: Faster but can be inaccurate in some situations. This is the option used by default.
+     * <p/>
+     * NON_LINEAR_GAUSS_SEIDEL: Slower but more precise.
+     */
+    public static enum JointsPositionCorrectionTechnique {
+        /**
+         * Faster but can be inaccurate in some situations. This is the option used by default.
+         */
+        BAUMGARTE_JOINTS,
+        /**
+         * Slower but more precise.
+         */
+        NON_LINEAR_GAUSS_SEIDEL
+    }
+
+    /**
+     * Position correction technique used in the contact solver (for contacts). Default: SPLIT_IMPULSES
+     * <p/>
+     * BAUMGARTE: Faster but can be inaccurate and can lead to unexpected bounciness in some situations (due to error correction factor being added to the bodies momentum).
+     * <p/>
+     * SPLIT_IMPULSES: A bit slower but the error correction factor is not added to the bodies momentum. This is the option used by default.
+     */
+    public static enum ContactsPositionCorrectionTechnique {
+        /**
+         * Faster but can be inaccurate and can lead to unexpected bounciness in some situations (due to error correction factor being added to the bodies momentum).
+         */
+        BAUMGARTE_CONTACTS,
+        /**
+         * A bit slower but the error correction factor is not added to the bodies momentum. This is the option used by default.
+         */
+        SPLIT_IMPULSES
+    }
 }

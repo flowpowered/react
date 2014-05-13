@@ -73,7 +73,12 @@ public class ContactPoint extends Constraint {
     }
 
     @Override
-    public void solve(ConstraintSolverData constraintSolverData) {
+    public void solveVelocityConstraint(ConstraintSolverData constraintSolverData) {
+    }
+
+    @Override
+    public void solvePositionConstraint(ConstraintSolverData constraintSolverData) {
+
     }
 
     /**

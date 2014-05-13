@@ -26,7 +26,6 @@
  */
 package org.spout.physics.constraint;
 
-import org.spout.physics.ReactDefaults.JointsPositionCorrectionTechnique;
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.constraint.ConstraintSolver.ConstraintSolverData;
 import org.spout.physics.math.Matrix3x3;
@@ -35,28 +34,29 @@ import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
 
 /**
- * This class represents a ball-and-socket joint that allows arbitrary rotation between two bodies.
+ * This class represents a slider joint.
  */
-public class BallAndSocketJoint extends Constraint {
-    private final Vector3 mLocalAnchorPointBody1;
-    private final Vector3 mLocalAnchorPointBody2;
+public class SliderJoint extends Constraint {
+    private final Vector3 mLocalAnchorPointBody1 = new Vector3();
+    private final Vector3 mLocalAnchorPointBody2 = new Vector3();
     private final Vector3 mU1World = new Vector3();
     private final Vector3 mU2World = new Vector3();
-    private final Matrix3x3 mSkewSymmetricMatrixU1World = new Matrix3x3();
-    private final Matrix3x3 mSkewSymmetricMatrixU2World = new Matrix3x3();
-    private final Matrix3x3 mInverseMassMatrix = new Matrix3x3();
-    private final Vector3 mImpulse;
+    private final Vector3 mN1 = new Vector3();
+    private final Vector3 mN2 = new Vector3();
+    private final Vector3 mU1WorldCrossN1 = new Vector3();
+    private final Vector3 mU1WorldCrossN2 = new Vector3();
+    private final Vector3 mU2WorldCrossN1 = new Vector3();
+    private final Vector3 mU2WorldCrossN2 = new Vector3();
 
     /**
-     * Constructs a new ball and socket joint from provided ball and socket joint info.
+     * Constructs a slider joint from provided slider joint info.
      *
      * @param jointInfo The joint info
      */
-    public BallAndSocketJoint(BallAndSocketJointInfo jointInfo) {
+    public SliderJoint(SliderJointInfo jointInfo) {
         super(jointInfo);
-        mImpulse = new Vector3(0, 0, 0);
-        mLocalAnchorPointBody1 = Transform.multiply(mBody1.getTransform().getInverse(), jointInfo.getAnchorPointWorldSpace());
-        mLocalAnchorPointBody2 = Transform.multiply(mBody2.getTransform().getInverse(), jointInfo.getAnchorPointWorldSpace());
+        mLocalAnchorPointBody1.set(Transform.multiply(mBody1.getTransform().getInverse(), jointInfo.getAnchorPointWorldSpace()));
+        mLocalAnchorPointBody2.set(Transform.multiply(mBody2.getTransform().getInverse(), jointInfo.getAnchorPointWorldSpace()));
     }
 
     @Override
@@ -69,20 +69,15 @@ public class BallAndSocketJoint extends Constraint {
         final Matrix3x3 I2 = mBody2.getInertiaTensorInverseWorld();
         mU1World.set(Quaternion.multiply(orientationBody1, mLocalAnchorPointBody1));
         mU2World.set(Quaternion.multiply(orientationBody2, mLocalAnchorPointBody2));
-        final Matrix3x3 skewSymmetricMatrixU1 = Matrix3x3.computeSkewSymmetricMatrixForCrossProduct(mU1World);
-        final Matrix3x3 skewSymmetricMatrixU2 = Matrix3x3.computeSkewSymmetricMatrixForCrossProduct(mU2World);
-        final float inverseMassBodies = mBody1.getMassInverse() + mBody2.getMassInverse();
-        final Matrix3x3 massMatrix =
-                Matrix3x3.add(
-                        new Matrix3x3(
-                                inverseMassBodies, 0, 0,
-                                0, inverseMassBodies, 0,
-                                0, 0, inverseMassBodies),
-                        Matrix3x3.add(
-                                Matrix3x3.multiply(skewSymmetricMatrixU1, Matrix3x3.multiply(I1, skewSymmetricMatrixU1.getTranspose())),
-                                Matrix3x3.multiply(skewSymmetricMatrixU2, Matrix3x3.multiply(I2, skewSymmetricMatrixU2.getTranspose())))
-                );
-        mInverseMassMatrix.set(massMatrix.getInverse());
+        mN1.set(mU1World.getOneUnitOrthogonalVector());
+        mN2.set(mU1World.cross(mN1));
+        mU1WorldCrossN1.set(mN2);
+        mU1WorldCrossN2.set(mU1World.cross(mN2));
+        mU2WorldCrossN1.set(mU2World.cross(mN1));
+        mU2WorldCrossN2.set(mU2World.cross(mN2));
+        final float n1Dotn1 = mN1.lengthSquare();
+        final float n2Dotn2 = mN2.lengthSquare();
+        final float sumInverseMass = mBody1.getMassInverse() + mBody2.getMassInverse();
     }
 
     @Override
@@ -93,31 +88,10 @@ public class BallAndSocketJoint extends Constraint {
         final Vector3 v2 = constraintSolverData.getLinearVelocities().get(mIndexBody2);
         final Vector3 w1 = constraintSolverData.getAngularVelocities().get(mIndexBody1);
         final Vector3 w2 = constraintSolverData.getAngularVelocities().get(mIndexBody2);
-        float inverseMassBody1 = mBody1.getMassInverse();
-        float inverseMassBody2 = mBody2.getMassInverse();
+        final float inverseMassBody1 = mBody1.getMassInverse();
+        final float inverseMassBody2 = mBody2.getMassInverse();
         final Matrix3x3 inverseInertiaTensorBody1 = mBody1.getInertiaTensorInverseWorld();
         final Matrix3x3 inverseInertiaTensorBody2 = mBody2.getInertiaTensorInverseWorld();
-        final Vector3 Jv = Vector3.add(Vector3.negate(v1), Vector3.add(mU1World.cross(w1), Vector3.subtract(v2, mU2World.cross(w2))));
-        final Vector3 b = new Vector3(0, 0, 0);
-        if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
-            final float beta = 0.2f;     // TODO : Use a constant here
-            final float biasFactor = beta / constraintSolverData.getTimeStep();
-            b.set(Vector3.multiply(biasFactor, Vector3.subtract(Vector3.subtract(Vector3.add(x2, mU2World), x1), mU1World)));
-        }
-        final Vector3 deltaLambda = Matrix3x3.multiply(mInverseMassMatrix, Vector3.subtract(Vector3.negate(Jv), b));
-        mImpulse.add(deltaLambda);
-        final Vector3 linearImpulseBody1 = Vector3.negate(deltaLambda);
-        final Vector3 angularImpulseBody1 = deltaLambda.cross(mU1World);
-        final Vector3 linearImpulseBody2 = deltaLambda;
-        final Vector3 angularImpulseBody2 = Vector3.negate(deltaLambda.cross(mU2World));
-        if (mBody1.isMotionEnabled()) {
-            v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
-            w1.add(Matrix3x3.multiply(inverseInertiaTensorBody1, angularImpulseBody1));
-        }
-        if (mBody2.isMotionEnabled()) {
-            v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
-            w2.add(Matrix3x3.multiply(inverseInertiaTensorBody2, angularImpulseBody2));
-        }
     }
 
     @Override
@@ -126,14 +100,24 @@ public class BallAndSocketJoint extends Constraint {
     }
 
     /**
-     * This structure is used to gather the information needed to create a ball-and-socket joint. This structure will be used to create the actual ball-and-socket joint.
+     * This structure is used to gather the information needed to create a slider joint. This structure will be used to create the actual slider joint.
      */
-    public static class BallAndSocketJointInfo extends ConstraintInfo {
+    public class SliderJointInfo extends ConstraintInfo {
         private final Vector3 anchorPointWorldSpace = new Vector3();
+        private final Vector3 axisWorldSpace = new Vector3();
 
-        public BallAndSocketJointInfo(RigidBody rigidBody1, RigidBody rigidBody2, Vector3 initAnchorPointWorldSpace) {
-            super(rigidBody1, rigidBody2, ConstraintType.BALLSOCKETJOINT);
+        /**
+         * Constructs a new slider joint info from the both bodies, the initial anchor point in world space and the init axis, also in world space.
+         *
+         * @param body1 The first body
+         * @param body2 The second body
+         * @param initAnchorPointWorldSpace The initial anchor point in world space
+         * @param initAxisWorldSpace The initial axis in world space
+         */
+        public SliderJointInfo(RigidBody body1, RigidBody body2, Vector3 initAnchorPointWorldSpace, Vector3 initAxisWorldSpace) {
+            super(body1, body2, ConstraintType.SLIDERJOINT);
             anchorPointWorldSpace.set(initAnchorPointWorldSpace);
+            axisWorldSpace.set(initAxisWorldSpace);
         }
 
         /**
@@ -152,6 +136,24 @@ public class BallAndSocketJoint extends Constraint {
          */
         public void setAnchorPointWorldSpace(Vector3 anchorPointWorldSpace) {
             this.anchorPointWorldSpace.set(anchorPointWorldSpace);
+        }
+
+        /**
+         * Returns the axis in world space.
+         *
+         * @return The axis in world space
+         */
+        public Vector3 getAxisWorldSpace() {
+            return axisWorldSpace;
+        }
+
+        /**
+         * Sets the axis, in world space.
+         *
+         * @param axisWorldSpace The axis in world space
+         */
+        public void setAxisWorldSpace(Vector3 axisWorldSpace) {
+            this.axisWorldSpace.set(axisWorldSpace);
         }
     }
 }
