@@ -57,12 +57,14 @@ public class SliderJoint extends Constraint {
     private final Vector2 mBTranslation = new Vector2();
     private final Vector3 mBRotation = new Vector3();
     private float mBLowerLimit;
+    private float mBUpperLimit;
     private final Matrix2x2 mInverseMassMatrixTranslationConstraint = new Matrix2x2();
     private final Matrix3x3 mInverseMassMatrixRotationConstraint = new Matrix3x3();
-    private float mInverseMassMatrixLowerLimit;
+    private float mInverseMassMatrixLimit;
     private final Vector2 mImpulseTranslation;
     private final Vector3 mImpulseRotation;
     private float mImpulseLowerLimit;
+    private float mImpulseUpperLimit;
     private boolean mIsLimitsActive;
     private final Vector3 mSliderAxisWorld = new Vector3();
     private float mLowerLimit;
@@ -83,6 +85,8 @@ public class SliderJoint extends Constraint {
         if (jointInfo.getLowerLimit() > 0) {
             throw new IllegalArgumentException("Lower limit must be smaller or equal to 0");
         }
+        mImpulseLowerLimit = 0;
+        mImpulseUpperLimit = 0;
         mIsLimitsActive = jointInfo.isLimitsActive();
         mLowerLimit = jointInfo.getLowerLimit();
         mUpperLimit = jointInfo.getUpperLimit();
@@ -115,8 +119,11 @@ public class SliderJoint extends Constraint {
         mSliderAxisWorld.normalize();
         mN1.set(mSliderAxisWorld.getOneUnitOrthogonalVector());
         mN2.set(mSliderAxisWorld.cross(mN1));
-        final float lowerLimitError = u.dot(mSliderAxisWorld) - mLowerLimit;
+        final float uDotSliderAxis = u.dot(mSliderAxisWorld);
+        final float lowerLimitError = uDotSliderAxis - mLowerLimit;
+        final float upperLimitError = mUpperLimit - uDotSliderAxis;
         mIsLowerLimitViolated = lowerLimitError <= 0;
+        mIsUpperLimitViolated = upperLimitError <= 0;
         mR2CrossN1.set(mR2.cross(mN1));
         mR2CrossN2.set(mR2.cross(mN2));
         mR2CrossSliderAxis.set(mR2.cross(mSliderAxisWorld));
@@ -173,11 +180,15 @@ public class SliderJoint extends Constraint {
             final Quaternion qError = Quaternion.multiply(currentOrientationDifference, mInitOrientationDifference.getInverse());
             mBRotation.set(Vector3.multiply(biasFactor * 2, qError.getVectorV()));
         }
-        mInverseMassMatrixLowerLimit = sumInverseMass + mR1PlusUCrossSliderAxis.dot(Matrix3x3.multiply(I1, mR1PlusUCrossSliderAxis))
+        mInverseMassMatrixLimit = sumInverseMass + mR1PlusUCrossSliderAxis.dot(Matrix3x3.multiply(I1, mR1PlusUCrossSliderAxis))
                 + mR2CrossSliderAxis.dot(Matrix3x3.multiply(I2, mR2CrossSliderAxis));
         mBLowerLimit = 0;
         if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
             mBLowerLimit = biasFactor * lowerLimitError;
+        }
+        mBUpperLimit = 0;
+        if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
+            mBUpperLimit = biasFactor * upperLimitError;
         }
     }
 
@@ -248,7 +259,7 @@ public class SliderJoint extends Constraint {
         if (mIsLimitsActive) {
             if (mIsLowerLimitViolated) {
                 final float JvLowerLimit = mSliderAxisWorld.dot(v2) + mR2CrossSliderAxis.dot(w2) - mSliderAxisWorld.dot(v1) - mR1PlusUCrossSliderAxis.dot(w1);
-                float deltaLambdaLower = mInverseMassMatrixLowerLimit * (-JvLowerLimit - mBLowerLimit);
+                float deltaLambdaLower = mInverseMassMatrixLimit * (-JvLowerLimit - mBLowerLimit);
                 final float lambdaTemp = mImpulseLowerLimit;
                 mImpulseLowerLimit = Math.max(mImpulseLowerLimit + deltaLambdaLower, 0);
                 deltaLambdaLower = mImpulseLowerLimit - lambdaTemp;
@@ -256,6 +267,25 @@ public class SliderJoint extends Constraint {
                 angularImpulseBody1.set(Vector3.multiply(-deltaLambdaLower, mR1PlusUCrossSliderAxis));
                 linearImpulseBody2.set(Vector3.negate(linearImpulseBody1));
                 angularImpulseBody2.set(Vector3.multiply(deltaLambdaLower, mR2CrossSliderAxis));
+                if (mBody1.getIsMotionEnabled()) {
+                    v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
+                    w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
+                }
+                if (mBody2.getIsMotionEnabled()) {
+                    v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
+                    w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
+                }
+            }
+            if (mIsUpperLimitViolated) {
+                final float JvUpperLimit = mSliderAxisWorld.dot(v1) + mR1PlusUCrossSliderAxis.dot(w1) - mSliderAxisWorld.dot(v2) - mR2CrossSliderAxis.dot(w2);
+                float deltaLambdaUpper = mInverseMassMatrixLimit * (-JvUpperLimit - mBUpperLimit);
+                final float lambdaTemp = mImpulseUpperLimit;
+                mImpulseUpperLimit = Math.max(mImpulseUpperLimit + deltaLambdaUpper, 0);
+                deltaLambdaUpper = mImpulseUpperLimit - lambdaTemp;
+                linearImpulseBody1.set(Vector3.multiply(deltaLambdaUpper, mSliderAxisWorld));
+                angularImpulseBody1.set(Vector3.multiply(deltaLambdaUpper, mR1PlusUCrossSliderAxis));
+                linearImpulseBody2.set(Vector3.negate(linearImpulseBody1));
+                angularImpulseBody2.set(Vector3.multiply(-deltaLambdaUpper, mR2CrossSliderAxis));
                 if (mBody1.getIsMotionEnabled()) {
                     v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
                     w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
