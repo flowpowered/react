@@ -42,14 +42,15 @@ import org.spout.physics.math.Vector3;
 public class SliderJoint extends Constraint {
     private final Vector3 mLocalAnchorPointBody1 = new Vector3();
     private final Vector3 mLocalAnchorPointBody2 = new Vector3();
-    private final Vector3 mU1World = new Vector3();
-    private final Vector3 mU2World = new Vector3();
+    private final Vector3 mSliderAxisBody1;
     private final Vector3 mN1 = new Vector3();
     private final Vector3 mN2 = new Vector3();
-    private final Vector3 mU1WorldCrossN1 = new Vector3();
-    private final Vector3 mU1WorldCrossN2 = new Vector3();
-    private final Vector3 mU2WorldCrossN1 = new Vector3();
-    private final Vector3 mU2WorldCrossN2 = new Vector3();
+    private final Vector3 mR1 = new Vector3();
+    private final Vector3 mR2 = new Vector3();
+    private final Vector3 mR2CrossN1 = new Vector3();
+    private final Vector3 mR2CrossN2 = new Vector3();
+    private final Vector3 mR1PlusUCrossN1 = new Vector3();
+    private final Vector3 mR1PlusUCrossN2 = new Vector3();
     private final Matrix2x2 mInverseMassMatrixTranslationConstraint = new Matrix2x2();
     private final Matrix3x3 mInverseMassMatrixRotationConstraint = new Matrix3x3();
     private final Vector2 mImpulseTranslation;
@@ -66,39 +67,69 @@ public class SliderJoint extends Constraint {
         mImpulseRotation = new Vector3(0, 0, 0);
         mLocalAnchorPointBody1.set(Transform.multiply(mBody1.getTransform().getInverse(), jointInfo.getAnchorPointWorldSpace()));
         mLocalAnchorPointBody2.set(Transform.multiply(mBody2.getTransform().getInverse(), jointInfo.getAnchorPointWorldSpace()));
+        mSliderAxisBody1 = Quaternion.multiply(mBody1.getTransform().getOrientation().getInverse(), jointInfo.sliderAxisWorldSpace);
+        mSliderAxisBody1.normalize();
     }
 
     @Override
     public void initBeforeSolve(ConstraintSolverData constraintSolverData) {
         mIndexBody1 = constraintSolverData.getMapBodyToConstrainedVelocityIndex().get(mBody1);
         mIndexBody2 = constraintSolverData.getMapBodyToConstrainedVelocityIndex().get(mBody2);
+        final Vector3 x1 = mBody1.getTransform().getPosition();
+        final Vector3 x2 = mBody2.getTransform().getPosition();
         final Quaternion orientationBody1 = mBody1.getTransform().getOrientation();
         final Quaternion orientationBody2 = mBody2.getTransform().getOrientation();
         final Matrix3x3 I1 = mBody1.getInertiaTensorInverseWorld();
         final Matrix3x3 I2 = mBody2.getInertiaTensorInverseWorld();
-        mU1World.set(Quaternion.multiply(orientationBody1, mLocalAnchorPointBody1));
-        mU2World.set(Quaternion.multiply(orientationBody2, mLocalAnchorPointBody2));
-        mN1.set(mU1World.getOneUnitOrthogonalVector());
-        mN2.set(mU1World.cross(mN1));
-        mU1WorldCrossN1.set(mN2);
-        mU1WorldCrossN2.set(mU1World.cross(mN2));
-        mU2WorldCrossN1.set(mU2World.cross(mN1));
-        mU2WorldCrossN2.set(mU2World.cross(mN2));
+        mR1.set(Quaternion.multiply(orientationBody1, mLocalAnchorPointBody1));
+        mR2.set(Quaternion.multiply(orientationBody2, mLocalAnchorPointBody2));
+        final Vector3 u = Vector3.subtract(Vector3.subtract(Vector3.add(x2, mR2), x1), mR1);
+        final Vector3 sliderAxisWorld = Quaternion.multiply(orientationBody1, mSliderAxisBody1);
+        sliderAxisWorld.normalize();
+        mN1.set(sliderAxisWorld.getOneUnitOrthogonalVector());
+        mN2.set(sliderAxisWorld.cross(mN1));
+        mR2CrossN1.set(mR2.cross(mN1));
+        mR2CrossN2.set(mR2.cross(mN2));
+        final Vector3 r1PlusU = Vector3.add(mR1, u);
+        mR1PlusUCrossN1.set((r1PlusU).cross(mN1));
+        mR1PlusUCrossN2.set((r1PlusU).cross(mN2));
         final float n1Dotn1 = mN1.lengthSquare();
         final float n2Dotn2 = mN2.lengthSquare();
         final float n1Dotn2 = mN1.dot(mN2);
-        final float sumInverseMass = mBody1.getMassInverse() + mBody2.getMassInverse();
-        final Vector3 I1U2CrossN1 = Matrix3x3.multiply(I1, mU2WorldCrossN1);
-        final Vector3 I1U2CrossN2 = Matrix3x3.multiply(I1, mU2WorldCrossN2);
-        final Vector3 I2U1CrossN1 = Matrix3x3.multiply(I2, mU1WorldCrossN1);
-        final Vector3 I2U1CrossN2 = Matrix3x3.multiply(I2, mU1WorldCrossN2);
-        final float el11 = sumInverseMass * (n1Dotn1) + mU2WorldCrossN1.dot(I1U2CrossN1) + mU1WorldCrossN1.dot(I2U1CrossN1);
-        final float el12 = sumInverseMass * (n1Dotn2) + mU2WorldCrossN1.dot(I1U2CrossN2) + mU1WorldCrossN1.dot(I2U1CrossN2);
-        final float el21 = sumInverseMass * (n1Dotn2) + mU2WorldCrossN2.dot(I1U2CrossN1) + mU1WorldCrossN2.dot(I2U1CrossN1);
-        final float el22 = sumInverseMass * (n2Dotn2) + mU2WorldCrossN2.dot(I1U2CrossN2) + mU1WorldCrossN2.dot(I2U1CrossN2);
+        float sumInverseMass = 0;
+        final Vector3 I1R1PlusUCrossN1 = new Vector3(0, 0, 0);
+        final Vector3 I1R1PlusUCrossN2 = new Vector3(0, 0, 0);
+        final Vector3 I2R2CrossN1 = new Vector3(0, 0, 0);
+        final Vector3 I2R2CrossN2 = new Vector3(0, 0, 0);
+        if (mBody1.getIsMotionEnabled()) {
+            sumInverseMass += mBody1.getMassInverse();
+            I1R1PlusUCrossN1.set(Matrix3x3.multiply(I1, mR1PlusUCrossN1));
+            I1R1PlusUCrossN2.set(Matrix3x3.multiply(I1, mR1PlusUCrossN2));
+        }
+        if (mBody2.getIsMotionEnabled()) {
+            sumInverseMass += mBody2.getMassInverse();
+            I2R2CrossN1.set(Matrix3x3.multiply(I2, mR2CrossN1));
+            I2R2CrossN2.set(Matrix3x3.multiply(I2, mR2CrossN2));
+        }
+        final float el11 = sumInverseMass * (n1Dotn1) + mR1PlusUCrossN1.dot(I1R1PlusUCrossN1) + mR2CrossN1.dot(I2R2CrossN1);
+        final float el12 = sumInverseMass * (n1Dotn2) + mR1PlusUCrossN1.dot(I1R1PlusUCrossN2) + mR2CrossN1.dot(I2R2CrossN2);
+        final float el21 = sumInverseMass * (n1Dotn2) + mR1PlusUCrossN2.dot(I1R1PlusUCrossN1) + mR2CrossN2.dot(I2R2CrossN1);
+        final float el22 = sumInverseMass * (n2Dotn2) + mR1PlusUCrossN2.dot(I1R1PlusUCrossN2) + mR2CrossN2.dot(I2R2CrossN2);
         final Matrix2x2 matrixKTranslation = new Matrix2x2(el11, el12, el21, el22);
-        mInverseMassMatrixTranslationConstraint.set(matrixKTranslation.getInverse());
-        mInverseMassMatrixRotationConstraint.set(Matrix3x3.add(I1, I2));
+        mInverseMassMatrixTranslationConstraint.setToZero();
+        if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
+            mInverseMassMatrixTranslationConstraint.set(matrixKTranslation.getInverse());
+        }
+        mInverseMassMatrixRotationConstraint.setToZero();
+        if (mBody1.getIsMotionEnabled()) {
+            mInverseMassMatrixRotationConstraint.add(I1);
+        }
+        if (mBody2.getIsMotionEnabled()) {
+            mInverseMassMatrixRotationConstraint.add(I2);
+        }
+        if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
+            mInverseMassMatrixRotationConstraint.set(mInverseMassMatrixRotationConstraint.getInverse());
+        }
     }
 
     @Override
@@ -112,9 +143,9 @@ public class SliderJoint extends Constraint {
         final Matrix3x3 I1 = mBody1.getInertiaTensorInverseWorld();
         final Matrix3x3 I2 = mBody2.getInertiaTensorInverseWorld();
         final Vector3 linearImpulseBody1 = Vector3.subtract(Vector3.multiply(Vector3.negate(mN1), mImpulseTranslation.getX()), Vector3.multiply(mN2, mImpulseTranslation.getY()));
-        final Vector3 angularImpulseBody1 = Vector3.add(Vector3.multiply(mU2WorldCrossN1, mImpulseTranslation.getX()), Vector3.multiply(mU2WorldCrossN2, mImpulseTranslation.getY()));
-        final Vector3 linearImpulseBody2 = Vector3.add(Vector3.multiply(mN1, mImpulseTranslation.getX()), Vector3.multiply(mN2, mImpulseTranslation.getY()));
-        final Vector3 angularImpulseBody2 = Vector3.subtract(Vector3.multiply(Vector3.negate(mU1WorldCrossN1), mImpulseTranslation.getX()), Vector3.multiply(mU1WorldCrossN2, mImpulseTranslation.getY()));
+        final Vector3 angularImpulseBody1 = Vector3.add(Vector3.multiply(Vector3.negate(mR1PlusUCrossN1), mImpulseTranslation.getX()), Vector3.multiply(mR1PlusUCrossN2, mImpulseTranslation.getY()));
+        final Vector3 linearImpulseBody2 = Vector3.negate(linearImpulseBody1);
+        final Vector3 angularImpulseBody2 = Vector3.subtract(Vector3.multiply(mR2CrossN1, mImpulseTranslation.getX()), Vector3.multiply(mR2CrossN2, mImpulseTranslation.getY()));
         angularImpulseBody1.add(Vector3.negate(mImpulseRotation));
         angularImpulseBody2.add(mImpulseRotation);
         if (mBody1.getIsMotionEnabled()) {
@@ -139,18 +170,32 @@ public class SliderJoint extends Constraint {
         final float inverseMassBody2 = mBody2.getMassInverse();
         final Matrix3x3 I1 = mBody1.getInertiaTensorInverseWorld();
         final Matrix3x3 I2 = mBody2.getInertiaTensorInverseWorld();
-        final float el1 = -mN1.dot(v1) + mU2WorldCrossN1.dot(w1) + mN1.dot(v2) - mU1WorldCrossN1.dot(w2);
-        final float el2 = -mN2.dot(v1) + mU2WorldCrossN2.dot(w1) + mN2.dot(v2) - mU1WorldCrossN2.dot(w2);
+        final float el1 = -mN1.dot(v1) - w1.dot(mR1PlusUCrossN1) + mN1.dot(v2) + w2.dot(mR2CrossN1);
+        final float el2 = -mN2.dot(v1) - w1.dot(mR1PlusUCrossN2) + mN2.dot(v2) + w2.dot(mR2CrossN2);
         final Vector2 JvTranslation = new Vector2(el1, el2);
-        final Vector3 JvRotation = Vector3.subtract(w2, w1);
         final Vector2 bTranslation = new Vector2(0, 0);
         final float beta = 0.2f;     // TODO : Use a constant here
         final float biasFactor = (beta / constraintSolverData.getTimeStep());
         if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
-            final Vector3 deltaV = Vector3.subtract(Vector3.subtract(Vector3.add(x2, mU2World), x1), mU1World);
+            final Vector3 deltaV = Vector3.subtract(Vector3.subtract(Vector3.add(x2, mR2), x1), mR1);
             bTranslation.setX(biasFactor * deltaV.dot(mN1));
             bTranslation.setY(biasFactor * deltaV.dot(mN2));
         }
+        final Vector2 deltaLambda = Matrix2x2.multiply(mInverseMassMatrixTranslationConstraint, Vector2.subtract(Vector2.negate(JvTranslation), bTranslation));
+        mImpulseTranslation.add(deltaLambda);
+        final Vector3 linearImpulseBody1 = Vector3.subtract(Vector3.multiply(Vector3.negate(mN1), deltaLambda.getX()), Vector3.multiply(mN2, deltaLambda.getY()));
+        final Vector3 angularImpulseBody1 = Vector3.subtract(Vector3.multiply(Vector3.negate(mR1PlusUCrossN1), deltaLambda.getX()), Vector3.multiply(mR1PlusUCrossN2, deltaLambda.getY()));
+        final Vector3 linearImpulseBody2 = Vector3.negate(linearImpulseBody1);
+        final Vector3 angularImpulseBody2 = Vector3.add(Vector3.multiply(mR2CrossN1, deltaLambda.getX()), Vector3.multiply(mR2CrossN2, deltaLambda.getY()));
+        if (mBody1.getIsMotionEnabled()) {
+            v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
+            w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
+        }
+        if (mBody2.getIsMotionEnabled()) {
+            v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
+            w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
+        }
+        final Vector3 JvRotation = Vector3.subtract(w2, w1);
         final Vector3 bRotation = new Vector3(0, 0, 0);
         if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
             final Quaternion q1 = mBody1.getTransform().getOrientation();
@@ -158,22 +203,14 @@ public class SliderJoint extends Constraint {
             final Quaternion qDiff = Quaternion.multiply(q1, q2.getInverse());
             bRotation.set(Vector3.multiply(2, qDiff.getVectorV()));
         }
-        final Vector2 deltaLambda = Matrix2x2.multiply(mInverseMassMatrixTranslationConstraint, Vector2.subtract(Vector2.negate(JvTranslation), bTranslation));
-        mImpulseTranslation.add(deltaLambda);
         final Vector3 deltaLambda2 = Matrix3x3.multiply(mInverseMassMatrixRotationConstraint, Vector3.subtract(Vector3.negate(JvRotation), bRotation));
         mImpulseRotation.add(deltaLambda2);
-        final Vector3 linearImpulseBody1 = Vector3.subtract(Vector3.multiply(Vector3.negate(mN1), deltaLambda.getX()), Vector3.multiply(mN2, deltaLambda.getY()));
-        final Vector3 angularImpulseBody1 = Vector3.add(Vector3.multiply(mU2WorldCrossN1, deltaLambda.getX()), Vector3.multiply(mU2WorldCrossN2, deltaLambda.getY()));
-        final Vector3 linearImpulseBody2 = Vector3.add(Vector3.multiply(mN1, deltaLambda.getX()), Vector3.multiply(mN2, deltaLambda.getY()));
-        final Vector3 angularImpulseBody2 = Vector3.subtract(Vector3.multiply(Vector3.negate(mU1WorldCrossN1), deltaLambda.getX()), Vector3.multiply(mU1WorldCrossN2, deltaLambda.getY()));
-        angularImpulseBody1.add(Vector3.negate(deltaLambda2));
-        angularImpulseBody2.add(deltaLambda2);
+        angularImpulseBody1.set(Vector3.negate(deltaLambda2));
+        angularImpulseBody2.set(deltaLambda2);
         if (mBody1.getIsMotionEnabled()) {
-            v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
             w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
         }
         if (mBody2.getIsMotionEnabled()) {
-            v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
             w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
         }
     }
@@ -185,9 +222,9 @@ public class SliderJoint extends Constraint {
     /**
      * This structure is used to gather the information needed to create a slider joint. This structure will be used to create the actual slider joint.
      */
-    public class SliderJointInfo extends ConstraintInfo {
+    public static class SliderJointInfo extends ConstraintInfo {
         private final Vector3 anchorPointWorldSpace = new Vector3();
-        private final Vector3 axisWorldSpace = new Vector3();
+        private final Vector3 sliderAxisWorldSpace = new Vector3();
 
         /**
          * Constructs a new slider joint info from the both bodies, the initial anchor point in world space and the init axis, also in world space.
@@ -195,12 +232,12 @@ public class SliderJoint extends Constraint {
          * @param body1 The first body
          * @param body2 The second body
          * @param initAnchorPointWorldSpace The initial anchor point in world space
-         * @param initAxisWorldSpace The initial axis in world space
+         * @param initSliderAxisWorldSpace The initial axis in world space
          */
-        public SliderJointInfo(RigidBody body1, RigidBody body2, Vector3 initAnchorPointWorldSpace, Vector3 initAxisWorldSpace) {
+        public SliderJointInfo(RigidBody body1, RigidBody body2, Vector3 initAnchorPointWorldSpace, Vector3 initSliderAxisWorldSpace) {
             super(body1, body2, ConstraintType.SLIDERJOINT);
             anchorPointWorldSpace.set(initAnchorPointWorldSpace);
-            axisWorldSpace.set(initAxisWorldSpace);
+            sliderAxisWorldSpace.set(initSliderAxisWorldSpace);
         }
 
         /**
@@ -226,17 +263,17 @@ public class SliderJoint extends Constraint {
          *
          * @return The axis in world space
          */
-        public Vector3 getAxisWorldSpace() {
-            return axisWorldSpace;
+        public Vector3 getSliderAxisWorldSpace() {
+            return sliderAxisWorldSpace;
         }
 
         /**
          * Sets the axis, in world space.
          *
-         * @param axisWorldSpace The axis in world space
+         * @param sliderAxisWorldSpace The axis in world space
          */
-        public void setAxisWorldSpace(Vector3 axisWorldSpace) {
-            this.axisWorldSpace.set(axisWorldSpace);
+        public void setSliderAxisWorldSpace(Vector3 sliderAxisWorldSpace) {
+            this.sliderAxisWorldSpace.set(sliderAxisWorldSpace);
         }
     }
 }
