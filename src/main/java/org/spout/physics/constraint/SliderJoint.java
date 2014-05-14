@@ -43,18 +43,32 @@ public class SliderJoint extends Constraint {
     private final Vector3 mLocalAnchorPointBody1 = new Vector3();
     private final Vector3 mLocalAnchorPointBody2 = new Vector3();
     private final Vector3 mSliderAxisBody1;
+    private final Quaternion mInitOrientationDifference;
     private final Vector3 mN1 = new Vector3();
     private final Vector3 mN2 = new Vector3();
     private final Vector3 mR1 = new Vector3();
     private final Vector3 mR2 = new Vector3();
     private final Vector3 mR2CrossN1 = new Vector3();
     private final Vector3 mR2CrossN2 = new Vector3();
+    private final Vector3 mR2CrossSliderAxis = new Vector3();
     private final Vector3 mR1PlusUCrossN1 = new Vector3();
     private final Vector3 mR1PlusUCrossN2 = new Vector3();
+    private final Vector3 mR1PlusUCrossSliderAxis = new Vector3();
+    private final Vector2 mBTranslation = new Vector2();
+    private final Vector3 mBRotation = new Vector3();
+    private float mBLowerLimit;
     private final Matrix2x2 mInverseMassMatrixTranslationConstraint = new Matrix2x2();
     private final Matrix3x3 mInverseMassMatrixRotationConstraint = new Matrix3x3();
+    private float mInverseMassMatrixLowerLimit;
     private final Vector2 mImpulseTranslation;
     private final Vector3 mImpulseRotation;
+    private float mImpulseLowerLimit;
+    private boolean mIsLimitsActive;
+    private final Vector3 mSliderAxisWorld = new Vector3();
+    private float mLowerLimit;
+    private float mUpperLimit;
+    private boolean mIsLowerLimitViolated;
+    private boolean mIsUpperLimitViolated;
 
     /**
      * Constructs a slider joint from provided slider joint info.
@@ -63,11 +77,24 @@ public class SliderJoint extends Constraint {
      */
     public SliderJoint(SliderJointInfo jointInfo) {
         super(jointInfo);
+        if (jointInfo.getUpperLimit() < 0) {
+            throw new IllegalArgumentException("Upper limit must be greater or equal to 0");
+        }
+        if (jointInfo.getLowerLimit() > 0) {
+            throw new IllegalArgumentException("Lower limit must be smaller or equal to 0");
+        }
+        mIsLimitsActive = jointInfo.isLimitsActive();
+        mLowerLimit = jointInfo.getLowerLimit();
+        mUpperLimit = jointInfo.getUpperLimit();
         mImpulseTranslation = new Vector2(0, 0);
         mImpulseRotation = new Vector3(0, 0, 0);
-        mLocalAnchorPointBody1.set(Transform.multiply(mBody1.getTransform().getInverse(), jointInfo.getAnchorPointWorldSpace()));
-        mLocalAnchorPointBody2.set(Transform.multiply(mBody2.getTransform().getInverse(), jointInfo.getAnchorPointWorldSpace()));
-        mSliderAxisBody1 = Quaternion.multiply(mBody1.getTransform().getOrientation().getInverse(), jointInfo.sliderAxisWorldSpace);
+        final Transform transform1 = mBody1.getTransform();
+        final Transform transform2 = mBody2.getTransform();
+        mLocalAnchorPointBody1.set(Transform.multiply(transform1.getInverse(), jointInfo.getAnchorPointWorldSpace()));
+        mLocalAnchorPointBody2.set(Transform.multiply(transform2.getInverse(), jointInfo.getAnchorPointWorldSpace()));
+        mInitOrientationDifference = Quaternion.multiply(transform2.getOrientation(), transform1.getOrientation().getInverse());
+        mInitOrientationDifference.normalize();
+        mSliderAxisBody1 = Quaternion.multiply(mBody1.getTransform().getOrientation().getInverse(), jointInfo.getSliderAxisWorldSpace());
         mSliderAxisBody1.normalize();
     }
 
@@ -84,18 +111,19 @@ public class SliderJoint extends Constraint {
         mR1.set(Quaternion.multiply(orientationBody1, mLocalAnchorPointBody1));
         mR2.set(Quaternion.multiply(orientationBody2, mLocalAnchorPointBody2));
         final Vector3 u = Vector3.subtract(Vector3.subtract(Vector3.add(x2, mR2), x1), mR1);
-        final Vector3 sliderAxisWorld = Quaternion.multiply(orientationBody1, mSliderAxisBody1);
-        sliderAxisWorld.normalize();
-        mN1.set(sliderAxisWorld.getOneUnitOrthogonalVector());
-        mN2.set(sliderAxisWorld.cross(mN1));
+        mSliderAxisWorld.set(Quaternion.multiply(orientationBody1, mSliderAxisBody1));
+        mSliderAxisWorld.normalize();
+        mN1.set(mSliderAxisWorld.getOneUnitOrthogonalVector());
+        mN2.set(mSliderAxisWorld.cross(mN1));
+        final float lowerLimitError = u.dot(mSliderAxisWorld) - mLowerLimit;
+        mIsLowerLimitViolated = lowerLimitError <= 0;
         mR2CrossN1.set(mR2.cross(mN1));
         mR2CrossN2.set(mR2.cross(mN2));
+        mR2CrossSliderAxis.set(mR2.cross(mSliderAxisWorld));
         final Vector3 r1PlusU = Vector3.add(mR1, u);
         mR1PlusUCrossN1.set((r1PlusU).cross(mN1));
         mR1PlusUCrossN2.set((r1PlusU).cross(mN2));
-        final float n1Dotn1 = mN1.lengthSquare();
-        final float n2Dotn2 = mN2.lengthSquare();
-        final float n1Dotn2 = mN1.dot(mN2);
+        mR1PlusUCrossSliderAxis.set((r1PlusU).cross(mSliderAxisWorld));
         float sumInverseMass = 0;
         final Vector3 I1R1PlusUCrossN1 = new Vector3(0, 0, 0);
         final Vector3 I1R1PlusUCrossN2 = new Vector3(0, 0, 0);
@@ -111,14 +139,22 @@ public class SliderJoint extends Constraint {
             I2R2CrossN1.set(Matrix3x3.multiply(I2, mR2CrossN1));
             I2R2CrossN2.set(Matrix3x3.multiply(I2, mR2CrossN2));
         }
-        final float el11 = sumInverseMass * (n1Dotn1) + mR1PlusUCrossN1.dot(I1R1PlusUCrossN1) + mR2CrossN1.dot(I2R2CrossN1);
-        final float el12 = sumInverseMass * (n1Dotn2) + mR1PlusUCrossN1.dot(I1R1PlusUCrossN2) + mR2CrossN1.dot(I2R2CrossN2);
-        final float el21 = sumInverseMass * (n1Dotn2) + mR1PlusUCrossN2.dot(I1R1PlusUCrossN1) + mR2CrossN2.dot(I2R2CrossN1);
-        final float el22 = sumInverseMass * (n2Dotn2) + mR1PlusUCrossN2.dot(I1R1PlusUCrossN2) + mR2CrossN2.dot(I2R2CrossN2);
+        final float el11 = sumInverseMass + mR1PlusUCrossN1.dot(I1R1PlusUCrossN1) + mR2CrossN1.dot(I2R2CrossN1);
+        final float el12 = mR1PlusUCrossN1.dot(I1R1PlusUCrossN2) + mR2CrossN1.dot(I2R2CrossN2);
+        final float el21 = mR1PlusUCrossN2.dot(I1R1PlusUCrossN1) + mR2CrossN2.dot(I2R2CrossN1);
+        final float el22 = sumInverseMass + mR1PlusUCrossN2.dot(I1R1PlusUCrossN2) + mR2CrossN2.dot(I2R2CrossN2);
         final Matrix2x2 matrixKTranslation = new Matrix2x2(el11, el12, el21, el22);
         mInverseMassMatrixTranslationConstraint.setToZero();
         if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
             mInverseMassMatrixTranslationConstraint.set(matrixKTranslation.getInverse());
+        }
+        mBTranslation.setToZero();
+        final float beta = 0.2f;     // TODO : Use a constant here
+        final float biasFactor = (beta / constraintSolverData.getTimeStep());
+        if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
+            mBTranslation.setX(u.dot(mN1));
+            mBTranslation.setY(u.dot(mN2));
+            mBTranslation.multiply(biasFactor);
         }
         mInverseMassMatrixRotationConstraint.setToZero();
         if (mBody1.getIsMotionEnabled()) {
@@ -129,6 +165,19 @@ public class SliderJoint extends Constraint {
         }
         if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
             mInverseMassMatrixRotationConstraint.set(mInverseMassMatrixRotationConstraint.getInverse());
+        }
+        mBRotation.setToZero();
+        if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
+            final Quaternion currentOrientationDifference = Quaternion.multiply(orientationBody2, orientationBody1.getInverse());
+            currentOrientationDifference.normalize();
+            final Quaternion qError = Quaternion.multiply(currentOrientationDifference, mInitOrientationDifference.getInverse());
+            mBRotation.set(Vector3.multiply(biasFactor * 2, qError.getVectorV()));
+        }
+        mInverseMassMatrixLowerLimit = sumInverseMass + mR1PlusUCrossSliderAxis.dot(Matrix3x3.multiply(I1, mR1PlusUCrossSliderAxis))
+                + mR2CrossSliderAxis.dot(Matrix3x3.multiply(I2, mR2CrossSliderAxis));
+        mBLowerLimit = 0;
+        if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
+            mBLowerLimit = biasFactor * lowerLimitError;
         }
     }
 
@@ -160,8 +209,6 @@ public class SliderJoint extends Constraint {
 
     @Override
     public void solveVelocityConstraint(ConstraintSolverData constraintSolverData) {
-        final Vector3 x1 = mBody1.getTransform().getPosition();
-        final Vector3 x2 = mBody2.getTransform().getPosition();
         final Vector3 v1 = constraintSolverData.getLinearVelocities().get(mIndexBody1);
         final Vector3 v2 = constraintSolverData.getLinearVelocities().get(mIndexBody2);
         final Vector3 w1 = constraintSolverData.getAngularVelocities().get(mIndexBody1);
@@ -173,15 +220,7 @@ public class SliderJoint extends Constraint {
         final float el1 = -mN1.dot(v1) - w1.dot(mR1PlusUCrossN1) + mN1.dot(v2) + w2.dot(mR2CrossN1);
         final float el2 = -mN2.dot(v1) - w1.dot(mR1PlusUCrossN2) + mN2.dot(v2) + w2.dot(mR2CrossN2);
         final Vector2 JvTranslation = new Vector2(el1, el2);
-        final Vector2 bTranslation = new Vector2(0, 0);
-        final float beta = 0.2f;     // TODO : Use a constant here
-        final float biasFactor = (beta / constraintSolverData.getTimeStep());
-        if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
-            final Vector3 deltaV = Vector3.subtract(Vector3.subtract(Vector3.add(x2, mR2), x1), mR1);
-            bTranslation.setX(biasFactor * deltaV.dot(mN1));
-            bTranslation.setY(biasFactor * deltaV.dot(mN2));
-        }
-        final Vector2 deltaLambda = Matrix2x2.multiply(mInverseMassMatrixTranslationConstraint, Vector2.subtract(Vector2.negate(JvTranslation), bTranslation));
+        final Vector2 deltaLambda = Matrix2x2.multiply(mInverseMassMatrixTranslationConstraint, Vector2.subtract(Vector2.negate(JvTranslation), mBTranslation));
         mImpulseTranslation.add(deltaLambda);
         final Vector3 linearImpulseBody1 = Vector3.subtract(Vector3.multiply(Vector3.negate(mN1), deltaLambda.getX()), Vector3.multiply(mN2, deltaLambda.getY()));
         final Vector3 angularImpulseBody1 = Vector3.subtract(Vector3.multiply(Vector3.negate(mR1PlusUCrossN1), deltaLambda.getX()), Vector3.multiply(mR1PlusUCrossN2, deltaLambda.getY()));
@@ -196,14 +235,7 @@ public class SliderJoint extends Constraint {
             w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
         }
         final Vector3 JvRotation = Vector3.subtract(w2, w1);
-        final Vector3 bRotation = new Vector3(0, 0, 0);
-        if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
-            final Quaternion q1 = mBody1.getTransform().getOrientation();
-            final Quaternion q2 = mBody2.getTransform().getOrientation();
-            final Quaternion qDiff = Quaternion.multiply(q1, q2.getInverse());
-            bRotation.set(Vector3.multiply(2, qDiff.getVectorV()));
-        }
-        final Vector3 deltaLambda2 = Matrix3x3.multiply(mInverseMassMatrixRotationConstraint, Vector3.subtract(Vector3.negate(JvRotation), bRotation));
+        final Vector3 deltaLambda2 = Matrix3x3.multiply(mInverseMassMatrixRotationConstraint, Vector3.subtract(Vector3.negate(JvRotation), mBRotation));
         mImpulseRotation.add(deltaLambda2);
         angularImpulseBody1.set(Vector3.negate(deltaLambda2));
         angularImpulseBody2.set(deltaLambda2);
@@ -212,6 +244,27 @@ public class SliderJoint extends Constraint {
         }
         if (mBody2.getIsMotionEnabled()) {
             w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
+        }
+        if (mIsLimitsActive) {
+            if (mIsLowerLimitViolated) {
+                final float JvLowerLimit = mSliderAxisWorld.dot(v2) + mR2CrossSliderAxis.dot(w2) - mSliderAxisWorld.dot(v1) - mR1PlusUCrossSliderAxis.dot(w1);
+                float deltaLambdaLower = mInverseMassMatrixLowerLimit * (-JvLowerLimit - mBLowerLimit);
+                final float lambdaTemp = mImpulseLowerLimit;
+                mImpulseLowerLimit = Math.max(mImpulseLowerLimit + deltaLambdaLower, 0);
+                deltaLambdaLower = mImpulseLowerLimit - lambdaTemp;
+                linearImpulseBody1.set(Vector3.multiply(-deltaLambdaLower, mSliderAxisWorld));
+                angularImpulseBody1.set(Vector3.multiply(-deltaLambdaLower, mR1PlusUCrossSliderAxis));
+                linearImpulseBody2.set(Vector3.negate(linearImpulseBody1));
+                angularImpulseBody2.set(Vector3.multiply(deltaLambdaLower, mR2CrossSliderAxis));
+                if (mBody1.getIsMotionEnabled()) {
+                    v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
+                    w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
+                }
+                if (mBody2.getIsMotionEnabled()) {
+                    v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
+                    w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
+                }
+            }
         }
     }
 
@@ -225,9 +278,12 @@ public class SliderJoint extends Constraint {
     public static class SliderJointInfo extends ConstraintInfo {
         private final Vector3 anchorPointWorldSpace = new Vector3();
         private final Vector3 sliderAxisWorldSpace = new Vector3();
+        private boolean isLimitsActive;
+        private float lowerLimit;
+        private float upperLimit;
 
         /**
-         * Constructs a new slider joint info from the both bodies, the initial anchor point in world space and the init axis, also in world space.
+         * Constructs a new unlimited slider joint info from the both bodies, the initial anchor point in world space and the init axis, also in world space.
          *
          * @param body1 The first body
          * @param body2 The second body
@@ -238,6 +294,28 @@ public class SliderJoint extends Constraint {
             super(body1, body2, ConstraintType.SLIDERJOINT);
             anchorPointWorldSpace.set(initAnchorPointWorldSpace);
             sliderAxisWorldSpace.set(initSliderAxisWorldSpace);
+            isLimitsActive = false;
+            lowerLimit = -1;
+            upperLimit = 1;
+        }
+
+        /**
+         * Constructs a new limited slider joint info from the both bodies, the initial anchor point in world space and the init axis, also in world space.
+         *
+         * @param body1 The first body
+         * @param body2 The second body
+         * @param initAnchorPointWorldSpace The initial anchor point in world space
+         * @param initSliderAxisWorldSpace The initial axis in world space
+         * @param initLowerLimit The initial lower limit
+         * @param initUpperLimit The initial upper limit
+         */
+        public SliderJointInfo(RigidBody body1, RigidBody body2, Vector3 initAnchorPointWorldSpace, Vector3 initSliderAxisWorldSpace, float initLowerLimit, float initUpperLimit) {
+            super(body1, body2, ConstraintType.SLIDERJOINT);
+            anchorPointWorldSpace.set(initAnchorPointWorldSpace);
+            sliderAxisWorldSpace.set(initSliderAxisWorldSpace);
+            isLimitsActive = true;
+            lowerLimit = initLowerLimit;
+            upperLimit = initUpperLimit;
         }
 
         /**
@@ -274,6 +352,33 @@ public class SliderJoint extends Constraint {
          */
         public void setSliderAxisWorldSpace(Vector3 sliderAxisWorldSpace) {
             this.sliderAxisWorldSpace.set(sliderAxisWorldSpace);
+        }
+
+        /**
+         * Returns true if the limits are active.
+         *
+         * @return Whether or not the limits are active
+         */
+        public boolean isLimitsActive() {
+            return isLimitsActive;
+        }
+
+        /**
+         * Returns the lower limit.
+         *
+         * @return The lower limit
+         */
+        public float getLowerLimit() {
+            return lowerLimit;
+        }
+
+        /**
+         * Returns the upper limit.
+         *
+         * @return The upper limit
+         */
+        public float getUpperLimit() {
+            return upperLimit;
         }
     }
 }
