@@ -231,6 +231,15 @@ public class ConstraintSolver {
         }
 
         /**
+         * Returns true if warm starting is active.
+         *
+         * @return Whether or not warm starting is active
+         */
+        public boolean isWarmStartingActive() {
+            return isWarmStartingActive;
+        }
+
+        /**
          * Sets whether or not warm starting is active.
          *
          * @param isWarmStartingActive Whether or not to warm start

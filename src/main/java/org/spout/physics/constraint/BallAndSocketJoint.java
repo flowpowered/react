@@ -38,10 +38,12 @@ import org.spout.physics.math.Vector3;
  * This class represents a ball-and-socket joint that allows arbitrary rotation between two bodies.
  */
 public class BallAndSocketJoint extends Constraint {
+    private static final float BETA = 0.2f;
     private final Vector3 mLocalAnchorPointBody1;
     private final Vector3 mLocalAnchorPointBody2;
     private final Vector3 mR1World = new Vector3();
     private final Vector3 mR2World = new Vector3();
+    private final Vector3 mBiasVector = new Vector3();
     private final Matrix3x3 mSkewSymmetricMatrixR1World = new Matrix3x3();
     private final Matrix3x3 mSkewSymmetricMatrixR2World = new Matrix3x3();
     private final Matrix3x3 mInverseMassMatrix = new Matrix3x3();
@@ -63,6 +65,8 @@ public class BallAndSocketJoint extends Constraint {
     public void initBeforeSolve(ConstraintSolverData constraintSolverData) {
         mIndexBody1 = constraintSolverData.getMapBodyToConstrainedVelocityIndex().get(mBody1);
         mIndexBody2 = constraintSolverData.getMapBodyToConstrainedVelocityIndex().get(mBody2);
+        final Vector3 x1 = mBody1.getTransform().getPosition();
+        final Vector3 x2 = mBody2.getTransform().getPosition();
         final Quaternion orientationBody1 = mBody1.getTransform().getOrientation();
         final Quaternion orientationBody2 = mBody2.getTransform().getOrientation();
         final Matrix3x3 I1 = mBody1.getInertiaTensorInverseWorld();
@@ -88,7 +92,18 @@ public class BallAndSocketJoint extends Constraint {
         if (mBody2.getIsMotionEnabled()) {
             massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU2, Matrix3x3.multiply(I2, skewSymmetricMatrixU2.getTranspose())));
         }
-        mInverseMassMatrix.set(massMatrix.getInverse());
+        mInverseMassMatrix.setToZero();
+        if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
+            mInverseMassMatrix.set(massMatrix.getInverse());
+        }
+        mBiasVector.setToZero();
+        if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
+            final float biasFactor = (BETA / constraintSolverData.getTimeStep());
+            mBiasVector.set(Vector3.multiply(biasFactor, Vector3.subtract(Vector3.subtract(Vector3.add(x2, mR2World), x1), mR1World)));
+        }
+        if (!constraintSolverData.isWarmStartingActive()) {
+            mImpulse.setToZero();
+        }
     }
 
     @Override
@@ -117,8 +132,6 @@ public class BallAndSocketJoint extends Constraint {
 
     @Override
     public void solveVelocityConstraint(ConstraintSolverData constraintSolverData) {
-        final Vector3 x1 = mBody1.getTransform().getPosition();
-        final Vector3 x2 = mBody2.getTransform().getPosition();
         final Vector3 v1 = constraintSolverData.getLinearVelocities().get(mIndexBody1);
         final Vector3 v2 = constraintSolverData.getLinearVelocities().get(mIndexBody2);
         final Vector3 w1 = constraintSolverData.getAngularVelocities().get(mIndexBody1);
@@ -127,14 +140,8 @@ public class BallAndSocketJoint extends Constraint {
         float inverseMassBody2 = mBody2.getMassInverse();
         final Matrix3x3 I1 = mBody1.getInertiaTensorInverseWorld();
         final Matrix3x3 I2 = mBody2.getInertiaTensorInverseWorld();
-        final Vector3 Jv = Vector3.add(Vector3.negate(v1), Vector3.add(mR1World.cross(w1), Vector3.subtract(v2, mR2World.cross(w2))));
-        final Vector3 b = new Vector3(0, 0, 0);
-        if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
-            final float beta = 0.2f;     // TODO : Use a constant here
-            final float biasFactor = beta / constraintSolverData.getTimeStep();
-            b.set(Vector3.multiply(biasFactor, Vector3.subtract(Vector3.subtract(Vector3.add(x2, mR2World), x1), mR1World)));
-        }
-        final Vector3 deltaLambda = Matrix3x3.multiply(mInverseMassMatrix, Vector3.subtract(Vector3.negate(Jv), b));
+        final Vector3 Jv = Vector3.subtract(Vector3.subtract(Vector3.add(v2, w2.cross(mR2World)), v1), w1.cross(mR1World));
+        final Vector3 deltaLambda = Matrix3x3.multiply(mInverseMassMatrix, Vector3.subtract(Vector3.negate(Jv), mBiasVector));
         mImpulse.add(deltaLambda);
         final Vector3 linearImpulseBody1 = Vector3.negate(deltaLambda);
         final Vector3 angularImpulseBody1 = deltaLambda.cross(mR1World);

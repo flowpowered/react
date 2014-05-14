@@ -29,6 +29,7 @@ package org.spout.physics.constraint;
 import org.spout.physics.ReactDefaults.JointsPositionCorrectionTechnique;
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.constraint.ConstraintSolver.ConstraintSolverData;
+import org.spout.physics.math.Mathematics;
 import org.spout.physics.math.Matrix2x2;
 import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Quaternion;
@@ -40,6 +41,7 @@ import org.spout.physics.math.Vector3;
  * This class represents a slider joint.
  */
 public class SliderJoint extends Constraint {
+    private static final float BETA = 0.2f;
     private final Vector3 mLocalAnchorPointBody1 = new Vector3();
     private final Vector3 mLocalAnchorPointBody2 = new Vector3();
     private final Vector3 mSliderAxisBody1;
@@ -61,16 +63,21 @@ public class SliderJoint extends Constraint {
     private final Matrix2x2 mInverseMassMatrixTranslationConstraint = new Matrix2x2();
     private final Matrix3x3 mInverseMassMatrixRotationConstraint = new Matrix3x3();
     private float mInverseMassMatrixLimit;
+    private float mInverseMassMatrixMotor;
     private final Vector2 mImpulseTranslation;
     private final Vector3 mImpulseRotation;
     private float mImpulseLowerLimit;
     private float mImpulseUpperLimit;
-    private boolean mIsLimitsActive;
+    private float mImpulseMotor;
+    private boolean mIsLimitEnabled;
+    private boolean mIsMotorEnabled;
     private final Vector3 mSliderAxisWorld = new Vector3();
     private float mLowerLimit;
     private float mUpperLimit;
     private boolean mIsLowerLimitViolated;
     private boolean mIsUpperLimitViolated;
+    private float mMotorSpeed;
+    private float mMaxMotorForce;
 
     /**
      * Constructs a slider joint from provided slider joint info.
@@ -85,11 +92,19 @@ public class SliderJoint extends Constraint {
         if (jointInfo.getLowerLimit() > 0) {
             throw new IllegalArgumentException("Lower limit must be smaller or equal to 0");
         }
+        if (jointInfo.getMaxMotorForce() < 0) {
+            throw new IllegalArgumentException("Max motor force must be greater or equal to 0");
+        }
         mImpulseLowerLimit = 0;
         mImpulseUpperLimit = 0;
-        mIsLimitsActive = jointInfo.isLimitsActive();
+        mIsLimitEnabled = jointInfo.isLimitsEnabled();
+        mIsMotorEnabled = jointInfo.isMotorEnabled();
         mLowerLimit = jointInfo.getLowerLimit();
         mUpperLimit = jointInfo.getUpperLimit();
+        mIsLowerLimitViolated = false;
+        mIsUpperLimitViolated = false;
+        mMotorSpeed = jointInfo.getMotorSpeed();
+        mMaxMotorForce = jointInfo.getMaxMotorForce();
         mImpulseTranslation = new Vector2(0, 0);
         mImpulseRotation = new Vector3(0, 0, 0);
         final Transform transform1 = mBody1.getTransform();
@@ -122,8 +137,16 @@ public class SliderJoint extends Constraint {
         final float uDotSliderAxis = u.dot(mSliderAxisWorld);
         final float lowerLimitError = uDotSliderAxis - mLowerLimit;
         final float upperLimitError = mUpperLimit - uDotSliderAxis;
+        final boolean oldIsLowerLimitViolated = mIsLowerLimitViolated;
         mIsLowerLimitViolated = lowerLimitError <= 0;
+        if (mIsLowerLimitViolated != oldIsLowerLimitViolated) {
+            mImpulseLowerLimit = 0;
+        }
+        final boolean oldIsUpperLimitViolated = mIsUpperLimitViolated;
         mIsUpperLimitViolated = upperLimitError <= 0;
+        if (mIsUpperLimitViolated != oldIsUpperLimitViolated) {
+            mImpulseUpperLimit = 0;
+        }
         mR2CrossN1.set(mR2.cross(mN1));
         mR2CrossN2.set(mR2.cross(mN2));
         mR2CrossSliderAxis.set(mR2.cross(mSliderAxisWorld));
@@ -156,8 +179,7 @@ public class SliderJoint extends Constraint {
             mInverseMassMatrixTranslationConstraint.set(matrixKTranslation.getInverse());
         }
         mBTranslation.setToZero();
-        final float beta = 0.2f;     // TODO : Use a constant here
-        final float biasFactor = (beta / constraintSolverData.getTimeStep());
+        final float biasFactor = (BETA / constraintSolverData.getTimeStep());
         if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
             mBTranslation.setX(u.dot(mN1));
             mBTranslation.setY(u.dot(mN2));
@@ -180,15 +202,38 @@ public class SliderJoint extends Constraint {
             final Quaternion qError = Quaternion.multiply(currentOrientationDifference, mInitOrientationDifference.getInverse());
             mBRotation.set(Vector3.multiply(biasFactor * 2, qError.getVectorV()));
         }
-        mInverseMassMatrixLimit = sumInverseMass + mR1PlusUCrossSliderAxis.dot(Matrix3x3.multiply(I1, mR1PlusUCrossSliderAxis))
-                + mR2CrossSliderAxis.dot(Matrix3x3.multiply(I2, mR2CrossSliderAxis));
-        mBLowerLimit = 0;
-        if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
-            mBLowerLimit = biasFactor * lowerLimitError;
+        if (mIsLimitEnabled && (mIsLowerLimitViolated || mIsUpperLimitViolated)) {
+            mInverseMassMatrixLimit = 0;
+            if (mBody1.getIsMotionEnabled()) {
+                mInverseMassMatrixLimit += mBody1.getMassInverse() + mR1PlusUCrossSliderAxis.dot(Matrix3x3.multiply(I1, mR1PlusUCrossSliderAxis));
+            }
+            if (mBody2.getIsMotionEnabled()) {
+                mInverseMassMatrixLimit += mBody2.getMassInverse() + mR2CrossSliderAxis.dot(Matrix3x3.multiply(I2, mR2CrossSliderAxis));
+            }
+            mInverseMassMatrixLimit = (mInverseMassMatrixLimit > 0) ? 1 / mInverseMassMatrixLimit : 0;
+            mBLowerLimit = 0;
+            if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
+                mBLowerLimit = biasFactor * lowerLimitError;
+            }
+            mBUpperLimit = 0;
+            if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
+                mBUpperLimit = biasFactor * upperLimitError;
+            }
         }
-        mBUpperLimit = 0;
-        if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
-            mBUpperLimit = biasFactor * upperLimitError;
+        mInverseMassMatrixMotor = 0;
+        if (mBody1.getIsMotionEnabled()) {
+            mInverseMassMatrixMotor += mBody1.getMassInverse();
+        }
+        if (mBody2.getIsMotionEnabled()) {
+            mInverseMassMatrixMotor += mBody2.getMassInverse();
+        }
+        mInverseMassMatrixMotor = (mInverseMassMatrixMotor > 0) ? 1 / mInverseMassMatrixMotor : 0;
+        if (!constraintSolverData.isWarmStartingActive()) {
+            mImpulseTranslation.setToZero();
+            mImpulseRotation.setToZero();
+            mImpulseLowerLimit = 0;
+            mImpulseUpperLimit = 0;
+            mImpulseMotor = 0;
         }
     }
 
@@ -208,6 +253,15 @@ public class SliderJoint extends Constraint {
         final Vector3 angularImpulseBody2 = Vector3.subtract(Vector3.multiply(mR2CrossN1, mImpulseTranslation.getX()), Vector3.multiply(mR2CrossN2, mImpulseTranslation.getY()));
         angularImpulseBody1.add(Vector3.negate(mImpulseRotation));
         angularImpulseBody2.add(mImpulseRotation);
+        final float impulseLimits = mImpulseUpperLimit - mImpulseLowerLimit;
+        final Vector3 linearImpulseLimits = Vector3.multiply(impulseLimits, mSliderAxisWorld);
+        linearImpulseBody1.add(linearImpulseLimits);
+        angularImpulseBody1.add(Vector3.multiply(impulseLimits, mR1PlusUCrossSliderAxis));
+        linearImpulseBody2.add(Vector3.negate(linearImpulseLimits));
+        angularImpulseBody2.add(Vector3.multiply(-impulseLimits, mR2CrossSliderAxis));
+        final Vector3 impulseMotor = Vector3.multiply(mImpulseMotor, mSliderAxisWorld);
+        linearImpulseBody1.add(impulseMotor);
+        linearImpulseBody2.add(Vector3.negate(impulseMotor));
         if (mBody1.getIsMotionEnabled()) {
             v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
             w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
@@ -256,7 +310,7 @@ public class SliderJoint extends Constraint {
         if (mBody2.getIsMotionEnabled()) {
             w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
         }
-        if (mIsLimitsActive) {
+        if (mIsLimitEnabled) {
             if (mIsLowerLimitViolated) {
                 final float JvLowerLimit = mSliderAxisWorld.dot(v2) + mR2CrossSliderAxis.dot(w2) - mSliderAxisWorld.dot(v1) - mR1PlusUCrossSliderAxis.dot(w1);
                 float deltaLambdaLower = mInverseMassMatrixLimit * (-JvLowerLimit - mBLowerLimit);
@@ -296,10 +350,177 @@ public class SliderJoint extends Constraint {
                 }
             }
         }
+        if (mIsMotorEnabled) {
+            final float JvMotor = mSliderAxisWorld.dot(v1) - mSliderAxisWorld.dot(v2);
+            final float maxMotorImpulse = mMaxMotorForce * constraintSolverData.getTimeStep();
+            float deltaLambdaMotor = mInverseMassMatrixMotor * (-JvMotor - mMotorSpeed);
+            final float lambdaTemp = mImpulseMotor;
+            mImpulseMotor = Mathematics.clamp(mImpulseMotor + deltaLambdaMotor, -maxMotorImpulse, maxMotorImpulse);
+            deltaLambdaMotor = mImpulseMotor - lambdaTemp;
+            linearImpulseBody1.set(Vector3.multiply(deltaLambdaMotor, mSliderAxisWorld));
+            linearImpulseBody2.set(Vector3.negate(linearImpulseBody1));
+            if (mBody1.getIsMotionEnabled()) {
+                v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
+            }
+            if (mBody2.getIsMotionEnabled()) {
+                v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
+            }
+        }
     }
 
     @Override
     public void solvePositionConstraint(ConstraintSolverData constraintSolverData) {
+    }
+
+    /**
+     * Enables or disables the joint limits.
+     *
+     * @param isLimitEnabled The new state of the joint limits
+     */
+    public void enableLimit(boolean isLimitEnabled) {
+        if (isLimitEnabled != mIsLimitEnabled) {
+            mIsLimitEnabled = isLimitEnabled;
+            resetLimits();
+        }
+    }
+
+    /**
+     * Enables or disables the joint motor.
+     *
+     * @param isMotorEnabled The new state of the joint motor
+     */
+    public void enableMotor(boolean isMotorEnabled) {
+        mIsMotorEnabled = isMotorEnabled;
+        mImpulseMotor = 0;
+        // TODO : Wake up the bodies of the joint here when sleeping is implemented
+    }
+
+    /**
+     * Sets the lower limit.
+     *
+     * @param lowerLimit The lower limit
+     */
+    public void setLowerLimit(float lowerLimit) {
+        if (lowerLimit > mUpperLimit) {
+            throw new IllegalArgumentException("Lower limit must be smaller or equal to current upper limit");
+        }
+        if (lowerLimit != mLowerLimit) {
+            mLowerLimit = lowerLimit;
+            resetLimits();
+        }
+    }
+
+    /**
+     * Sets the upper limit.
+     *
+     * @param upperLimit The upper limit
+     */
+    public void setUpperLimit(float upperLimit) {
+        if (mLowerLimit > upperLimit) {
+            throw new IllegalArgumentException("Current lower limit must be smaller or equal to upper limit");
+        }
+        if (upperLimit != mUpperLimit) {
+            mUpperLimit = upperLimit;
+            resetLimits();
+        }
+    }
+
+    // Resets the limits.
+    private void resetLimits() {
+        mImpulseLowerLimit = 0;
+        mImpulseUpperLimit = 0;
+        // TODO : Wake up the bodies of the joint here when sleeping is implemented
+    }
+
+    /**
+     * Sets the motor speed.
+     *
+     * @param motorSpeed The motor speed
+     */
+    public void setMotorSpeed(float motorSpeed) {
+        if (motorSpeed != mMotorSpeed) {
+            mMotorSpeed = motorSpeed;
+            // TODO : Wake up the bodies of the joint here when sleeping is implemented
+        }
+    }
+
+    /**
+     * Sets the maximum motor force.
+     *
+     * @param maxMotorForce The maximum motor force
+     */
+    public void setMaxMotorForce(float maxMotorForce) {
+        if (mMaxMotorForce < 0) {
+            throw new IllegalArgumentException("Max motor force must be greater or equal to 0");
+        }
+        if (maxMotorForce != mMaxMotorForce) {
+            mMaxMotorForce = maxMotorForce;
+            // TODO : Wake up the bodies of the joint here when sleeping is implemented
+        }
+    }
+
+    /**
+     * Return true if the limits or the joint are enabled.
+     *
+     * @return Whether or not the limits are enabled
+     */
+    public boolean isLimitEnabled() {
+        return mIsLimitEnabled;
+    }
+
+    /**
+     * Returns true if the motor of the joint is enabled.
+     *
+     * @return Whether or not the motor is enabled
+     */
+    public boolean isMotorEnabled() {
+        return mIsMotorEnabled;
+    }
+
+    /**
+     * Returns the lower limit.
+     *
+     * @return The lower limit
+     */
+    public float getLowerLimit() {
+        return mLowerLimit;
+    }
+
+    /**
+     * Returns the upper limit.
+     *
+     * @return The upper limit
+     */
+    public float getUpperLimit() {
+        return mUpperLimit;
+    }
+
+    /**
+     * Returns the motor speed.
+     *
+     * @return The motor speed
+     */
+    public float getMotorSpeed() {
+        return mMotorSpeed;
+    }
+
+    /**
+     * Returns the maximum motor force.
+     *
+     * @return The maximum motor force
+     */
+    public float getMaxMotorForce() {
+        return mMaxMotorForce;
+    }
+
+    /**
+     * Returns the intensity of the current force applied for the joint motor.
+     *
+     * @param timeStep The simulation time step
+     * @return The motor force for the time step
+     */
+    public float getMotorForce(float timeStep) {
+        return mImpulseMotor / timeStep;
     }
 
     /**
@@ -308,12 +529,15 @@ public class SliderJoint extends Constraint {
     public static class SliderJointInfo extends ConstraintInfo {
         private final Vector3 anchorPointWorldSpace = new Vector3();
         private final Vector3 sliderAxisWorldSpace = new Vector3();
-        private boolean isLimitsActive;
+        private boolean isLimitsEnabled;
+        private boolean isMotorEnabled;
         private float lowerLimit;
         private float upperLimit;
+        private float motorSpeed;
+        private float maxMotorForce;
 
         /**
-         * Constructs a new unlimited slider joint info from the both bodies, the initial anchor point in world space and the init axis, also in world space.
+         * Constructs a new unlimited and non-motored slider joint info from the both bodies, the initial anchor point in world space and the init axis, also in world space.
          *
          * @param body1 The first body
          * @param body2 The second body
@@ -324,13 +548,16 @@ public class SliderJoint extends Constraint {
             super(body1, body2, ConstraintType.SLIDERJOINT);
             anchorPointWorldSpace.set(initAnchorPointWorldSpace);
             sliderAxisWorldSpace.set(initSliderAxisWorldSpace);
-            isLimitsActive = false;
+            isLimitsEnabled = false;
+            isMotorEnabled = false;
             lowerLimit = -1;
             upperLimit = 1;
+            motorSpeed = 0;
+            maxMotorForce = 0;
         }
 
         /**
-         * Constructs a new limited slider joint info from the both bodies, the initial anchor point in world space and the init axis, also in world space.
+         * Constructs a new limited but non-motored slider joint info from the both bodies, the initial anchor point in world space and the init axis, also in world space.
          *
          * @param body1 The first body
          * @param body2 The second body
@@ -343,9 +570,35 @@ public class SliderJoint extends Constraint {
             super(body1, body2, ConstraintType.SLIDERJOINT);
             anchorPointWorldSpace.set(initAnchorPointWorldSpace);
             sliderAxisWorldSpace.set(initSliderAxisWorldSpace);
-            isLimitsActive = true;
+            isLimitsEnabled = true;
+            isMotorEnabled = false;
             lowerLimit = initLowerLimit;
             upperLimit = initUpperLimit;
+            motorSpeed = 0;
+            maxMotorForce = 0;
+        }
+
+        /**
+         * Constructs a new limited and motored slider joint info from the both bodies, the initial anchor point in world space and the init axis, also in world space.
+         *
+         * @param body1 The first body
+         * @param body2 The second body
+         * @param initAnchorPointWorldSpace The initial anchor point in world space
+         * @param initSliderAxisWorldSpace The initial axis in world space
+         * @param initLowerLimit The initial lower limit
+         * @param initUpperLimit The initial upper limit
+         */
+        public SliderJointInfo(RigidBody body1, RigidBody body2, Vector3 initAnchorPointWorldSpace, Vector3 initSliderAxisWorldSpace, float initLowerLimit, float initUpperLimit, float initMotorSpeed,
+                               float initMaxMotorForce) {
+            super(body1, body2, ConstraintType.SLIDERJOINT);
+            anchorPointWorldSpace.set(initAnchorPointWorldSpace);
+            sliderAxisWorldSpace.set(initSliderAxisWorldSpace);
+            isLimitsEnabled = true;
+            isMotorEnabled = true;
+            lowerLimit = initLowerLimit;
+            upperLimit = initUpperLimit;
+            motorSpeed = initMotorSpeed;
+            maxMotorForce = initMaxMotorForce;
         }
 
         /**
@@ -389,8 +642,8 @@ public class SliderJoint extends Constraint {
          *
          * @return Whether or not the limits are active
          */
-        public boolean isLimitsActive() {
-            return isLimitsActive;
+        public boolean isLimitsEnabled() {
+            return isLimitsEnabled;
         }
 
         /**
@@ -409,6 +662,33 @@ public class SliderJoint extends Constraint {
          */
         public float getUpperLimit() {
             return upperLimit;
+        }
+
+        /**
+         * Returns true if the motor is enabled.
+         *
+         * @return Whether or not the motor is enabled
+         */
+        public boolean isMotorEnabled() {
+            return isMotorEnabled;
+        }
+
+        /**
+         * Returns the motor speed.
+         *
+         * @return The motor speed
+         */
+        public float getMotorSpeed() {
+            return motorSpeed;
+        }
+
+        /**
+         * Returns the max motor force.
+         *
+         * @return The motor force
+         */
+        public float getMaxMotorForce() {
+            return maxMotorForce;
         }
     }
 }

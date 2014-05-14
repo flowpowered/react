@@ -55,4 +55,19 @@ public class Mathematics {
         float difference = a - b;
         return difference < epsilon && difference > -epsilon;
     }
+
+    /**
+     * Returns the result of the "value" clamped by two others values "lowerLimit" and "upperLimit".
+     *
+     * @param value The value to clamp
+     * @param lowerLimit The lower limit
+     * @param upperLimit The upper limit
+     * @return The clamped value
+     */
+    public static float clamp(float value, float lowerLimit, float upperLimit) {
+        if (lowerLimit > upperLimit) {
+            throw new IllegalArgumentException("Lower limit must be smaller or equal to the upper limit");
+        }
+        return Math.min(Math.max(value, lowerLimit), upperLimit);
+    }
 }

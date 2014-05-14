@@ -131,7 +131,8 @@ public abstract class Constraint {
     public static enum ConstraintType {
         CONTACT,
         BALLSOCKETJOINT,
-        SLIDERJOINT
+        SLIDERJOINT,
+        HINGEJOINT
     }
 
     /**
