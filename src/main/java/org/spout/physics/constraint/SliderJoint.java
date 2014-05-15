@@ -180,7 +180,7 @@ public class SliderJoint extends Constraint {
             mInverseMassMatrixTranslationConstraint.set(matrixKTranslation.getInverse());
         }
         mBTranslation.setToZero();
-        final float biasFactor = (BETA / constraintSolverData.getTimeStep());
+        final float biasFactor = BETA / constraintSolverData.getTimeStep();
         if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
             mBTranslation.setX(u.dot(mN1));
             mBTranslation.setY(u.dot(mN2));
@@ -211,7 +211,7 @@ public class SliderJoint extends Constraint {
             if (mBody2.getIsMotionEnabled()) {
                 mInverseMassMatrixLimit += mBody2.getMassInverse() + mR2CrossSliderAxis.dot(Matrix3x3.multiply(I2, mR2CrossSliderAxis));
             }
-            mInverseMassMatrixLimit = (mInverseMassMatrixLimit > 0) ? 1 / mInverseMassMatrixLimit : 0;
+            mInverseMassMatrixLimit = mInverseMassMatrixLimit > 0 ? 1 / mInverseMassMatrixLimit : 0;
             mBLowerLimit = 0;
             if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
                 mBLowerLimit = biasFactor * lowerLimitError;
@@ -228,7 +228,7 @@ public class SliderJoint extends Constraint {
         if (mBody2.getIsMotionEnabled()) {
             mInverseMassMatrixMotor += mBody2.getMassInverse();
         }
-        mInverseMassMatrixMotor = (mInverseMassMatrixMotor > 0) ? 1 / mInverseMassMatrixMotor : 0;
+        mInverseMassMatrixMotor = mInverseMassMatrixMotor > 0 ? 1 / mInverseMassMatrixMotor : 0;
         if (!constraintSolverData.isWarmStartingActive()) {
             mImpulseTranslation.setToZero();
             mImpulseRotation.setToZero();

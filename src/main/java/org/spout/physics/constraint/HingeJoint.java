@@ -165,7 +165,7 @@ public class HingeJoint extends Constraint {
             mInverseMassMatrixTranslation.set(massMatrix.getInverse());
         }
         mBTranslation.setToZero();
-        final float biasFactor = (BETA / constraintSolverData.getTimeStep());
+        final float biasFactor = BETA / constraintSolverData.getTimeStep();
         if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
             mBTranslation.set(Vector3.multiply(biasFactor, Vector3.subtract(Vector3.subtract(Vector3.add(x2, mR2World), x1), mR1World)));
         }
@@ -209,7 +209,7 @@ public class HingeJoint extends Constraint {
             if (mBody2.getIsMotionEnabled()) {
                 mInverseMassMatrixLimitMotor += mA1.dot(Matrix3x3.multiply(I2, mA1));
             }
-            mInverseMassMatrixLimitMotor = (mInverseMassMatrixLimitMotor > 0) ? 1 / mInverseMassMatrixLimitMotor : 0;
+            mInverseMassMatrixLimitMotor = mInverseMassMatrixLimitMotor > 0 ? 1 / mInverseMassMatrixLimitMotor : 0;
             mBLowerLimit = 0;
             if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
                 mBLowerLimit = biasFactor * lowerLimitError;

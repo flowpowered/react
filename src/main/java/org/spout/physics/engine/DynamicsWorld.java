@@ -50,6 +50,8 @@ import org.spout.physics.constraint.Constraint.ConstraintInfo;
 import org.spout.physics.constraint.ConstraintSolver;
 import org.spout.physics.constraint.ContactPoint;
 import org.spout.physics.constraint.ContactPoint.ContactPointInfo;
+import org.spout.physics.constraint.FixedJoint;
+import org.spout.physics.constraint.FixedJoint.FixedJointInfo;
 import org.spout.physics.constraint.HingeJoint;
 import org.spout.physics.constraint.HingeJoint.HingeJointInfo;
 import org.spout.physics.constraint.SliderJoint;
@@ -555,6 +557,11 @@ public class DynamicsWorld extends CollisionWorld {
             case HINGEJOINT: {
                 final HingeJointInfo info = (HingeJointInfo) jointInfo;
                 newJoint = new HingeJoint(info);
+                break;
+            }
+            case FIXEDJOINT: {
+                final FixedJointInfo info = (FixedJointInfo) jointInfo;
+                newJoint = new FixedJoint(info);
                 break;
             }
             default:

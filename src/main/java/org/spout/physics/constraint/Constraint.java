@@ -132,7 +132,8 @@ public abstract class Constraint {
         CONTACT,
         BALLSOCKETJOINT,
         SLIDERJOINT,
-        HINGEJOINT
+        HINGEJOINT,
+        FIXEDJOINT
     }
 
     /**
