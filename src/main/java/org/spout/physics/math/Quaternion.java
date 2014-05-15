@@ -229,12 +229,28 @@ public class Quaternion {
     }
 
     /**
+     * Sets to the identity quaternion.
+     */
+    public void setToIdentity() {
+        setAllValues(0, 0, 0, 1);
+    }
+
+    /**
      * Returns the x, y and z values of this quaternion as a vector3.
      *
      * @return The x, y and z values of this quaternion as a vector3.
      */
     public Vector3 getVectorV() {
         return new Vector3(x, y, z);
+    }
+
+    /**
+     * Returns the square of the length of the quaternion.
+     *
+     * @return The length squared
+     */
+    public float lengthSquare() {
+        return x * x + y * y + z * z + w * w;
     }
 
     /**
@@ -258,6 +274,17 @@ public class Quaternion {
         y /= l;
         z /= l;
         w /= l;
+    }
+
+    public void inverse() {
+        final float lengthSquareQuaternion = lengthSquare();
+        if (lengthSquareQuaternion <= ReactDefaults.MACHINE_EPSILON) {
+            throw new IllegalArgumentException("Cannot normalize the zero quaternion");
+        }
+        x /= -lengthSquareQuaternion;
+        y /= -lengthSquareQuaternion;
+        z /= -lengthSquareQuaternion;
+        w /= lengthSquareQuaternion;
     }
 
     /**
@@ -292,16 +319,15 @@ public class Quaternion {
      * @return The inverse of this quaternion
      */
     public Quaternion getInverse() {
-        float lengthQuaternion = length();
-        lengthQuaternion *= lengthQuaternion;
-        if (lengthQuaternion <= ReactDefaults.MACHINE_EPSILON) {
+        final float lengthSquareQuaternion = lengthSquare();
+        if (lengthSquareQuaternion <= ReactDefaults.MACHINE_EPSILON) {
             throw new IllegalArgumentException("Cannot normalize the zero quaternion");
         }
         return new Quaternion(
-                -x / lengthQuaternion,
-                -y / lengthQuaternion,
-                -z / lengthQuaternion,
-                w / lengthQuaternion);
+                -x / lengthSquareQuaternion,
+                -y / lengthSquareQuaternion,
+                -z / lengthSquareQuaternion,
+                w / lengthSquareQuaternion);
     }
 
     /**

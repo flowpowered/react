@@ -104,6 +104,7 @@ public class ConstraintSolver {
         mLinearVelocities = linearVelocities;
         mAngularVelocities = angularVelocities;
         mMapBodyToConstrainedVelocityIndex = mapBodyToConstrainedVelocityIndex;
+        mIsWarmStartingActive = true;
         mIsNonLinearGaussSeidelPositionCorrectionActive = false;
         mConstraintSolverData = new ConstraintSolverData(linearVelocities, angularVelocities, mapBodyToConstrainedVelocityIndex);
     }
@@ -123,6 +124,9 @@ public class ConstraintSolver {
             mConstraintBodies.add(body1);
             mConstraintBodies.add(body2);
             joint.initBeforeSolve(mConstraintSolverData);
+            if (mIsWarmStartingActive) {
+                joint.warmstart(mConstraintSolverData);
+            }
         }
     }
 

@@ -35,6 +35,10 @@ public class ReactDefaults {
      */
     public static final float MACHINE_EPSILON = 1.1920929E-7f;
     /**
+     * 2 * Pi constant.
+     */
+    public static final float PI_TIMES_2 = 6.28318530f;
+    /**
      * Default internal constant timestep in seconds. Default: 1/60s
      */
     public static final float DEFAULT_TIMESTEP = 1f / 60;

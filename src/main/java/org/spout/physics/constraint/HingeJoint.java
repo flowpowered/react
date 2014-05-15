@@ -26,6 +26,7 @@
  */
 package org.spout.physics.constraint;
 
+import org.spout.physics.ReactDefaults;
 import org.spout.physics.ReactDefaults.JointsPositionCorrectionTechnique;
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.constraint.ConstraintSolver.ConstraintSolverData;
@@ -38,40 +39,35 @@ import org.spout.physics.math.Vector2;
 import org.spout.physics.math.Vector3;
 
 /**
- * This class represents a slider joint.
+ *
  */
-public class SliderJoint extends Constraint {
+public class HingeJoint extends Constraint {
     private static final float BETA = 0.2f;
     private final Vector3 mLocalAnchorPointBody1;
     private final Vector3 mLocalAnchorPointBody2;
-    private final Vector3 mSliderAxisBody1;
-    private final Quaternion mInitOrientationDifferenceInv;
-    private final Vector3 mN1 = new Vector3();
-    private final Vector3 mN2 = new Vector3();
-    private final Vector3 mR1 = new Vector3();
-    private final Vector3 mR2 = new Vector3();
-    private final Vector3 mR2CrossN1 = new Vector3();
-    private final Vector3 mR2CrossN2 = new Vector3();
-    private final Vector3 mR2CrossSliderAxis = new Vector3();
-    private final Vector3 mR1PlusUCrossN1 = new Vector3();
-    private final Vector3 mR1PlusUCrossN2 = new Vector3();
-    private final Vector3 mR1PlusUCrossSliderAxis = new Vector3();
-    private final Vector2 mBTranslation = new Vector2();
-    private final Vector3 mBRotation = new Vector3();
-    private float mBLowerLimit;
-    private float mBUpperLimit;
-    private final Matrix2x2 mInverseMassMatrixTranslationConstraint = new Matrix2x2();
-    private final Matrix3x3 mInverseMassMatrixRotationConstraint = new Matrix3x3();
-    private float mInverseMassMatrixLimit;
-    private float mInverseMassMatrixMotor;
-    private final Vector2 mImpulseTranslation;
-    private final Vector3 mImpulseRotation;
+    private final Vector3 mHingeLocalAxisBody1;
+    private final Vector3 mHingeLocalAxisBody2;
+    private final Vector3 mA1 = new Vector3();
+    private final Vector3 mR1World = new Vector3();
+    private final Vector3 mR2World = new Vector3();
+    private final Vector3 mB2CrossA1 = new Vector3();
+    private final Vector3 mC2CrossA1 = new Vector3();
+    private final Vector3 mImpulseTranslation;
+    private final Vector2 mImpulseRotation;
     private float mImpulseLowerLimit;
     private float mImpulseUpperLimit;
     private float mImpulseMotor;
+    private final Matrix3x3 mInverseMassMatrixTranslation = new Matrix3x3();
+    private final Matrix2x2 mInverseMassMatrixRotation = new Matrix2x2();
+    private float mInverseMassMatrixLimitMotor;
+    private float mInverseMassMatrixMotor;
+    private final Vector3 mBTranslation = new Vector3();
+    private final Vector2 mBRotation = new Vector2();
+    private float mBLowerLimit;
+    private float mBUpperLimit;
+    private final Quaternion mInitOrientationDifferenceInv;
     private boolean mIsLimitEnabled;
     private boolean mIsMotorEnabled;
-    private final Vector3 mSliderAxisWorld = new Vector3();
     private float mLowerLimit;
     private float mUpperLimit;
     private boolean mIsLowerLimitViolated;
@@ -79,43 +75,36 @@ public class SliderJoint extends Constraint {
     private float mMotorSpeed;
     private float mMaxMotorForce;
 
-    /**
-     * Constructs a slider joint from provided slider joint info.
-     *
-     * @param jointInfo The joint info
-     */
-    public SliderJoint(SliderJointInfo jointInfo) {
+    public HingeJoint(HingeJointInfo jointInfo) {
         super(jointInfo);
-        if (jointInfo.getMaxTranslationLimit() < 0) {
-            throw new IllegalArgumentException("Upper limit must be greater or equal to 0");
+        if (jointInfo.getMinAngleLimit() > 0 || jointInfo.getMinAngleLimit() < -2 * Math.PI) {
+            throw new IllegalArgumentException("Lower limit must be smaller or equal to 0 and greater or equal to -2 * PI");
         }
-        if (jointInfo.getMinTranslationLimit() > 0) {
-            throw new IllegalArgumentException("Lower limit must be smaller or equal to 0");
+        if (jointInfo.getMaxAngleLimit() < 0 || jointInfo.getMaxAngleLimit() > 2 * Math.PI) {
+            throw new IllegalArgumentException("Upper limit must be greater or equal to 0 and smaller or equal to 2 * PI");
         }
-        if (jointInfo.getMaxMotorForce() < 0) {
-            throw new IllegalArgumentException("Max motor force must be greater or equal to 0");
-        }
-        mImpulseTranslation = new Vector2(0, 0);
-        mImpulseRotation = new Vector3(0, 0, 0);
+        mImpulseTranslation = new Vector3(0, 0, 0);
+        mImpulseRotation = new Vector2(0, 0);
         mImpulseLowerLimit = 0;
         mImpulseUpperLimit = 0;
         mImpulseMotor = 0;
         mIsLimitEnabled = jointInfo.isLimitEnabled();
         mIsMotorEnabled = jointInfo.isMotorEnabled();
-        mLowerLimit = jointInfo.getMinTranslationLimit();
-        mUpperLimit = jointInfo.getMaxTranslationLimit();
+        mLowerLimit = jointInfo.getMinAngleLimit();
+        mUpperLimit = jointInfo.getMaxAngleLimit();
         mIsLowerLimitViolated = false;
         mIsUpperLimitViolated = false;
-        mMotorSpeed = jointInfo.getMotorSpeed();
-        mMaxMotorForce = jointInfo.getMaxMotorForce();
         final Transform transform1 = mBody1.getTransform();
         final Transform transform2 = mBody2.getTransform();
         mLocalAnchorPointBody1 = Transform.multiply(transform1.getInverse(), jointInfo.getAnchorPointWorldSpace());
         mLocalAnchorPointBody2 = Transform.multiply(transform2.getInverse(), jointInfo.getAnchorPointWorldSpace());
+        mHingeLocalAxisBody1 = Quaternion.multiply(transform1.getOrientation().getInverse(), jointInfo.getRotationAxisWorld());
+        mHingeLocalAxisBody2 = Quaternion.multiply(transform2.getOrientation().getInverse(), jointInfo.getRotationAxisWorld());
+        mHingeLocalAxisBody1.normalize();
+        mHingeLocalAxisBody2.normalize();
         mInitOrientationDifferenceInv = Quaternion.multiply(transform2.getOrientation(), transform1.getOrientation().getInverse());
         mInitOrientationDifferenceInv.normalize();
-        mSliderAxisBody1 = Quaternion.multiply(mBody1.getTransform().getOrientation().getInverse(), jointInfo.getSliderAxisWorldSpace());
-        mSliderAxisBody1.normalize();
+        mInitOrientationDifferenceInv.inverse();
     }
 
     @Override
@@ -128,16 +117,11 @@ public class SliderJoint extends Constraint {
         final Quaternion orientationBody2 = mBody2.getTransform().getOrientation();
         final Matrix3x3 I1 = mBody1.getInertiaTensorInverseWorld();
         final Matrix3x3 I2 = mBody2.getInertiaTensorInverseWorld();
-        mR1.set(Quaternion.multiply(orientationBody1, mLocalAnchorPointBody1));
-        mR2.set(Quaternion.multiply(orientationBody2, mLocalAnchorPointBody2));
-        final Vector3 u = Vector3.subtract(Vector3.subtract(Vector3.add(x2, mR2), x1), mR1);
-        mSliderAxisWorld.set(Quaternion.multiply(orientationBody1, mSliderAxisBody1));
-        mSliderAxisWorld.normalize();
-        mN1.set(mSliderAxisWorld.getOneUnitOrthogonalVector());
-        mN2.set(mSliderAxisWorld.cross(mN1));
-        final float uDotSliderAxis = u.dot(mSliderAxisWorld);
-        final float lowerLimitError = uDotSliderAxis - mLowerLimit;
-        final float upperLimitError = mUpperLimit - uDotSliderAxis;
+        mR1World.set(Quaternion.multiply(orientationBody1, mLocalAnchorPointBody1));
+        mR2World.set(Quaternion.multiply(orientationBody2, mLocalAnchorPointBody2));
+        final float hingeAngle = computeCurrentHingeAngle(orientationBody1, orientationBody2);
+        final float lowerLimitError = hingeAngle - mLowerLimit;
+        final float upperLimitError = mUpperLimit - hingeAngle;
         final boolean oldIsLowerLimitViolated = mIsLowerLimitViolated;
         mIsLowerLimitViolated = lowerLimitError <= 0;
         if (mIsLowerLimitViolated != oldIsLowerLimitViolated) {
@@ -148,70 +132,84 @@ public class SliderJoint extends Constraint {
         if (mIsUpperLimitViolated != oldIsUpperLimitViolated) {
             mImpulseUpperLimit = 0;
         }
-        mR2CrossN1.set(mR2.cross(mN1));
-        mR2CrossN2.set(mR2.cross(mN2));
-        mR2CrossSliderAxis.set(mR2.cross(mSliderAxisWorld));
-        final Vector3 r1PlusU = Vector3.add(mR1, u);
-        mR1PlusUCrossN1.set((r1PlusU).cross(mN1));
-        mR1PlusUCrossN2.set((r1PlusU).cross(mN2));
-        mR1PlusUCrossSliderAxis.set((r1PlusU).cross(mSliderAxisWorld));
-        float sumInverseMass = 0;
-        final Vector3 I1R1PlusUCrossN1 = new Vector3(0, 0, 0);
-        final Vector3 I1R1PlusUCrossN2 = new Vector3(0, 0, 0);
-        final Vector3 I2R2CrossN1 = new Vector3(0, 0, 0);
-        final Vector3 I2R2CrossN2 = new Vector3(0, 0, 0);
+        final float testAngle = computeCurrentHingeAngle(orientationBody1, orientationBody2);
+        mA1.set(Quaternion.multiply(orientationBody1, mHingeLocalAxisBody1));
+        final Vector3 a2 = Quaternion.multiply(orientationBody2, mHingeLocalAxisBody2);
+        mA1.normalize();
+        a2.normalize();
+        final Vector3 b2 = a2.getOneUnitOrthogonalVector();
+        final Vector3 c2 = a2.cross(b2);
+        mB2CrossA1.set(b2.cross(mA1));
+        mC2CrossA1.set(c2.cross(mA1));
+        final Matrix3x3 skewSymmetricMatrixU1 = Matrix3x3.computeSkewSymmetricMatrixForCrossProduct(mR1World);
+        final Matrix3x3 skewSymmetricMatrixU2 = Matrix3x3.computeSkewSymmetricMatrixForCrossProduct(mR2World);
+        float inverseMassBodies = 0;
         if (mBody1.getIsMotionEnabled()) {
-            sumInverseMass += mBody1.getMassInverse();
-            I1R1PlusUCrossN1.set(Matrix3x3.multiply(I1, mR1PlusUCrossN1));
-            I1R1PlusUCrossN2.set(Matrix3x3.multiply(I1, mR1PlusUCrossN2));
+            inverseMassBodies += mBody1.getMassInverse();
         }
         if (mBody2.getIsMotionEnabled()) {
-            sumInverseMass += mBody2.getMassInverse();
-            I2R2CrossN1.set(Matrix3x3.multiply(I2, mR2CrossN1));
-            I2R2CrossN2.set(Matrix3x3.multiply(I2, mR2CrossN2));
+            inverseMassBodies += mBody2.getMassInverse();
         }
-        final float el11 = sumInverseMass + mR1PlusUCrossN1.dot(I1R1PlusUCrossN1) + mR2CrossN1.dot(I2R2CrossN1);
-        final float el12 = mR1PlusUCrossN1.dot(I1R1PlusUCrossN2) + mR2CrossN1.dot(I2R2CrossN2);
-        final float el21 = mR1PlusUCrossN2.dot(I1R1PlusUCrossN1) + mR2CrossN2.dot(I2R2CrossN1);
-        final float el22 = sumInverseMass + mR1PlusUCrossN2.dot(I1R1PlusUCrossN2) + mR2CrossN2.dot(I2R2CrossN2);
-        final Matrix2x2 matrixKTranslation = new Matrix2x2(el11, el12, el21, el22);
-        mInverseMassMatrixTranslationConstraint.setToZero();
+        final Matrix3x3 massMatrix = new Matrix3x3(
+                inverseMassBodies, 0, 0,
+                0, inverseMassBodies, 0,
+                0, 0, inverseMassBodies);
+        if (mBody1.getIsMotionEnabled()) {
+            massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU1, Matrix3x3.multiply(I1, skewSymmetricMatrixU1.getTranspose())));
+        }
+        if (mBody2.getIsMotionEnabled()) {
+            massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU2, Matrix3x3.multiply(I2, skewSymmetricMatrixU2.getTranspose())));
+        }
+        mInverseMassMatrixTranslation.setToZero();
         if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
-            mInverseMassMatrixTranslationConstraint.set(matrixKTranslation.getInverse());
+            mInverseMassMatrixTranslation.set(massMatrix.getInverse());
         }
         mBTranslation.setToZero();
         final float biasFactor = (BETA / constraintSolverData.getTimeStep());
         if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
-            mBTranslation.setX(u.dot(mN1));
-            mBTranslation.setY(u.dot(mN2));
-            mBTranslation.multiply(biasFactor);
+            mBTranslation.set(Vector3.multiply(biasFactor, Vector3.subtract(Vector3.subtract(Vector3.add(x2, mR2World), x1), mR1World)));
         }
-        mInverseMassMatrixRotationConstraint.setToZero();
+        final Vector3 I1B2CrossA1 = new Vector3(0, 0, 0);
+        final Vector3 I1C2CrossA1 = new Vector3(0, 0, 0);
+        final Vector3 I2B2CrossA1 = new Vector3(0, 0, 0);
+        final Vector3 I2C2CrossA1 = new Vector3(0, 0, 0);
         if (mBody1.getIsMotionEnabled()) {
-            mInverseMassMatrixRotationConstraint.add(I1);
+            I1B2CrossA1.set(Matrix3x3.multiply(I1, mB2CrossA1));
+            I1C2CrossA1.set(Matrix3x3.multiply(I1, mC2CrossA1));
         }
         if (mBody2.getIsMotionEnabled()) {
-            mInverseMassMatrixRotationConstraint.add(I2);
+            I2B2CrossA1.set(Matrix3x3.multiply(I2, mB2CrossA1));
+            I2C2CrossA1.set(Matrix3x3.multiply(I2, mC2CrossA1));
         }
+        final float el11 = mB2CrossA1.dot(I1B2CrossA1) + mB2CrossA1.dot(I2B2CrossA1);
+        final float el12 = mB2CrossA1.dot(I1C2CrossA1) + mB2CrossA1.dot(I2C2CrossA1);
+        final float el21 = mC2CrossA1.dot(I1B2CrossA1) + mC2CrossA1.dot(I2B2CrossA1);
+        final float el22 = mC2CrossA1.dot(I1C2CrossA1) + mC2CrossA1.dot(I2C2CrossA1);
+        final Matrix2x2 matrixKRotation = new Matrix2x2(el11, el12, el21, el22);
+        mInverseMassMatrixRotation.setToZero();
         if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
-            mInverseMassMatrixRotationConstraint.set(mInverseMassMatrixRotationConstraint.getInverse());
+            mInverseMassMatrixRotation.set(matrixKRotation.getInverse());
         }
         mBRotation.setToZero();
         if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
-            final Quaternion currentOrientationDifference = Quaternion.multiply(orientationBody2, orientationBody1.getInverse());
-            currentOrientationDifference.normalize();
-            final Quaternion qError = Quaternion.multiply(currentOrientationDifference, mInitOrientationDifferenceInv.getInverse());
-            mBRotation.set(Vector3.multiply(biasFactor * 2, qError.getVectorV()));
+            mBRotation.set(Vector2.multiply(biasFactor, new Vector2(mA1.dot(b2), mA1.dot(c2))));
+        }
+        if (!constraintSolverData.isWarmStartingActive()) {
+            mImpulseTranslation.setToZero();
+            mImpulseRotation.setToZero();
+            mImpulseLowerLimit = 0;
+            mImpulseUpperLimit = 0;
+            mImpulseMotor = 0;
         }
         if (mIsLimitEnabled && (mIsLowerLimitViolated || mIsUpperLimitViolated)) {
-            mInverseMassMatrixLimit = 0;
+            mInverseMassMatrixLimitMotor = 0;
             if (mBody1.getIsMotionEnabled()) {
-                mInverseMassMatrixLimit += mBody1.getMassInverse() + mR1PlusUCrossSliderAxis.dot(Matrix3x3.multiply(I1, mR1PlusUCrossSliderAxis));
+                mInverseMassMatrixLimitMotor += mA1.dot(Matrix3x3.multiply(I1, mA1));
             }
             if (mBody2.getIsMotionEnabled()) {
-                mInverseMassMatrixLimit += mBody2.getMassInverse() + mR2CrossSliderAxis.dot(Matrix3x3.multiply(I2, mR2CrossSliderAxis));
+                mInverseMassMatrixLimitMotor += mA1.dot(Matrix3x3.multiply(I2, mA1));
             }
-            mInverseMassMatrixLimit = (mInverseMassMatrixLimit > 0) ? 1 / mInverseMassMatrixLimit : 0;
+            mInverseMassMatrixLimitMotor = (mInverseMassMatrixLimitMotor > 0) ? 1 / mInverseMassMatrixLimitMotor : 0;
             mBLowerLimit = 0;
             if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
                 mBLowerLimit = biasFactor * lowerLimitError;
@@ -220,21 +218,6 @@ public class SliderJoint extends Constraint {
             if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
                 mBUpperLimit = biasFactor * upperLimitError;
             }
-        }
-        mInverseMassMatrixMotor = 0;
-        if (mBody1.getIsMotionEnabled()) {
-            mInverseMassMatrixMotor += mBody1.getMassInverse();
-        }
-        if (mBody2.getIsMotionEnabled()) {
-            mInverseMassMatrixMotor += mBody2.getMassInverse();
-        }
-        mInverseMassMatrixMotor = (mInverseMassMatrixMotor > 0) ? 1 / mInverseMassMatrixMotor : 0;
-        if (!constraintSolverData.isWarmStartingActive()) {
-            mImpulseTranslation.setToZero();
-            mImpulseRotation.setToZero();
-            mImpulseLowerLimit = 0;
-            mImpulseUpperLimit = 0;
-            mImpulseMotor = 0;
         }
     }
 
@@ -248,21 +231,19 @@ public class SliderJoint extends Constraint {
         final float inverseMassBody2 = mBody2.getMassInverse();
         final Matrix3x3 I1 = mBody1.getInertiaTensorInverseWorld();
         final Matrix3x3 I2 = mBody2.getInertiaTensorInverseWorld();
-        final Vector3 linearImpulseBody1 = Vector3.subtract(Vector3.multiply(Vector3.negate(mN1), mImpulseTranslation.getX()), Vector3.multiply(mN2, mImpulseTranslation.getY()));
-        final Vector3 angularImpulseBody1 = Vector3.subtract(Vector3.multiply(Vector3.negate(mR1PlusUCrossN1), mImpulseTranslation.getX()), Vector3.multiply(mR1PlusUCrossN2, mImpulseTranslation.getY()));
-        final Vector3 linearImpulseBody2 = Vector3.negate(linearImpulseBody1);
-        final Vector3 angularImpulseBody2 = Vector3.add(Vector3.multiply(mR2CrossN1, mImpulseTranslation.getX()), Vector3.multiply(mR2CrossN2, mImpulseTranslation.getY()));
-        angularImpulseBody1.add(Vector3.negate(mImpulseRotation));
-        angularImpulseBody2.add(mImpulseRotation);
-        final float impulseLimits = mImpulseUpperLimit - mImpulseLowerLimit;
-        final Vector3 linearImpulseLimits = Vector3.multiply(impulseLimits, mSliderAxisWorld);
-        linearImpulseBody1.add(linearImpulseLimits);
-        angularImpulseBody1.add(Vector3.multiply(impulseLimits, mR1PlusUCrossSliderAxis));
-        linearImpulseBody2.add(Vector3.negate(linearImpulseLimits));
-        angularImpulseBody2.add(Vector3.multiply(-impulseLimits, mR2CrossSliderAxis));
-        final Vector3 impulseMotor = Vector3.multiply(mImpulseMotor, mSliderAxisWorld);
-        linearImpulseBody1.add(impulseMotor);
-        linearImpulseBody2.add(Vector3.negate(impulseMotor));
+        final Vector3 linearImpulseBody1 = Vector3.negate(mImpulseTranslation);
+        final Vector3 angularImpulseBody1 = mImpulseTranslation.cross(mR1World);
+        final Vector3 linearImpulseBody2 = mImpulseTranslation;
+        final Vector3 angularImpulseBody2 = Vector3.negate(mImpulseTranslation.cross(mR2World));
+        final Vector3 rotationImpulse = Vector3.subtract(Vector3.multiply(Vector3.negate(mB2CrossA1), mImpulseRotation.getX()), Vector3.multiply(mC2CrossA1, mImpulseRotation.getY()));
+        angularImpulseBody1.add(rotationImpulse);
+        angularImpulseBody2.add(Vector3.negate(rotationImpulse));
+        final Vector3 limitsImpulse = Vector3.multiply(mImpulseUpperLimit - mImpulseLowerLimit, mA1);
+        angularImpulseBody1.add(limitsImpulse);
+        angularImpulseBody2.add(Vector3.negate(limitsImpulse));
+        final Vector3 motorImpulse = Vector3.multiply(-mImpulseMotor, mA1);
+        angularImpulseBody1.add(motorImpulse);
+        angularImpulseBody2.add(Vector3.negate(motorImpulse));
         if (mBody1.getIsMotionEnabled()) {
             v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
             w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
@@ -283,15 +264,13 @@ public class SliderJoint extends Constraint {
         final float inverseMassBody2 = mBody2.getMassInverse();
         final Matrix3x3 I1 = mBody1.getInertiaTensorInverseWorld();
         final Matrix3x3 I2 = mBody2.getInertiaTensorInverseWorld();
-        final float el1 = -mN1.dot(v1) - w1.dot(mR1PlusUCrossN1) + mN1.dot(v2) + w2.dot(mR2CrossN1);
-        final float el2 = -mN2.dot(v1) - w1.dot(mR1PlusUCrossN2) + mN2.dot(v2) + w2.dot(mR2CrossN2);
-        final Vector2 JvTranslation = new Vector2(el1, el2);
-        final Vector2 deltaLambda = Matrix2x2.multiply(mInverseMassMatrixTranslationConstraint, Vector2.subtract(Vector2.negate(JvTranslation), mBTranslation));
-        mImpulseTranslation.add(deltaLambda);
-        final Vector3 linearImpulseBody1 = Vector3.subtract(Vector3.multiply(Vector3.negate(mN1), deltaLambda.getX()), Vector3.multiply(mN2, deltaLambda.getY()));
-        final Vector3 angularImpulseBody1 = Vector3.subtract(Vector3.multiply(Vector3.negate(mR1PlusUCrossN1), deltaLambda.getX()), Vector3.multiply(mR1PlusUCrossN2, deltaLambda.getY()));
-        final Vector3 linearImpulseBody2 = Vector3.negate(linearImpulseBody1);
-        final Vector3 angularImpulseBody2 = Vector3.add(Vector3.multiply(mR2CrossN1, deltaLambda.getX()), Vector3.multiply(mR2CrossN2, deltaLambda.getY()));
+        final Vector3 JvTranslation = Vector3.subtract(Vector3.subtract(Vector3.add(v2, w2.cross(mR2World)), v1), w1.cross(mR1World));
+        final Vector3 deltaLambdaTranslation = Matrix3x3.multiply(mInverseMassMatrixTranslation, Vector3.subtract(Vector3.negate(JvTranslation), mBTranslation));
+        mImpulseTranslation.add(deltaLambdaTranslation);
+        final Vector3 linearImpulseBody1 = Vector3.negate(deltaLambdaTranslation);
+        final Vector3 angularImpulseBody1 = deltaLambdaTranslation.cross(mR1World);
+        final Vector3 linearImpulseBody2 = deltaLambdaTranslation;
+        final Vector3 angularImpulseBody2 = Vector3.negate(deltaLambdaTranslation.cross(mR2World));
         if (mBody1.getIsMotionEnabled()) {
             v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
             w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
@@ -300,11 +279,11 @@ public class SliderJoint extends Constraint {
             v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
             w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
         }
-        final Vector3 JvRotation = Vector3.subtract(w2, w1);
-        final Vector3 deltaLambda2 = Matrix3x3.multiply(mInverseMassMatrixRotationConstraint, Vector3.subtract(Vector3.negate(JvRotation), mBRotation));
-        mImpulseRotation.add(deltaLambda2);
-        angularImpulseBody1.set(Vector3.negate(deltaLambda2));
-        angularImpulseBody2.set(deltaLambda2);
+        final Vector2 JvRotation = new Vector2(-mB2CrossA1.dot(w1) + mB2CrossA1.dot(w2), -mC2CrossA1.dot(w1) + mC2CrossA1.dot(w2));
+        final Vector2 deltaLambdaRotation = Matrix2x2.multiply(mInverseMassMatrixRotation, Vector2.subtract(Vector2.negate(JvRotation), mBRotation));
+        mImpulseRotation.add(deltaLambdaRotation);
+        angularImpulseBody1.set(Vector3.subtract(Vector3.multiply(Vector3.negate(mB2CrossA1), deltaLambdaRotation.getX()), Vector3.multiply(mC2CrossA1, deltaLambdaRotation.getY())));
+        angularImpulseBody2.set(Vector3.negate(angularImpulseBody1));
         if (mBody1.getIsMotionEnabled()) {
             w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
         }
@@ -313,58 +292,50 @@ public class SliderJoint extends Constraint {
         }
         if (mIsLimitEnabled) {
             if (mIsLowerLimitViolated) {
-                final float JvLowerLimit = mSliderAxisWorld.dot(v2) + mR2CrossSliderAxis.dot(w2) - mSliderAxisWorld.dot(v1) - mR1PlusUCrossSliderAxis.dot(w1);
-                float deltaLambdaLower = mInverseMassMatrixLimit * (-JvLowerLimit - mBLowerLimit);
+                final float JvLowerLimit = Vector3.subtract(w2, w1).dot(mA1);
+                float deltaLambdaLower = mInverseMassMatrixLimitMotor * (-JvLowerLimit - mBLowerLimit);
                 final float lambdaTemp = mImpulseLowerLimit;
                 mImpulseLowerLimit = Math.max(mImpulseLowerLimit + deltaLambdaLower, 0);
                 deltaLambdaLower = mImpulseLowerLimit - lambdaTemp;
-                linearImpulseBody1.set(Vector3.multiply(-deltaLambdaLower, mSliderAxisWorld));
-                angularImpulseBody1.set(Vector3.multiply(-deltaLambdaLower, mR1PlusUCrossSliderAxis));
-                linearImpulseBody2.set(Vector3.negate(linearImpulseBody1));
-                angularImpulseBody2.set(Vector3.multiply(deltaLambdaLower, mR2CrossSliderAxis));
+                angularImpulseBody1.set(Vector3.multiply(-deltaLambdaLower, mA1));
+                angularImpulseBody2.set(Vector3.negate(angularImpulseBody1));
                 if (mBody1.getIsMotionEnabled()) {
-                    v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
                     w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
                 }
                 if (mBody2.getIsMotionEnabled()) {
-                    v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
                     w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
                 }
             }
             if (mIsUpperLimitViolated) {
-                final float JvUpperLimit = mSliderAxisWorld.dot(v1) + mR1PlusUCrossSliderAxis.dot(w1) - mSliderAxisWorld.dot(v2) - mR2CrossSliderAxis.dot(w2);
-                float deltaLambdaUpper = mInverseMassMatrixLimit * (-JvUpperLimit - mBUpperLimit);
+                final float JvUpperLimit = -Vector3.subtract(w2, w1).dot(mA1);
+                float deltaLambdaUpper = mInverseMassMatrixLimitMotor * (-JvUpperLimit - mBUpperLimit);
                 final float lambdaTemp = mImpulseUpperLimit;
                 mImpulseUpperLimit = Math.max(mImpulseUpperLimit + deltaLambdaUpper, 0);
                 deltaLambdaUpper = mImpulseUpperLimit - lambdaTemp;
-                linearImpulseBody1.set(Vector3.multiply(deltaLambdaUpper, mSliderAxisWorld));
-                angularImpulseBody1.set(Vector3.multiply(deltaLambdaUpper, mR1PlusUCrossSliderAxis));
-                linearImpulseBody2.set(Vector3.negate(linearImpulseBody1));
-                angularImpulseBody2.set(Vector3.multiply(-deltaLambdaUpper, mR2CrossSliderAxis));
+                angularImpulseBody1.set(Vector3.multiply(deltaLambdaUpper, mA1));
+                angularImpulseBody2.set(Vector3.negate(angularImpulseBody1));
                 if (mBody1.getIsMotionEnabled()) {
-                    v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
                     w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
                 }
                 if (mBody2.getIsMotionEnabled()) {
-                    v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
                     w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
                 }
             }
         }
         if (mIsMotorEnabled) {
-            final float JvMotor = mSliderAxisWorld.dot(v1) - mSliderAxisWorld.dot(v2);
+            final float JvMotor = mA1.dot(Vector3.subtract(w1, w2));
             final float maxMotorImpulse = mMaxMotorForce * constraintSolverData.getTimeStep();
-            float deltaLambdaMotor = mInverseMassMatrixMotor * (-JvMotor - mMotorSpeed);
+            float deltaLambdaMotor = mInverseMassMatrixLimitMotor * (-JvMotor - mMotorSpeed);
             final float lambdaTemp = mImpulseMotor;
             mImpulseMotor = Mathematics.clamp(mImpulseMotor + deltaLambdaMotor, -maxMotorImpulse, maxMotorImpulse);
             deltaLambdaMotor = mImpulseMotor - lambdaTemp;
-            linearImpulseBody1.set(Vector3.multiply(deltaLambdaMotor, mSliderAxisWorld));
-            linearImpulseBody2.set(Vector3.negate(linearImpulseBody1));
+            angularImpulseBody1.set(Vector3.multiply(-deltaLambdaMotor, mA1));
+            angularImpulseBody2.set(Vector3.negate(angularImpulseBody1));
             if (mBody1.getIsMotionEnabled()) {
-                v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
+                w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
             }
             if (mBody2.getIsMotionEnabled()) {
-                v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
+                w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
             }
         }
     }
@@ -397,13 +368,13 @@ public class SliderJoint extends Constraint {
     }
 
     /**
-     * Sets the minimum translation limit.
+     * Sets the minimum angle limit.
      *
      * @param lowerLimit The minimum limit
      */
-    public void setMinTranslationLimit(float lowerLimit) {
-        if (lowerLimit > mUpperLimit) {
-            throw new IllegalArgumentException("Lower limit must be smaller or equal to current upper limit");
+    public void setMinAngleLimit(float lowerLimit) {
+        if (lowerLimit > 0 || lowerLimit < -2 * Math.PI) {
+            throw new IllegalArgumentException("Lower limit must be smaller or equal to 0 and greater or equal to -2 * PI");
         }
         if (lowerLimit != mLowerLimit) {
             mLowerLimit = lowerLimit;
@@ -412,13 +383,13 @@ public class SliderJoint extends Constraint {
     }
 
     /**
-     * Sets the maximum translation limit.
+     * Sets the maximum angle limit.
      *
      * @param upperLimit The maximum limit
      */
-    public void setMaxTranslationLimit(float upperLimit) {
-        if (mLowerLimit > upperLimit) {
-            throw new IllegalArgumentException("Current lower limit must be smaller or equal to upper limit");
+    public void setMaxAngleLimit(float upperLimit) {
+        if (upperLimit < 0 || upperLimit > 2 * Math.PI) {
+            throw new IllegalArgumentException("Upper limit must be greater or equal to 0 and smaller or equal to 2 * PI");
         }
         if (upperLimit != mUpperLimit) {
             mUpperLimit = upperLimit;
@@ -483,7 +454,7 @@ public class SliderJoint extends Constraint {
      *
      * @return The minimum limit
      */
-    public float getMinTranslationLimit() {
+    public float getMinAngleLimit() {
         return mLowerLimit;
     }
 
@@ -492,7 +463,7 @@ public class SliderJoint extends Constraint {
      *
      * @return The maximum limit
      */
-    public float getMaxTranslationLimit() {
+    public float getMaxAngleLimit() {
         return mUpperLimit;
     }
 
@@ -524,84 +495,133 @@ public class SliderJoint extends Constraint {
         return mImpulseMotor / timeStep;
     }
 
+    // Given an angle in radian, this method returns the corresponding angle in the range [-pi; pi].
+    private float computeNormalizedAngle(float angle) {
+        angle = angle % ReactDefaults.PI_TIMES_2;
+        if (angle < -Math.PI) {
+            return angle + ReactDefaults.PI_TIMES_2;
+        } else if (angle > Math.PI) {
+            return angle - ReactDefaults.PI_TIMES_2;
+        } else {
+            return angle;
+        }
+    }
+
+    // Given an "inputAngle" in the range [-pi, pi], this method returns an
+    // angle (modulo 2 * pi) in the range [-2 * pi; 2 * pi] that is closest to one of the two angle limits in arguments.
+    private float computeCorrespondingAngleNearLimits(float inputAngle, float lowerLimitAngle, float upperLimitAngle) {
+        if (upperLimitAngle <= lowerLimitAngle) {
+            return inputAngle;
+        } else if (inputAngle > upperLimitAngle) {
+            final float diffToUpperLimit = Math.abs(computeNormalizedAngle(inputAngle - upperLimitAngle));
+            final float diffToLowerLimit = Math.abs(computeNormalizedAngle(inputAngle - lowerLimitAngle));
+            return (diffToUpperLimit > diffToLowerLimit) ? (inputAngle - ReactDefaults.PI_TIMES_2) : inputAngle;
+        } else if (inputAngle < lowerLimitAngle) {
+            final float diffToUpperLimit = Math.abs(computeNormalizedAngle(upperLimitAngle - inputAngle));
+            final float diffToLowerLimit = Math.abs(computeNormalizedAngle(lowerLimitAngle - inputAngle));
+            return (diffToUpperLimit > diffToLowerLimit) ? inputAngle : (inputAngle + ReactDefaults.PI_TIMES_2);
+        } else {
+            return inputAngle;
+        }
+    }
+
+    // Computes the current angle around the hinge axis.
+    private float computeCurrentHingeAngle(Quaternion orientationBody1, Quaternion orientationBody2) {
+        float hingeAngle;
+        final Quaternion currentOrientationDiff = Quaternion.multiply(orientationBody2, orientationBody1.getInverse());
+        currentOrientationDiff.normalize();
+        final Quaternion relativeRotation = Quaternion.multiply(currentOrientationDiff, mInitOrientationDifferenceInv);
+        relativeRotation.normalize();
+        final float cosHalfAngle = relativeRotation.getW();
+        final float sinHalfAngleAbs = relativeRotation.getVectorV().length();
+        final float dotProduct = relativeRotation.getVectorV().dot(mA1);
+        if (dotProduct >= 0) {
+            hingeAngle = 2 * (float) Math.atan2(sinHalfAngleAbs, cosHalfAngle);
+        } else {
+            hingeAngle = 2 * (float) Math.atan2(sinHalfAngleAbs, -cosHalfAngle);
+        }
+        hingeAngle = computeNormalizedAngle(hingeAngle);
+        return computeCorrespondingAngleNearLimits(hingeAngle, mLowerLimit, mUpperLimit);
+    }
+
     /**
-     * This structure is used to gather the information needed to create a slider joint. This structure will be used to create the actual slider joint.
+     * This structure is used to gather the information needed to create a hinge joint. This structure will be used to create the actual hinge joint.
      */
-    public static class SliderJointInfo extends ConstraintInfo {
-        private final Vector3 anchorPointWorldSpace = new Vector3();
-        private final Vector3 sliderAxisWorldSpace = new Vector3();
+    public static class HingeJointInfo extends ConstraintInfo {
+        private final Vector3 anchorPointWorldSpace;
+        private final Vector3 rotationAxisWorld;
         private final boolean isLimitEnabled;
         private final boolean isMotorEnabled;
-        private final float minTranslationLimit;
-        private final float maxTranslationLimit;
+        private final float minAngleLimit;
+        private final float maxAngleLimit;
         private final float motorSpeed;
         private final float maxMotorForce;
 
         /**
-         * Constructs a new unlimited and non-motored slider joint info from the both bodies, the initial anchor point in world space and the init axis, also in world space.
+         * Constructs a new unlimited and non-motored hinge joint info from the both bodies, the initial anchor point in world space and the init axis, also in world space.
          *
          * @param body1 The first body
          * @param body2 The second body
          * @param initAnchorPointWorldSpace The initial anchor point in world space
-         * @param initSliderAxisWorldSpace The initial axis in world space
+         * @param initRotationAxisWorld The initial axis in world space
          */
-        public SliderJointInfo(RigidBody body1, RigidBody body2, Vector3 initAnchorPointWorldSpace, Vector3 initSliderAxisWorldSpace) {
-            super(body1, body2, ConstraintType.SLIDERJOINT);
-            anchorPointWorldSpace.set(initAnchorPointWorldSpace);
-            sliderAxisWorldSpace.set(initSliderAxisWorldSpace);
+        public HingeJointInfo(RigidBody body1, RigidBody body2, Vector3 initAnchorPointWorldSpace, Vector3 initRotationAxisWorld) {
+            super(body1, body2, ConstraintType.HINGEJOINT);
+            anchorPointWorldSpace = initAnchorPointWorldSpace;
+            rotationAxisWorld = initRotationAxisWorld;
             isLimitEnabled = false;
             isMotorEnabled = false;
-            minTranslationLimit = -1;
-            maxTranslationLimit = 1;
+            minAngleLimit = -1;
+            maxAngleLimit = 1;
             motorSpeed = 0;
             maxMotorForce = 0;
         }
 
         /**
-         * Constructs a new limited but non-motored slider joint info from the both bodies, the initial anchor point in world space, the initial axis, also in world space, and the upper and lower
+         * Constructs a new limited but non-motored hinge joint info from the both bodies, the initial anchor point in world space, the initial axis, also in world space, and the upper and lower
          * limits of the joint.
          *
          * @param body1 The first body
          * @param body2 The second body
          * @param initAnchorPointWorldSpace The initial anchor point in world space
-         * @param initSliderAxisWorldSpace The initial axis in world space
-         * @param initLowerLimit The initial lower limit
-         * @param initUpperLimit The initial upper limit
+         * @param initRotationAxisWorld The initial axis in world space
+         * @param initMinAngleLimit The initial lower limit
+         * @param initMaxAngleLimit The initial upper limit
          */
-        public SliderJointInfo(RigidBody body1, RigidBody body2, Vector3 initAnchorPointWorldSpace, Vector3 initSliderAxisWorldSpace, float initLowerLimit, float initUpperLimit) {
-            super(body1, body2, ConstraintType.SLIDERJOINT);
-            anchorPointWorldSpace.set(initAnchorPointWorldSpace);
-            sliderAxisWorldSpace.set(initSliderAxisWorldSpace);
+        public HingeJointInfo(RigidBody body1, RigidBody body2, Vector3 initAnchorPointWorldSpace, Vector3 initRotationAxisWorld, float initMinAngleLimit, float initMaxAngleLimit) {
+            super(body1, body2, ConstraintType.HINGEJOINT);
+            anchorPointWorldSpace = initAnchorPointWorldSpace;
+            rotationAxisWorld = initRotationAxisWorld;
             isLimitEnabled = true;
             isMotorEnabled = false;
-            minTranslationLimit = initLowerLimit;
-            maxTranslationLimit = initUpperLimit;
+            minAngleLimit = initMinAngleLimit;
+            maxAngleLimit = initMaxAngleLimit;
             motorSpeed = 0;
             maxMotorForce = 0;
         }
 
         /**
-         * Constructs a new limited and motored slider joint info from the both bodies, the initial anchor point in world space, the initial axis, also in world space, the upper and lower limits of
-         * the joint, the motor speed and the maximum motor force.
+         * Constructs a new limited and motored hinge joint info from the both bodies, the initial anchor point in world space, the initial axis, also in world space, the upper and lower limits of the
+         * joint, the motor speed and the maximum motor force.
          *
          * @param body1 The first body
          * @param body2 The second body
          * @param initAnchorPointWorldSpace The initial anchor point in world space
-         * @param initSliderAxisWorldSpace The initial axis in world space
-         * @param initLowerLimit The initial lower limit
-         * @param initUpperLimit The initial upper limit
+         * @param initRotationAxisWorld The initial axis in world space
+         * @param initMinAngleLimit The initial lower limit
+         * @param initMaxAngleLimit The initial upper limit
          * @param initMotorSpeed The initial motor speed
          * @param initMaxMotorForce The initial maximum motor force
          */
-        public SliderJointInfo(RigidBody body1, RigidBody body2, Vector3 initAnchorPointWorldSpace, Vector3 initSliderAxisWorldSpace, float initLowerLimit, float initUpperLimit, float initMotorSpeed,
-                               float initMaxMotorForce) {
-            super(body1, body2, ConstraintType.SLIDERJOINT);
-            anchorPointWorldSpace.set(initAnchorPointWorldSpace);
-            sliderAxisWorldSpace.set(initSliderAxisWorldSpace);
+        public HingeJointInfo(RigidBody body1, RigidBody body2, Vector3 initAnchorPointWorldSpace, Vector3 initRotationAxisWorld, float initMinAngleLimit, float initMaxAngleLimit,
+                              float initMotorSpeed, float initMaxMotorForce) {
+            super(body1, body2, ConstraintType.HINGEJOINT);
+            anchorPointWorldSpace = initAnchorPointWorldSpace;
+            rotationAxisWorld = initRotationAxisWorld;
             isLimitEnabled = true;
             isMotorEnabled = true;
-            minTranslationLimit = initLowerLimit;
-            maxTranslationLimit = initUpperLimit;
+            minAngleLimit = initMinAngleLimit;
+            maxAngleLimit = initMaxAngleLimit;
             motorSpeed = initMotorSpeed;
             maxMotorForce = initMaxMotorForce;
         }
@@ -616,12 +636,12 @@ public class SliderJoint extends Constraint {
         }
 
         /**
-         * Returns the axis in world space.
+         * Returns the rotation axis in world space.
          *
          * @return The axis in world space
          */
-        public Vector3 getSliderAxisWorldSpace() {
-            return sliderAxisWorldSpace;
+        public Vector3 getRotationAxisWorld() {
+            return rotationAxisWorld;
         }
 
         /**
@@ -634,21 +654,21 @@ public class SliderJoint extends Constraint {
         }
 
         /**
-         * Returns the lower limit.
+         * Returns the lower angle limit.
          *
          * @return The lower limit
          */
-        public float getMinTranslationLimit() {
-            return minTranslationLimit;
+        public float getMinAngleLimit() {
+            return minAngleLimit;
         }
 
         /**
-         * Returns the upper limit.
+         * Returns the upper angle limit.
          *
          * @return The upper limit
          */
-        public float getMaxTranslationLimit() {
-            return maxTranslationLimit;
+        public float getMaxAngleLimit() {
+            return maxAngleLimit;
         }
 
         /**
