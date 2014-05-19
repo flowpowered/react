@@ -28,8 +28,7 @@ package org.spout.physics;
 
 import org.junit.Test;
 
-import org.spout.physics.body.ImmobileRigidBody;
-import org.spout.physics.body.MobileRigidBody;
+import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.shape.BoxShape;
 import org.spout.physics.engine.DynamicsWorld;
 import org.spout.physics.math.Matrix3x3;
@@ -50,13 +49,14 @@ public class DynamicsWorldTest {
             final Matrix3x3 floorInertia = new Matrix3x3();
             final float floorMass = 100;
             floorShape.computeLocalInertiaTensor(floorInertia, floorMass);
-            final ImmobileRigidBody floor = world.createImmobileRigidBody(floorTransform, floorMass, floorInertia, floorShape);
+            final RigidBody floor = world.createRigidBody(floorTransform, floorMass, floorInertia, floorShape);
+            floor.setIsMotionEnabled(false);
             final BoxShape boxShape = new BoxShape(new Vector3(1, 1, 1));
             final Transform boxTransform = new Transform(new Vector3(0, 5, 0), Quaternion.identity());
             final Matrix3x3 boxInertia = new Matrix3x3();
             final float boxMass = 5;
             boxShape.computeLocalInertiaTensor(boxInertia, boxMass);
-            final MobileRigidBody box = world.createMobileRigidBody(boxTransform, boxMass, boxInertia, boxShape);
+            final RigidBody box = world.createRigidBody(boxTransform, boxMass, boxInertia, boxShape);
             final int stepCount = Math.round((1 / timeStep) * RUN_TIME);
             final int sleepTime = Math.round(timeStep * 1000);
             world.start();

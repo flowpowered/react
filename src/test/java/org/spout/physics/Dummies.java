@@ -29,7 +29,7 @@ package org.spout.physics;
 import java.util.Random;
 
 import org.spout.physics.body.CollisionBody;
-import org.spout.physics.body.MobileRigidBody;
+import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.BroadPhasePair;
 import org.spout.physics.collision.CollisionDetection;
 import org.spout.physics.collision.shape.AABB;
@@ -71,7 +71,7 @@ public class Dummies {
     }
 
     public static CollisionBody newCollisionBody(int id) {
-        return new MobileRigidBody(Transform.identity(), 0, Matrix3x3.identity(), new BoxShape(new Vector3()), id);
+        return new RigidBody(Transform.identity(), 0, Matrix3x3.identity(), new BoxShape(new Vector3()), id);
     }
 
     public static AABB newAABB() {

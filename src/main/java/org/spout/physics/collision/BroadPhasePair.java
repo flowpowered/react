@@ -55,13 +55,7 @@ public class BroadPhasePair {
      * @return The pair of body indexes (IDs)
      */
     public IntPair getBodiesIndexPair() {
-        IntPair indexPair = body1.getID() < body2.getID() ?
-                new IntPair(body1.getID(), body2.getID()) :
-                new IntPair(body2.getID(), body1.getID());
-        if (indexPair.getFirst() == indexPair.getSecond()) {
-            throw new IllegalStateException("First int of the pair cannot be equal to the second int of the pair");
-        }
-        return indexPair;
+        return computeBodiesIndexPair(body1, body2);
     }
 
     /**
@@ -156,5 +150,22 @@ public class BroadPhasePair {
      */
     public boolean isNotEqualTo(BroadPhasePair broadPhasePair2) {
         return body1.isNotEqualTo(broadPhasePair2.body1) || body2.isNotEqualTo(broadPhasePair2.body2);
+    }
+
+    /**
+     * Converts the pair of bodies to a pair of indexes (IDs) as a pair of integers.
+     *
+     * @param body1 The first body
+     * @param body2 The second body
+     * @return The pair of body indexes (IDs)
+     */
+    public static IntPair computeBodiesIndexPair(CollisionBody body1, CollisionBody body2) {
+        final IntPair indexPair = body1.getID() < body2.getID() ?
+                new IntPair(body1.getID(), body2.getID()) :
+                new IntPair(body2.getID(), body1.getID());
+        if (indexPair.getFirst() == indexPair.getSecond()) {
+            throw new IllegalStateException("First int of the pair cannot be equal to the second int of the pair");
+        }
+        return indexPair;
     }
 }

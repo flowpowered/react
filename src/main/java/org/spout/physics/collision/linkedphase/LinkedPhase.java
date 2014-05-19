@@ -30,8 +30,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.spout.physics.ReactDefaults;
-import org.spout.physics.body.ImmobileRigidBody;
-import org.spout.physics.body.MobileRigidBody;
+import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.shape.AABB;
 import org.spout.physics.engine.linked.LinkedDynamicsWorld;
 import org.spout.physics.math.Vector3;
@@ -47,18 +46,18 @@ public class LinkedPhase {
      *
      * @param linkedWorld The linked dynamics world this phase is associate to
      */
-    public LinkedPhase(final LinkedDynamicsWorld linkedWorld) {
+    public LinkedPhase(LinkedDynamicsWorld linkedWorld) {
         this.linkedWorld = linkedWorld;
     }
 
     /**
-     * Sweeps for {@link ImmobileRigidBody}s around the body provided. <p> The algorithm will ask for all bodies within the bounds of the bodies' AABB scaled by a {@link
+     * Sweeps for {@link RigidBody}s around the body provided. <p> The algorithm will ask for all bodies within the bounds of the bodies' AABB scaled by a {@link
      * ReactDefaults#LINKED_PHASE_AABB_SCALING}. </p>
      *
      * @param body The mobile body to scan around
      * @return A set of all bodies in range
      */
-    public Set<ImmobileRigidBody> getBodiesInRange(final MobileRigidBody body) {
+    public Set<RigidBody> getBodiesInRange(RigidBody body) {
         final AABB aabb = body.getAABB();
         // To object coords
         final Vector3 max = Vector3.subtract(aabb.getMax(), aabb.getCenter());
@@ -75,11 +74,11 @@ public class LinkedPhase {
         final int endX = (int) Math.ceil(max.getX());
         final int endY = (int) Math.ceil(max.getY());
         final int endZ = (int) Math.ceil(max.getZ());
-        final Set<ImmobileRigidBody> foundBodies = new HashSet<>();
+        final Set<RigidBody> foundBodies = new HashSet<>();
         for (int xx = startX; xx <= endX; xx++) {
             for (int yy = startY; yy <= endY; yy++) {
                 for (int zz = startZ; zz <= endZ; zz++) {
-                    final ImmobileRigidBody immobile = linkedWorld.getLinkedInfo().getBody(xx, yy, zz);
+                    final RigidBody immobile = linkedWorld.getLinkedInfo().getBody(xx, yy, zz);
                     if (immobile == null) {
                         continue;
                     }

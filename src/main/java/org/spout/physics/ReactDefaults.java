@@ -73,18 +73,18 @@ public class ReactDefaults {
     /**
      * Number of iterations when solving the position constraints of the Sequential Impulse technique. Default: 3
      */
-    public static final int DEFAULT_POSITION_SOLVER_NB_ITERATIONS = 3;  // TODO : Maybe we can use less iterations here
+    public static final int DEFAULT_POSITION_SOLVER_NB_ITERATIONS = 5;
     /**
      * The linked phase AABB scaling factor. Default: 2
      */
     public static final float LINKED_PHASE_AABB_SCALING = 2;
 
     /**
-     * Position correction technique used in the constraint solver (for joints). Default: BAUMGARTE
+     * Position correction technique used in the constraint solver (for joints). Default: NON_LINEAR_GAUSS_SEIDEL
      * <p/>
-     * BAUMGARTE: Faster but can be inaccurate in some situations. This is the option used by default.
+     * BAUMGARTE: Faster but can be inaccurate in some situations.
      * <p/>
-     * NON_LINEAR_GAUSS_SEIDEL: Slower but more precise.
+     * NON_LINEAR_GAUSS_SEIDEL: Slower but more precise. This is the option used by default.
      */
     public static enum JointsPositionCorrectionTechnique {
         /**

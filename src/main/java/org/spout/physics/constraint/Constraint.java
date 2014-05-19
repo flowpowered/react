@@ -41,6 +41,7 @@ public abstract class Constraint {
     protected int mIndexBody1;
     protected int mIndexBody2;
     protected final JointsPositionCorrectionTechnique mPositionCorrectionTechnique;
+    protected final boolean mIsCollisionEnabled;
 
     /**
      * Constructs a new constraint from the provided constraint info.
@@ -59,6 +60,7 @@ public abstract class Constraint {
         mActive = true;
         mType = constraintInfo.getType();
         mPositionCorrectionTechnique = constraintInfo.getPositionCorrectionTechnique();
+        mIsCollisionEnabled = constraintInfo.isCollisionEnabled();
     }
 
     /**
@@ -126,6 +128,15 @@ public abstract class Constraint {
     }
 
     /**
+     * Returns true if the collision between the two bodies of the constraint is enabled.
+     *
+     * @return Whether or not the collision is enabled
+     */
+    public boolean isCollisionEnabled() {
+        return mIsCollisionEnabled;
+    }
+
+    /**
      * An enumeration of the possible constraint types (contact).
      */
     public static enum ConstraintType {
@@ -143,6 +154,7 @@ public abstract class Constraint {
         private RigidBody body1;
         private RigidBody body2;
         private final ConstraintType type;
+        private boolean isCollisionEnabled;
         private JointsPositionCorrectionTechnique positionCorrectionTechnique;
 
         /**
@@ -154,7 +166,8 @@ public abstract class Constraint {
             body1 = null;
             body2 = null;
             this.type = type;
-            positionCorrectionTechnique = JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS;
+            positionCorrectionTechnique = JointsPositionCorrectionTechnique.NON_LINEAR_GAUSS_SEIDEL;
+            isCollisionEnabled = true;
         }
 
         /**
@@ -168,7 +181,8 @@ public abstract class Constraint {
             this.body1 = body1;
             this.body2 = body2;
             this.type = type;
-            positionCorrectionTechnique = JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS;
+            positionCorrectionTechnique = JointsPositionCorrectionTechnique.NON_LINEAR_GAUSS_SEIDEL;
+            isCollisionEnabled = true;
         }
 
         /**
@@ -217,12 +231,39 @@ public abstract class Constraint {
         }
 
         /**
+         * Returns true if collisions are enabled.
+         *
+         * @return Whether or not collisions are enabled
+         */
+        public boolean isCollisionEnabled() {
+            return isCollisionEnabled;
+        }
+
+        /**
+         * Sets collisions as enabled or not.
+         *
+         * @param isCollisionEnabled The new state of collision enabled
+         */
+        public void setCollisionEnabled(boolean isCollisionEnabled) {
+            this.isCollisionEnabled = isCollisionEnabled;
+        }
+
+        /**
          * Returns the joints position correction technique.
          *
          * @return The correction technique
          */
         public JointsPositionCorrectionTechnique getPositionCorrectionTechnique() {
             return positionCorrectionTechnique;
+        }
+
+        /**
+         * Sets the position correction technique.
+         *
+         * @param positionCorrectionTechnique The position correction technique
+         */
+        public void setPositionCorrectionTechnique(JointsPositionCorrectionTechnique positionCorrectionTechnique) {
+            this.positionCorrectionTechnique = positionCorrectionTechnique;
         }
     }
 }

@@ -33,6 +33,7 @@ import java.util.Set;
 import gnu.trove.map.TObjectIntMap;
 
 import org.spout.physics.body.RigidBody;
+import org.spout.physics.math.Quaternion;
 import org.spout.physics.math.Vector3;
 
 /**
@@ -85,10 +86,11 @@ public class ConstraintSolver {
     private final Set<RigidBody> mConstraintBodies = new HashSet<>();
     private final List<Vector3> mLinearVelocities;
     private final List<Vector3> mAngularVelocities;
+    private final List<Vector3> mPositions;
+    private final List<Quaternion> mOrientations;
     private final TObjectIntMap<RigidBody> mMapBodyToConstrainedVelocityIndex;
     private float mTimeStep;
     private boolean mIsWarmStartingActive;
-    private boolean mIsNonLinearGaussSeidelPositionCorrectionActive;
     private final ConstraintSolverData mConstraintSolverData;
 
     /**
@@ -99,14 +101,16 @@ public class ConstraintSolver {
      * @param angularVelocities The angular velocities
      * @param mapBodyToConstrainedVelocityIndex The map from body to constrained velocity
      */
-    public ConstraintSolver(Set<Constraint> joints, List<Vector3> linearVelocities, List<Vector3> angularVelocities, TObjectIntMap<RigidBody> mapBodyToConstrainedVelocityIndex) {
+    public ConstraintSolver(Set<Constraint> joints, List<Vector3> linearVelocities, List<Vector3> angularVelocities, List<Vector3> positions, List<Quaternion> orientations,
+                            TObjectIntMap<RigidBody> mapBodyToConstrainedVelocityIndex) {
         mJoints = joints;
         mLinearVelocities = linearVelocities;
         mAngularVelocities = angularVelocities;
+        mPositions = positions;
+        mOrientations = orientations;
         mMapBodyToConstrainedVelocityIndex = mapBodyToConstrainedVelocityIndex;
         mIsWarmStartingActive = true;
-        mIsNonLinearGaussSeidelPositionCorrectionActive = false;
-        mConstraintSolverData = new ConstraintSolverData(linearVelocities, angularVelocities, mapBodyToConstrainedVelocityIndex);
+        mConstraintSolverData = new ConstraintSolverData(linearVelocities, angularVelocities, positions, orientations, mapBodyToConstrainedVelocityIndex);
     }
 
     /**
@@ -149,21 +153,12 @@ public class ConstraintSolver {
     }
 
     /**
-     * Returns true if the Non-Linear-Gauss-Seidel position correction technique is active.
+     * Returns true if the body is in at least one constraint.
      *
-     * @return Whether or not the position correction technique is active
+     * @return Whether or not the body is in at least one constraint
      */
-    public boolean getIsNonLinearGaussSeidelPositionCorrectionActive() {
-        return mIsNonLinearGaussSeidelPositionCorrectionActive;
-    }
-
-    /**
-     * Enables or disables the Non-Linear-Gauss-Seidel position correction technique.
-     *
-     * @param isNonLinearGaussSeidelPositionCorrectionActive The new state
-     */
-    public void setIsNonLinearGaussSeidelPositionCorrectionActive(boolean isNonLinearGaussSeidelPositionCorrectionActive) {
-        this.mIsNonLinearGaussSeidelPositionCorrectionActive = isNonLinearGaussSeidelPositionCorrectionActive;
+    public boolean isConstrainedBody(RigidBody body) {
+        return mConstraintBodies.contains(body);
     }
 
     /**
@@ -173,6 +168,8 @@ public class ConstraintSolver {
         private float timeStep;
         private final List<Vector3> linearVelocities;
         private final List<Vector3> angularVelocities;
+        private final List<Vector3> positions;
+        private final List<Quaternion> orientations;
         private final TObjectIntMap<RigidBody> mapBodyToConstrainedVelocityIndex;
         private boolean isWarmStartingActive;
 
@@ -183,9 +180,12 @@ public class ConstraintSolver {
          * @param refAngularVelocities The angular velocities
          * @param refMapBodyToConstrainedVelocityIndex The map from body to constrained velocity index
          */
-        public ConstraintSolverData(List<Vector3> refLinearVelocities, List<Vector3> refAngularVelocities, TObjectIntMap<RigidBody> refMapBodyToConstrainedVelocityIndex) {
+        public ConstraintSolverData(List<Vector3> refLinearVelocities, List<Vector3> refAngularVelocities, List<Vector3> refPositions, List<Quaternion> refOrientations,
+                                    TObjectIntMap<RigidBody> refMapBodyToConstrainedVelocityIndex) {
             this.linearVelocities = refLinearVelocities;
             this.angularVelocities = refAngularVelocities;
+            this.positions = refPositions;
+            this.orientations = refOrientations;
             this.mapBodyToConstrainedVelocityIndex = refMapBodyToConstrainedVelocityIndex;
         }
 
@@ -223,6 +223,24 @@ public class ConstraintSolver {
          */
         public List<Vector3> getAngularVelocities() {
             return angularVelocities;
+        }
+
+        /**
+         * Returns the list of positions.
+         *
+         * @return The positions
+         */
+        public List<Vector3> getPositions() {
+            return positions;
+        }
+
+        /**
+         * Returns the list of orientations.
+         *
+         * @return The orientations
+         */
+        public List<Quaternion> getOrientations() {
+            return orientations;
         }
 
         /**

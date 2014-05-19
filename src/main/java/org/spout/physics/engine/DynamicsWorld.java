@@ -36,10 +36,7 @@ import gnu.trove.map.hash.TObjectIntHashMap;
 
 import org.spout.physics.ReactDefaults;
 import org.spout.physics.ReactDefaults.ContactsPositionCorrectionTechnique;
-import org.spout.physics.ReactDefaults.JointsPositionCorrectionTechnique;
 import org.spout.physics.Utilities.IntPair;
-import org.spout.physics.body.ImmobileRigidBody;
-import org.spout.physics.body.MobileRigidBody;
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.BroadPhasePair;
 import org.spout.physics.collision.shape.CollisionShape;
@@ -78,6 +75,8 @@ public class DynamicsWorld extends CollisionWorld {
     private boolean mIsGravityOn = true;
     private final ArrayList<Vector3> mConstrainedLinearVelocities = new ArrayList<>();
     private final ArrayList<Vector3> mConstrainedAngularVelocities = new ArrayList<>();
+    private final ArrayList<Vector3> mConstrainedPositions = new ArrayList<>();
+    private final ArrayList<Quaternion> mConstrainedOrientations = new ArrayList<>();
     private final TObjectIntMap<RigidBody> mMapBodyToConstrainedVelocityIndex = new TObjectIntHashMap<>();
     private boolean isTicking = false;
     // Tick cache
@@ -103,7 +102,8 @@ public class DynamicsWorld extends CollisionWorld {
         mTimer = new Timer(timeStep);
         mGravity = gravity;
         mContactSolver = new ContactSolver(mContactManifolds, mConstrainedLinearVelocities, mConstrainedAngularVelocities, mMapBodyToConstrainedVelocityIndex);
-        mConstraintSolver = new ConstraintSolver(mJoints, mConstrainedLinearVelocities, mConstrainedAngularVelocities, mMapBodyToConstrainedVelocityIndex);
+        mConstraintSolver = new ConstraintSolver(mJoints, mConstrainedLinearVelocities, mConstrainedAngularVelocities, mConstrainedPositions, mConstrainedOrientations,
+                mMapBodyToConstrainedVelocityIndex);
         mNbVelocitySolverIterations = ReactDefaults.DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS;
         mNbPositionSolverIterations = ReactDefaults.DEFAULT_POSITION_SOLVER_NB_ITERATIONS;
         mIsDeactivationActive = ReactDefaults.DEACTIVATION_ENABLED;
@@ -155,19 +155,6 @@ public class DynamicsWorld extends CollisionWorld {
     }
 
     /**
-     * Sets the position correction technique used for joints.
-     *
-     * @param technique The technique to use
-     */
-    public void setJointsPositionCorrectionTechnique(JointsPositionCorrectionTechnique technique) {
-        if (technique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
-            mConstraintSolver.setIsNonLinearGaussSeidelPositionCorrectionActive(false);
-        } else {
-            mConstraintSolver.setIsNonLinearGaussSeidelPositionCorrectionActive(true);
-        }
-    }
-
-    /**
      * Activates or deactivates the solving of friction constraints at the center of the contact manifold instead of solving them at each contact point.
      *
      * @param isActive Whether or not to solve the friction constraint at the center of the manifold
@@ -213,6 +200,15 @@ public class DynamicsWorld extends CollisionWorld {
     }
 
     /**
+     * Returns the number of joints in the world.
+     *
+     * @return The number of joints
+     */
+    public int getNbJoints() {
+        return mJoints.size();
+    }
+
+    /**
      * Gets the set of bodies of the physics world.
      *
      * @return The rigid bodies
@@ -228,6 +224,15 @@ public class DynamicsWorld extends CollisionWorld {
      */
     public int getNbContactManifolds() {
         return mContactManifolds.size();
+    }
+
+    /**
+     * Returns the current physics time (in seconds)
+     *
+     * @return The current physics time
+     */
+    public double getPhysicsTime() {
+        return mTimer.getPhysicsTime();
     }
 
     /**
@@ -269,10 +274,12 @@ public class DynamicsWorld extends CollisionWorld {
         mContactManifolds.clear();
         mCollisionDetection.computeCollisionDetection();
         integrateRigidBodiesVelocities(dt);
-        solveContactsAndConstraints();
-        mTimer.nextStep();
         resetBodiesMovementVariable();
+        mTimer.nextStep();
+        solveContactsAndConstraints();
         integrateRigidBodiesPositions(dt);
+        solvePositionCorrection();
+        updateRigidBodiesAABB();
         mContactSolver.cleanup();
         cleanupConstrainedVelocitiesArray();
         isTicking = false;
@@ -289,36 +296,31 @@ public class DynamicsWorld extends CollisionWorld {
     // The positions and orientations of the bodies are integrated using the symplectic Euler time stepping scheme.
     private void integrateRigidBodiesPositions(float dt) {
         for (RigidBody rigidBody : getRigidBodies()) {
-            if (!(rigidBody instanceof MobileRigidBody)) {
-                continue;
-            }
-            final MobileRigidBody mobileBody = (MobileRigidBody) rigidBody;
-            if (mobileBody.getIsMotionEnabled()) {
-                mobileBody.snapshotTransform();
-                final int indexArray = mMapBodyToConstrainedVelocityIndex.get(mobileBody);
+            if (rigidBody.getIsMotionEnabled()) {
+                final int indexArray = mMapBodyToConstrainedVelocityIndex.get(rigidBody);
                 final Vector3 newLinVelocity = mConstrainedLinearVelocities.get(indexArray);
                 final Vector3 newAngVelocity = mConstrainedAngularVelocities.get(indexArray);
-                mobileBody.setLinearVelocity(newLinVelocity);
-                mobileBody.setAngularVelocity(newAngVelocity);
-                if (mContactSolver.isConstrainedBody(mobileBody)) {
-                    newLinVelocity.add(mContactSolver.getSplitLinearVelocityOfBody(mobileBody));
-                    newAngVelocity.add(mContactSolver.getSplitAngularVelocityOfBody(mobileBody));
+                rigidBody.setLinearVelocity(newLinVelocity);
+                rigidBody.setAngularVelocity(newAngVelocity);
+                if (mContactSolver.isConstrainedBody(rigidBody) && mContactSolver.isSplitImpulseActive()) {
+                    newLinVelocity.add(mContactSolver.getSplitLinearVelocityOfBody(rigidBody));
+                    newAngVelocity.add(mContactSolver.getSplitAngularVelocityOfBody(rigidBody));
                 }
-                final Vector3 currentPosition = mobileBody.getTransform().getPosition();
-                final Quaternion currentOrientation = mobileBody.getTransform().getOrientation();
+                final Vector3 currentPosition = rigidBody.getTransform().getPosition();
+                final Quaternion currentOrientation = rigidBody.getTransform().getOrientation();
                 final Vector3 newPosition = Vector3.add(currentPosition, Vector3.multiply(newLinVelocity, dt));
-                final Quaternion newOrientation = Quaternion.add(
-                        currentOrientation,
-                        Quaternion.multiply(
-                                Quaternion.multiply(
-                                        new Quaternion(newAngVelocity.getX(), newAngVelocity.getY(), newAngVelocity.getZ(), 0),
-                                        currentOrientation),
-                                0.5f * dt
-                        )
-                );
+                final Quaternion newOrientation = Quaternion.add(currentOrientation, Quaternion.multiply(Quaternion.multiply(new Quaternion(0, newAngVelocity), currentOrientation), 0.5f * dt));
                 final Transform newTransform = new Transform(newPosition, newOrientation.getUnit());
-                mobileBody.setTransform(newTransform);
-                mobileBody.updateAABB();
+                rigidBody.setTransform(newTransform);
+            }
+        }
+    }
+
+    // Updates the AABBs of the bodies
+    private void updateRigidBodiesAABB() {
+        for (RigidBody rigidBody : getRigidBodies()) {
+            if (rigidBody.getHasMoved()) {
+                rigidBody.updateAABB();
             }
         }
     }
@@ -366,6 +368,7 @@ public class DynamicsWorld extends CollisionWorld {
                                 Matrix3x3.multiply(dt, rigidBody.getInertiaTensorInverseWorld()),
                                 rigidBody.getExternalTorque())
                 ));
+                rigidBody.updateOldTransform();
             } else {
                 mConstrainedLinearVelocities.add(i, new Vector3(0, 0, 0));
                 mConstrainedAngularVelocities.add(i, new Vector3(0, 0, 0));
@@ -403,12 +406,37 @@ public class DynamicsWorld extends CollisionWorld {
         if (isContactsToSolve) {
             mContactSolver.storeImpulses();
         }
-        // TODO : Integrate the bodies positions here
-        if (mConstraintSolver.getIsNonLinearGaussSeidelPositionCorrectionActive()) {
-            for (int i = 0; i < mNbPositionSolverIterations; i++) {
-                if (isConstraintsToSolve) {
-                    mConstraintSolver.solvePositionConstraints();
-                }
+    }
+
+    public void solvePositionCorrection() {
+        if (mJoints.isEmpty()) {
+            return;
+        }
+        // TODO : Use better memory allocation here
+        mConstrainedPositions.ensureCapacity(mRigidBodies.size());
+        mConstrainedOrientations.ensureCapacity(mRigidBodies.size());
+        for (int i = 0; i < mRigidBodies.size(); i++) {
+            mConstrainedPositions.add(null);
+            mConstrainedOrientations.add(null);
+        }
+        for (RigidBody rigidBody : mRigidBodies) {
+            if (mConstraintSolver.isConstrainedBody(rigidBody)) {
+                final int index = mMapBodyToConstrainedVelocityIndex.get(rigidBody);
+                final Transform transform = rigidBody.getTransform();
+                mConstrainedPositions.set(index, transform.getPosition());
+                mConstrainedOrientations.set(index, transform.getOrientation());
+            }
+        }
+        for (int i = 0; i < mNbPositionSolverIterations; i++) {
+            mConstraintSolver.solvePositionConstraints();
+        }
+        for (RigidBody rigidBody : mRigidBodies) {
+            if (mConstraintSolver.isConstrainedBody(rigidBody)) {
+                final int index = mMapBodyToConstrainedVelocityIndex.get(rigidBody);
+                final Vector3 newPosition = mConstrainedPositions.get(index);
+                final Quaternion newOrientation = mConstrainedOrientations.get(index);
+                final Transform newTransform = new Transform(newPosition, newOrientation.getUnit());
+                rigidBody.setTransform(newTransform);
             }
         }
     }
@@ -433,36 +461,6 @@ public class DynamicsWorld extends CollisionWorld {
     }
 
     /**
-     * Creates an immobile rigid body and adds it to the physics world. The inertia tensor will be computed from the shape and mass.
-     *
-     * @param transform The transform (position and orientation) of the body
-     * @param mass The mass of the body
-     * @param collisionShape The collision shape
-     * @return The new rigid body
-     */
-    public ImmobileRigidBody createImmobileRigidBody(Transform transform, float mass, CollisionShape collisionShape) {
-        final Matrix3x3 inertiaTensor = new Matrix3x3();
-        collisionShape.computeLocalInertiaTensor(inertiaTensor, mass);
-        return createImmobileRigidBody(transform, mass, inertiaTensor, collisionShape);
-    }
-
-    /**
-     * Creates an immobile rigid body and adds it to the physics world.
-     *
-     * @param transform The transform (position and orientation) of the body
-     * @param mass The mass of the body
-     * @param inertiaTensorLocal The local inertia tensor
-     * @param collisionShape The collision shape
-     * @return The new rigid body
-     */
-    public ImmobileRigidBody createImmobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape) {
-        final CollisionShape newCollisionShape = createCollisionShape(collisionShape);
-        final ImmobileRigidBody immobileBody = new ImmobileRigidBody(transform, mass, inertiaTensorLocal, newCollisionShape, getNextFreeID());
-        addRigidBody(immobileBody);
-        return immobileBody;
-    }
-
-    /**
      * Creates a mobile rigid body and adds it to the physics world. The inertia tensor will be computed from the shape and mass.
      *
      * @param transform The transform (position and orientation) of the body
@@ -470,10 +468,10 @@ public class DynamicsWorld extends CollisionWorld {
      * @param collisionShape The collision shape
      * @return The new rigid body
      */
-    public MobileRigidBody createMobileRigidBody(Transform transform, float mass, CollisionShape collisionShape) {
+    public RigidBody createRigidBody(Transform transform, float mass, CollisionShape collisionShape) {
         final Matrix3x3 inertiaTensor = new Matrix3x3();
         collisionShape.computeLocalInertiaTensor(inertiaTensor, mass);
-        return createMobileRigidBody(transform, mass, inertiaTensor, collisionShape);
+        return createRigidBody(transform, mass, inertiaTensor, collisionShape);
     }
 
     /**
@@ -485,9 +483,9 @@ public class DynamicsWorld extends CollisionWorld {
      * @param collisionShape The collision shape
      * @return The new rigid body
      */
-    public MobileRigidBody createMobileRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape) {
+    public RigidBody createRigidBody(Transform transform, float mass, Matrix3x3 inertiaTensorLocal, CollisionShape collisionShape) {
         final CollisionShape newCollisionShape = createCollisionShape(collisionShape);
-        final MobileRigidBody mobileBody = new MobileRigidBody(transform, mass, inertiaTensorLocal, newCollisionShape, getNextFreeID());
+        final RigidBody mobileBody = new RigidBody(transform, mass, inertiaTensorLocal, newCollisionShape, getNextFreeID());
         addRigidBody(mobileBody);
         return mobileBody;
     }
@@ -519,7 +517,7 @@ public class DynamicsWorld extends CollisionWorld {
     }
 
     /**
-     * Destroys a rigid body.
+     * Destroys a rigid body and all the joints to which it belongs.
      *
      * @param rigidBody The rigid body to destroy
      */
@@ -530,6 +528,12 @@ public class DynamicsWorld extends CollisionWorld {
             mBodies.remove(rigidBody);
             mRigidBodies.remove(rigidBody);
             removeCollisionShape(rigidBody.getCollisionShape());
+            final int idToRemove = rigidBody.getID();
+            for (Constraint joint : mJoints) {
+                if (joint.getFirstBody().getID() == idToRemove || joint.getSecondBody().getID() == idToRemove) {
+                    destroyJoint(joint);
+                }
+            }
         } else {
             mRigidBodiesToDeleteCache.add(rigidBody);
         }
@@ -567,6 +571,9 @@ public class DynamicsWorld extends CollisionWorld {
             default:
                 throw new IllegalArgumentException("Unsupported joint type +" + jointInfo.getType());
         }
+        if (!jointInfo.isCollisionEnabled()) {
+            mCollisionDetection.addNoCollisionPair(jointInfo.getFirstBody(), jointInfo.getSecondBody());
+        }
         mJoints.add(newJoint);
         return newJoint;
     }
@@ -579,6 +586,9 @@ public class DynamicsWorld extends CollisionWorld {
     public void destroyJoint(Constraint joint) {
         if (joint == null) {
             throw new IllegalArgumentException("Joint cannot be null");
+        }
+        if (!joint.isCollisionEnabled()) {
+            mCollisionDetection.removeNoCollisionPair(joint.getFirstBody(), joint.getSecondBody());
         }
         mJoints.remove(joint);
     }

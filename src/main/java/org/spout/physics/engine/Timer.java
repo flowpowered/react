@@ -31,8 +31,8 @@ package org.spout.physics.engine;
  */
 public class Timer {
     private double mTimeStep;
-    private double mTime;
     private double mLastUpdateTime;
+    private double mDeltaTime;
     private double mAccumulator;
     private boolean mIsRunning = false;
 
@@ -74,8 +74,8 @@ public class Timer {
      *
      * @return The current time
      */
-    public double getTime() {
-        return mTime;
+    public double getPhysicsTime() {
+        return mLastUpdateTime;
     }
 
     /**
@@ -91,10 +91,11 @@ public class Timer {
      * Start the timer.
      */
     public void start() {
-        mTime = 0;
-        mLastUpdateTime = System.nanoTime() / 1000000000d;
-        mAccumulator = 0;
-        mIsRunning = true;
+        if (!mIsRunning) {
+            mLastUpdateTime = getCurrentSystemTime();
+            mAccumulator = 0;
+            mIsRunning = true;
+        }
     }
 
     /**
@@ -120,7 +121,6 @@ public class Timer {
         if (!mIsRunning) {
             throw new IllegalStateException("Timer is not running");
         }
-        mTime += mTimeStep;
         mAccumulator -= mTimeStep;
     }
 
@@ -137,9 +137,13 @@ public class Timer {
      * Compute the time since the last update call and add it to the accumulator.
      */
     public void update() {
-        final double currentTime = System.nanoTime() / 1000000000d;
-        final double mDeltaTime = currentTime - mLastUpdateTime;
+        final double currentTime = getCurrentSystemTime();
+        mDeltaTime = currentTime - mLastUpdateTime;
         mLastUpdateTime = currentTime;
         mAccumulator += mDeltaTime;
+    }
+
+    private static double getCurrentSystemTime() {
+        return System.nanoTime() / 1e9d;
     }
 }

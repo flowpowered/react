@@ -30,7 +30,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.spout.physics.body.ImmobileRigidBody;
+import org.spout.physics.body.RigidBody;
 import org.spout.physics.engine.DynamicsWorld;
 import org.spout.physics.math.Vector3;
 
@@ -39,7 +39,7 @@ import org.spout.physics.math.Vector3;
  */
 public class LinkedDynamicsWorld extends DynamicsWorld {
     private final LinkedWorldInfo info;
-    private final Set<ImmobileRigidBody> linkedBodies = new HashSet<>();
+    private final Set<RigidBody> linkedBodies = new HashSet<>();
 
     /**
      * Constructs a new linked dynamics world from the gravity, the time step and the linked world information.
@@ -80,20 +80,20 @@ public class LinkedDynamicsWorld extends DynamicsWorld {
     }
 
     /**
-     * Adds {@link ImmobileRigidBody}s to this world. These will be cleared at the end of the physics tick.
+     * Adds {@link RigidBody}s to this world. These will be cleared at the end of the physics tick.
      *
      * @param bodies The bodies to add
      */
-    public void addLinkedBodies(Collection<ImmobileRigidBody> bodies) {
+    public void addLinkedBodies(Collection<RigidBody> bodies) {
         linkedBodies.addAll(bodies);
-        for (ImmobileRigidBody body : bodies) {
+        for (RigidBody body : bodies) {
             addRigidBodyIgnoreTick(body);
         }
     }
 
     // Clears all bodies tracked in the world.
     private void clearLinkedBodies() {
-        for (ImmobileRigidBody linkedBody : linkedBodies) {
+        for (RigidBody linkedBody : linkedBodies) {
             destroyRigidBody(linkedBody);
         }
         linkedBodies.clear();

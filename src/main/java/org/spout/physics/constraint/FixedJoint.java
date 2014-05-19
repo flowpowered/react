@@ -43,6 +43,8 @@ public class FixedJoint extends Constraint {
     private final Vector3 mLocalAnchorPointBody2;
     private final Vector3 mR1World = new Vector3();
     private final Vector3 mR2World = new Vector3();
+    private final Matrix3x3 mI1 = new Matrix3x3();
+    private final Matrix3x3 mI2 = new Matrix3x3();
     private final Vector3 mImpulseTranslation;
     private final Vector3 mImpulseRotation;
     private final Matrix3x3 mInverseMassMatrixTranslation = new Matrix3x3();
@@ -77,8 +79,8 @@ public class FixedJoint extends Constraint {
         final Vector3 x2 = mBody2.getTransform().getPosition();
         final Quaternion orientationBody1 = mBody1.getTransform().getOrientation();
         final Quaternion orientationBody2 = mBody2.getTransform().getOrientation();
-        final Matrix3x3 I1 = mBody1.getInertiaTensorInverseWorld();
-        final Matrix3x3 I2 = mBody2.getInertiaTensorInverseWorld();
+        mI1.set(mBody1.getInertiaTensorInverseWorld());
+        mI2.set(mBody2.getInertiaTensorInverseWorld());
         mR1World.set(Quaternion.multiply(orientationBody1, mLocalAnchorPointBody1));
         mR2World.set(Quaternion.multiply(orientationBody2, mLocalAnchorPointBody2));
         final Matrix3x3 skewSymmetricMatrixU1 = Matrix3x3.computeSkewSymmetricMatrixForCrossProduct(mR1World);
@@ -94,10 +96,10 @@ public class FixedJoint extends Constraint {
                 0, inverseMassBodies, 0,
                 0, 0, inverseMassBodies);
         if (mBody1.getIsMotionEnabled()) {
-            massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU1, Matrix3x3.multiply(I1, skewSymmetricMatrixU1.getTranspose())));
+            massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU1, Matrix3x3.multiply(mI1, skewSymmetricMatrixU1.getTranspose())));
         }
         if (mBody2.getIsMotionEnabled()) {
-            massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU2, Matrix3x3.multiply(I2, skewSymmetricMatrixU2.getTranspose())));
+            massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU2, Matrix3x3.multiply(mI2, skewSymmetricMatrixU2.getTranspose())));
         }
         mInverseMassMatrixTranslation.setToZero();
         if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
@@ -110,10 +112,10 @@ public class FixedJoint extends Constraint {
         }
         mInverseMassMatrixRotation.setToZero();
         if (mBody1.getIsMotionEnabled()) {
-            mInverseMassMatrixRotation.add(I1);
+            mInverseMassMatrixRotation.add(mI1);
         }
         if (mBody2.getIsMotionEnabled()) {
-            mInverseMassMatrixRotation.add(I2);
+            mInverseMassMatrixRotation.add(mI2);
         }
         if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
             mInverseMassMatrixRotation.set(mInverseMassMatrixRotation.getInverse());
@@ -139,21 +141,19 @@ public class FixedJoint extends Constraint {
         final Vector3 w2 = constraintSolverData.getAngularVelocities().get(mIndexBody2);
         final float inverseMassBody1 = mBody1.getMassInverse();
         final float inverseMassBody2 = mBody2.getMassInverse();
-        final Matrix3x3 I1 = mBody1.getInertiaTensorInverseWorld();
-        final Matrix3x3 I2 = mBody2.getInertiaTensorInverseWorld();
-        final Vector3 linearImpulseBody1 = Vector3.negate(mImpulseTranslation);
-        final Vector3 angularImpulseBody1 = mImpulseTranslation.cross(mR1World);
-        final Vector3 linearImpulseBody2 = mImpulseTranslation;
-        final Vector3 angularImpulseBody2 = Vector3.negate(mImpulseTranslation.cross(mR2World));
-        angularImpulseBody1.add(Vector3.negate(mImpulseRotation));
-        angularImpulseBody2.add(mImpulseRotation);
         if (mBody1.getIsMotionEnabled()) {
+            final Vector3 linearImpulseBody1 = Vector3.negate(mImpulseTranslation);
+            final Vector3 angularImpulseBody1 = mImpulseTranslation.cross(mR1World);
+            angularImpulseBody1.add(Vector3.negate(mImpulseRotation));
             v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
-            w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
+            w1.add(Matrix3x3.multiply(mI1, angularImpulseBody1));
         }
         if (mBody2.getIsMotionEnabled()) {
+            final Vector3 linearImpulseBody2 = mImpulseTranslation;
+            final Vector3 angularImpulseBody2 = Vector3.negate(mImpulseTranslation.cross(mR2World));
+            angularImpulseBody2.add(mImpulseRotation);
             v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
-            w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
+            w2.add(Matrix3x3.multiply(mI2, angularImpulseBody2));
         }
     }
 
@@ -165,39 +165,119 @@ public class FixedJoint extends Constraint {
         final Vector3 w2 = constraintSolverData.getAngularVelocities().get(mIndexBody2);
         final float inverseMassBody1 = mBody1.getMassInverse();
         final float inverseMassBody2 = mBody2.getMassInverse();
-        final Matrix3x3 I1 = mBody1.getInertiaTensorInverseWorld();
-        final Matrix3x3 I2 = mBody2.getInertiaTensorInverseWorld();
         final Vector3 JvTranslation = Vector3.subtract(Vector3.subtract(Vector3.add(v2, w2.cross(mR2World)), v1), w1.cross(mR1World));
         final Vector3 deltaLambda = Matrix3x3.multiply(mInverseMassMatrixTranslation, Vector3.subtract(Vector3.negate(JvTranslation), mBiasTranslation));
         mImpulseTranslation.add(deltaLambda);
-        final Vector3 linearImpulseBody1 = Vector3.negate(deltaLambda);
-        final Vector3 angularImpulseBody1 = deltaLambda.cross(mR1World);
-        final Vector3 linearImpulseBody2 = deltaLambda;
-        final Vector3 angularImpulseBody2 = Vector3.negate(deltaLambda.cross(mR2World));
         if (mBody1.getIsMotionEnabled()) {
+            final Vector3 linearImpulseBody1 = Vector3.negate(deltaLambda);
+            final Vector3 angularImpulseBody1 = deltaLambda.cross(mR1World);
             v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
-            w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
+            w1.add(Matrix3x3.multiply(mI1, angularImpulseBody1));
         }
         if (mBody2.getIsMotionEnabled()) {
+            final Vector3 linearImpulseBody2 = deltaLambda;
+            final Vector3 angularImpulseBody2 = Vector3.negate(deltaLambda.cross(mR2World));
             v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
-            w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
+            w2.add(Matrix3x3.multiply(mI2, angularImpulseBody2));
         }
         final Vector3 JvRotation = Vector3.subtract(w2, w1);
         final Vector3 deltaLambda2 = Matrix3x3.multiply(mInverseMassMatrixRotation, Vector3.subtract(Vector3.negate(JvRotation), mBiasRotation));
         mImpulseRotation.add(deltaLambda2);
-        angularImpulseBody1.set(Vector3.negate(deltaLambda2));
-        angularImpulseBody2.set(deltaLambda2);
         if (mBody1.getIsMotionEnabled()) {
-            w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
+            final Vector3 angularImpulseBody1 = Vector3.negate(deltaLambda2);
+            w1.add(Matrix3x3.multiply(mI1, angularImpulseBody1));
         }
         if (mBody2.getIsMotionEnabled()) {
-            w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
+            final Vector3 angularImpulseBody2 = deltaLambda2;
+            w2.add(Matrix3x3.multiply(mI2, angularImpulseBody2));
         }
     }
 
     @Override
     public void solvePositionConstraint(ConstraintSolverData constraintSolverData) {
-
+        if (mPositionCorrectionTechnique != JointsPositionCorrectionTechnique.NON_LINEAR_GAUSS_SEIDEL) {
+            return;
+        }
+        final Vector3 x1 = constraintSolverData.getPositions().get(mIndexBody1);
+        final Vector3 x2 = constraintSolverData.getPositions().get(mIndexBody2);
+        final Quaternion q1 = constraintSolverData.getOrientations().get(mIndexBody1);
+        final Quaternion q2 = constraintSolverData.getOrientations().get(mIndexBody2);
+        final float inverseMassBody1 = mBody1.getMassInverse();
+        final float inverseMassBody2 = mBody2.getMassInverse();
+        mI1.set(mBody1.getInertiaTensorInverseWorld());
+        mI2.set(mBody2.getInertiaTensorInverseWorld());
+        mR1World.set(Quaternion.multiply(q1, mLocalAnchorPointBody1));
+        mR2World.set(Quaternion.multiply(q2, mLocalAnchorPointBody2));
+        final Matrix3x3 skewSymmetricMatrixU1 = Matrix3x3.computeSkewSymmetricMatrixForCrossProduct(mR1World);
+        final Matrix3x3 skewSymmetricMatrixU2 = Matrix3x3.computeSkewSymmetricMatrixForCrossProduct(mR2World);
+        float inverseMassBodies = 0;
+        if (mBody1.getIsMotionEnabled()) {
+            inverseMassBodies += mBody1.getMassInverse();
+        }
+        if (mBody2.getIsMotionEnabled()) {
+            inverseMassBodies += mBody2.getMassInverse();
+        }
+        final Matrix3x3 massMatrix = new Matrix3x3(
+                inverseMassBodies, 0, 0,
+                0, inverseMassBodies, 0,
+                0, 0, inverseMassBodies);
+        if (mBody1.getIsMotionEnabled()) {
+            massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU1, Matrix3x3.multiply(mI1, skewSymmetricMatrixU1.getTranspose())));
+        }
+        if (mBody2.getIsMotionEnabled()) {
+            massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU2, Matrix3x3.multiply(mI2, skewSymmetricMatrixU2.getTranspose())));
+        }
+        mInverseMassMatrixTranslation.setToZero();
+        if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
+            mInverseMassMatrixTranslation.set(massMatrix.getInverse());
+        }
+        final Vector3 errorTranslation = Vector3.subtract(Vector3.subtract(Vector3.add(x2, mR2World), x1), mR1World);
+        final Vector3 lambdaTranslation = Matrix3x3.multiply(mInverseMassMatrixTranslation, Vector3.negate(errorTranslation));
+        if (mBody1.getIsMotionEnabled()) {
+            final Vector3 linearImpulseBody1 = Vector3.negate(lambdaTranslation);
+            final Vector3 angularImpulseBody1 = lambdaTranslation.cross(mR1World);
+            final Vector3 v1 = Vector3.multiply(inverseMassBody1, linearImpulseBody1);
+            final Vector3 w1 = Matrix3x3.multiply(mI1, angularImpulseBody1);
+            x1.add(v1);
+            q1.add(Quaternion.multiply(Quaternion.multiply(new Quaternion(0, w1), q1), 0.5f));
+            q1.normalize();
+        }
+        if (mBody2.getIsMotionEnabled()) {
+            final Vector3 linearImpulseBody2 = lambdaTranslation;
+            final Vector3 angularImpulseBody2 = Vector3.negate(lambdaTranslation.cross(mR2World));
+            final Vector3 v2 = Vector3.multiply(inverseMassBody2, linearImpulseBody2);
+            final Vector3 w2 = Matrix3x3.multiply(mI2, angularImpulseBody2);
+            x2.add(v2);
+            q2.add(Quaternion.multiply(Quaternion.multiply(new Quaternion(0, w2), q2), 0.5f));
+            q2.normalize();
+        }
+        mInverseMassMatrixRotation.setToZero();
+        if (mBody1.getIsMotionEnabled()) {
+            mInverseMassMatrixRotation.add(mI1);
+        }
+        if (mBody2.getIsMotionEnabled()) {
+            mInverseMassMatrixRotation.add(mI2);
+        }
+        if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
+            mInverseMassMatrixRotation.set(mInverseMassMatrixRotation.getInverse());
+        }
+        final Quaternion currentOrientationDifference = Quaternion.multiply(q2, q1.getInverse());
+        currentOrientationDifference.normalize();
+        final Quaternion qError = Quaternion.multiply(currentOrientationDifference, mInitOrientationDifferenceInv);
+        final Vector3 errorRotation = Vector3.multiply(2, qError.getVectorV());
+        final Vector3 lambdaRotation = Matrix3x3.multiply(mInverseMassMatrixRotation, Vector3.negate(errorRotation));
+        if (mBody1.getIsMotionEnabled()) {
+            final Vector3 angularImpulseBody1 = Vector3.negate(lambdaRotation);
+            final Vector3 w1 = Matrix3x3.multiply(mI1, angularImpulseBody1);
+            q1.add(Quaternion.multiply(Quaternion.multiply(new Quaternion(0, w1), q1), 0.5f));
+            q1.normalize();
+        }
+        if (mBody2.getIsMotionEnabled()) {
+            final Vector3 angularImpulseBody2 = lambdaRotation;
+            final Vector3 w2 = Matrix3x3.multiply(mI2, angularImpulseBody2);
+            q2.add(Quaternion.multiply(Quaternion.multiply(new Quaternion(0, w2), q2), 0.5f));
+            q2.normalize();
+        }
     }
 
     /**

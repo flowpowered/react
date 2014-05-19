@@ -28,14 +28,14 @@ package org.spout.physics.collision;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.spout.physics.Utilities.IntPair;
 import org.spout.physics.body.CollisionBody;
-import org.spout.physics.body.ImmobileRigidBody;
-import org.spout.physics.body.MobileRigidBody;
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.broadphase.BroadPhaseAlgorithm;
 import org.spout.physics.collision.broadphase.PairManager.BodyPair;
@@ -60,6 +60,7 @@ public class CollisionDetection {
     private final BroadPhaseAlgorithm mBroadPhaseAlgorithm;
     private final GJKAlgorithm mNarrowPhaseGJKAlgorithm = new GJKAlgorithm();
     private final SphereVsSphereAlgorithm mNarrowPhaseSphereVsSphereAlgorithm = new SphereVsSphereAlgorithm();
+    private final Set<IntPair> mNoCollisionPairs = new HashSet<>();
     private final List<CollisionListener> mCallBacks = new ArrayList<>();
     private final LinkedPhase mLinkedPhase;
 
@@ -115,6 +116,26 @@ public class CollisionDetection {
     }
 
     /**
+     * Add a pair of bodies that cannot collide with each other.
+     *
+     * @param body1 The first body
+     * @param body2 The second body
+     */
+    public void addNoCollisionPair(CollisionBody body1, CollisionBody body2) {
+        mNoCollisionPairs.add(BroadPhasePair.computeBodiesIndexPair(body1, body2));
+    }
+
+    /**
+     * Removes a pair of bodies that cannot collide with each other.
+     *
+     * @param body1 The first body
+     * @param body2 The second body
+     */
+    public void removeNoCollisionPair(CollisionBody body1, CollisionBody body2) {
+        mNoCollisionPairs.remove(BroadPhasePair.computeBodiesIndexPair(body1, body2));
+    }
+
+    /**
      * Computes the collision detection.
      */
     public void computeCollisionDetection() {
@@ -128,13 +149,13 @@ public class CollisionDetection {
     // Computes the linked-phase collision detection.
     private void computeLinkedPhase() {
         final List<CollisionBody> bodies = new ArrayList<>(mWorld.getBodies());
-        final List<ImmobileRigidBody> foundBodies = new ArrayList<>();
+        final List<RigidBody> foundBodies = new ArrayList<>();
         for (CollisionBody body : bodies) {
-            if (!(body instanceof MobileRigidBody)) {
+            if (!(body instanceof RigidBody)) {
                 continue;
             }
-            for (ImmobileRigidBody immobileBody : mLinkedPhase.getBodiesInRange((MobileRigidBody) body)) {
-                foundBodies.add(immobileBody);
+            for (RigidBody rigidBody : mLinkedPhase.getBodiesInRange((RigidBody) body)) {
+                foundBodies.add(rigidBody);
             }
         }
         ((LinkedDynamicsWorld) mWorld).addLinkedBodies(foundBodies);
@@ -160,6 +181,9 @@ public class CollisionDetection {
             final CollisionBody body1 = pair.getFirstBody();
             final CollisionBody body2 = pair.getSecondBody();
             mWorld.updateOverlappingPair(pair);
+            if (mNoCollisionPairs.contains(pair.getBodiesIndexPair())) {
+                continue;
+            }
             final NarrowPhaseAlgorithm narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(body1.getCollisionShape(), body2.getCollisionShape());
             narrowPhaseAlgorithm.setCurrentOverlappingPair(pair);
             if (narrowPhaseAlgorithm.testCollision(body1.getCollisionShape(), body1.getTransform(), body2.getCollisionShape(), body2.getTransform(), contactInfo)) {

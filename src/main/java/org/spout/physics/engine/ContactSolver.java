@@ -133,6 +133,15 @@ public class ContactSolver {
     }
 
     /**
+     * Returns true if the split impulses position correction technique is used for contacts.
+     *
+     * @return Whether or not the split impulses position correction technique is used
+     */
+    public boolean isSplitImpulseActive() {
+        return mIsSplitImpulseActive;
+    }
+
+    /**
      * Activates or deactivates the split impulses for contacts.
      *
      * @param isActive True if the split impulses are active, false if not

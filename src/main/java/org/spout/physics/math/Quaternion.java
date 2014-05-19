@@ -236,6 +236,34 @@ public class Quaternion {
     }
 
     /**
+     * Adds a quaternion to this quaternion, then returns the result. Does not create a new quaternion.
+     *
+     * @param quaternion to add to this one
+     * @return this quaternion, after addition is finished
+     */
+    public Quaternion add(Quaternion quaternion) {
+        x += quaternion.getX();
+        y += quaternion.getY();
+        z += quaternion.getZ();
+        w += quaternion.getW();
+        return this;
+    }
+
+    /**
+     * Subtracts a quaternion from this quaternion, then returns the result. Does not create a new quaternion.
+     *
+     * @param quaternion to subtract from this one
+     * @return the difference of this quaternion and the other quaternion
+     */
+    public Quaternion subtract(Quaternion quaternion) {
+        x -= quaternion.getX();
+        y -= quaternion.getY();
+        z -= quaternion.getZ();
+        w -= quaternion.getW();
+        return this;
+    }
+
+    /**
      * Returns the x, y and z values of this quaternion as a vector3.
      *
      * @return The x, y and z values of this quaternion as a vector3.

@@ -29,17 +29,15 @@ package org.spout.physics.body;
 /**
  * This is the base class for a body in the physics engine.
  */
-public abstract class Body {
+public class Body {
     protected final int mID;
-    /* A pointer to the owner of the body (if any) */
-    private Object userPointer;
 
     /**
      * Construct a new body from its ID.
      *
      * @param id The body's ID
      */
-    protected Body(int id) {
+    public Body(int id) {
         mID = id;
     }
 
@@ -50,14 +48,6 @@ public abstract class Body {
      */
     public int getID() {
         return mID;
-    }
-
-    public Object getUserPointer() {
-        return userPointer;
-    }
-
-    public void setUserPointer(final Object userPointer) {
-        this.userPointer = userPointer;
     }
 
     /**

@@ -47,6 +47,8 @@ public class HingeJoint extends Constraint {
     private final Vector3 mLocalAnchorPointBody2;
     private final Vector3 mHingeLocalAxisBody1;
     private final Vector3 mHingeLocalAxisBody2;
+    private final Matrix3x3 mI1 = new Matrix3x3();
+    private final Matrix3x3 mI2 = new Matrix3x3();
     private final Vector3 mA1 = new Vector3();
     private final Vector3 mR1World = new Vector3();
     private final Vector3 mR2World = new Vector3();
@@ -73,7 +75,7 @@ public class HingeJoint extends Constraint {
     private boolean mIsLowerLimitViolated;
     private boolean mIsUpperLimitViolated;
     private float mMotorSpeed;
-    private float mMaxMotorForce;
+    private float mMaxMotorTorque;
 
     public HingeJoint(HingeJointInfo jointInfo) {
         super(jointInfo);
@@ -94,6 +96,8 @@ public class HingeJoint extends Constraint {
         mUpperLimit = jointInfo.getMaxAngleLimit();
         mIsLowerLimitViolated = false;
         mIsUpperLimitViolated = false;
+        mMotorSpeed = jointInfo.getMotorSpeed();
+        mMaxMotorTorque = jointInfo.getMaxMotorTorque();
         final Transform transform1 = mBody1.getTransform();
         final Transform transform2 = mBody2.getTransform();
         mLocalAnchorPointBody1 = Transform.multiply(transform1.getInverse(), jointInfo.getAnchorPointWorldSpace());
@@ -115,8 +119,8 @@ public class HingeJoint extends Constraint {
         final Vector3 x2 = mBody2.getTransform().getPosition();
         final Quaternion orientationBody1 = mBody1.getTransform().getOrientation();
         final Quaternion orientationBody2 = mBody2.getTransform().getOrientation();
-        final Matrix3x3 I1 = mBody1.getInertiaTensorInverseWorld();
-        final Matrix3x3 I2 = mBody2.getInertiaTensorInverseWorld();
+        mI1.set(mBody1.getInertiaTensorInverseWorld());
+        mI2.set(mBody2.getInertiaTensorInverseWorld());
         mR1World.set(Quaternion.multiply(orientationBody1, mLocalAnchorPointBody1));
         mR2World.set(Quaternion.multiply(orientationBody2, mLocalAnchorPointBody2));
         final float hingeAngle = computeCurrentHingeAngle(orientationBody1, orientationBody2);
@@ -132,7 +136,6 @@ public class HingeJoint extends Constraint {
         if (mIsUpperLimitViolated != oldIsUpperLimitViolated) {
             mImpulseUpperLimit = 0;
         }
-        final float testAngle = computeCurrentHingeAngle(orientationBody1, orientationBody2);
         mA1.set(Quaternion.multiply(orientationBody1, mHingeLocalAxisBody1));
         final Vector3 a2 = Quaternion.multiply(orientationBody2, mHingeLocalAxisBody2);
         mA1.normalize();
@@ -155,10 +158,10 @@ public class HingeJoint extends Constraint {
                 0, inverseMassBodies, 0,
                 0, 0, inverseMassBodies);
         if (mBody1.getIsMotionEnabled()) {
-            massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU1, Matrix3x3.multiply(I1, skewSymmetricMatrixU1.getTranspose())));
+            massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU1, Matrix3x3.multiply(mI1, skewSymmetricMatrixU1.getTranspose())));
         }
         if (mBody2.getIsMotionEnabled()) {
-            massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU2, Matrix3x3.multiply(I2, skewSymmetricMatrixU2.getTranspose())));
+            massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU2, Matrix3x3.multiply(mI1, skewSymmetricMatrixU2.getTranspose())));
         }
         mInverseMassMatrixTranslation.setToZero();
         if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
@@ -174,12 +177,12 @@ public class HingeJoint extends Constraint {
         final Vector3 I2B2CrossA1 = new Vector3(0, 0, 0);
         final Vector3 I2C2CrossA1 = new Vector3(0, 0, 0);
         if (mBody1.getIsMotionEnabled()) {
-            I1B2CrossA1.set(Matrix3x3.multiply(I1, mB2CrossA1));
-            I1C2CrossA1.set(Matrix3x3.multiply(I1, mC2CrossA1));
+            I1B2CrossA1.set(Matrix3x3.multiply(mI1, mB2CrossA1));
+            I1C2CrossA1.set(Matrix3x3.multiply(mI1, mC2CrossA1));
         }
         if (mBody2.getIsMotionEnabled()) {
-            I2B2CrossA1.set(Matrix3x3.multiply(I2, mB2CrossA1));
-            I2C2CrossA1.set(Matrix3x3.multiply(I2, mC2CrossA1));
+            I2B2CrossA1.set(Matrix3x3.multiply(mI1, mB2CrossA1));
+            I2C2CrossA1.set(Matrix3x3.multiply(mI1, mC2CrossA1));
         }
         final float el11 = mB2CrossA1.dot(I1B2CrossA1) + mB2CrossA1.dot(I2B2CrossA1);
         final float el12 = mB2CrossA1.dot(I1C2CrossA1) + mB2CrossA1.dot(I2C2CrossA1);
@@ -204,10 +207,10 @@ public class HingeJoint extends Constraint {
         if (mIsLimitEnabled && (mIsLowerLimitViolated || mIsUpperLimitViolated)) {
             mInverseMassMatrixLimitMotor = 0;
             if (mBody1.getIsMotionEnabled()) {
-                mInverseMassMatrixLimitMotor += mA1.dot(Matrix3x3.multiply(I1, mA1));
+                mInverseMassMatrixLimitMotor += mA1.dot(Matrix3x3.multiply(mI1, mA1));
             }
             if (mBody2.getIsMotionEnabled()) {
-                mInverseMassMatrixLimitMotor += mA1.dot(Matrix3x3.multiply(I2, mA1));
+                mInverseMassMatrixLimitMotor += mA1.dot(Matrix3x3.multiply(mI1, mA1));
             }
             mInverseMassMatrixLimitMotor = mInverseMassMatrixLimitMotor > 0 ? 1 / mInverseMassMatrixLimitMotor : 0;
             mBLowerLimit = 0;
@@ -231,24 +234,24 @@ public class HingeJoint extends Constraint {
         final float inverseMassBody2 = mBody2.getMassInverse();
         final Matrix3x3 I1 = mBody1.getInertiaTensorInverseWorld();
         final Matrix3x3 I2 = mBody2.getInertiaTensorInverseWorld();
-        final Vector3 linearImpulseBody1 = Vector3.negate(mImpulseTranslation);
-        final Vector3 angularImpulseBody1 = mImpulseTranslation.cross(mR1World);
-        final Vector3 linearImpulseBody2 = mImpulseTranslation;
-        final Vector3 angularImpulseBody2 = Vector3.negate(mImpulseTranslation.cross(mR2World));
         final Vector3 rotationImpulse = Vector3.subtract(Vector3.multiply(Vector3.negate(mB2CrossA1), mImpulseRotation.getX()), Vector3.multiply(mC2CrossA1, mImpulseRotation.getY()));
-        angularImpulseBody1.add(rotationImpulse);
-        angularImpulseBody2.add(Vector3.negate(rotationImpulse));
         final Vector3 limitsImpulse = Vector3.multiply(mImpulseUpperLimit - mImpulseLowerLimit, mA1);
-        angularImpulseBody1.add(limitsImpulse);
-        angularImpulseBody2.add(Vector3.negate(limitsImpulse));
         final Vector3 motorImpulse = Vector3.multiply(-mImpulseMotor, mA1);
-        angularImpulseBody1.add(motorImpulse);
-        angularImpulseBody2.add(Vector3.negate(motorImpulse));
         if (mBody1.getIsMotionEnabled()) {
+            final Vector3 linearImpulseBody1 = Vector3.negate(mImpulseTranslation);
+            final Vector3 angularImpulseBody1 = mImpulseTranslation.cross(mR1World);
+            angularImpulseBody1.add(rotationImpulse);
+            angularImpulseBody1.add(limitsImpulse);
+            angularImpulseBody1.add(motorImpulse);
             v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
             w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
         }
         if (mBody2.getIsMotionEnabled()) {
+            final Vector3 linearImpulseBody2 = mImpulseTranslation;
+            final Vector3 angularImpulseBody2 = Vector3.negate(mImpulseTranslation.cross(mR2World));
+            angularImpulseBody2.add(Vector3.negate(rotationImpulse));
+            angularImpulseBody2.add(Vector3.negate(limitsImpulse));
+            angularImpulseBody2.add(Vector3.negate(motorImpulse));
             v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
             w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
         }
@@ -262,33 +265,31 @@ public class HingeJoint extends Constraint {
         final Vector3 w2 = constraintSolverData.getAngularVelocities().get(mIndexBody2);
         final float inverseMassBody1 = mBody1.getMassInverse();
         final float inverseMassBody2 = mBody2.getMassInverse();
-        final Matrix3x3 I1 = mBody1.getInertiaTensorInverseWorld();
-        final Matrix3x3 I2 = mBody2.getInertiaTensorInverseWorld();
         final Vector3 JvTranslation = Vector3.subtract(Vector3.subtract(Vector3.add(v2, w2.cross(mR2World)), v1), w1.cross(mR1World));
         final Vector3 deltaLambdaTranslation = Matrix3x3.multiply(mInverseMassMatrixTranslation, Vector3.subtract(Vector3.negate(JvTranslation), mBTranslation));
         mImpulseTranslation.add(deltaLambdaTranslation);
-        final Vector3 linearImpulseBody1 = Vector3.negate(deltaLambdaTranslation);
-        final Vector3 angularImpulseBody1 = deltaLambdaTranslation.cross(mR1World);
-        final Vector3 linearImpulseBody2 = deltaLambdaTranslation;
-        final Vector3 angularImpulseBody2 = Vector3.negate(deltaLambdaTranslation.cross(mR2World));
         if (mBody1.getIsMotionEnabled()) {
+            final Vector3 linearImpulseBody1 = Vector3.negate(deltaLambdaTranslation);
+            final Vector3 angularImpulseBody1 = deltaLambdaTranslation.cross(mR1World);
             v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
-            w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
+            w1.add(Matrix3x3.multiply(mI1, angularImpulseBody1));
         }
         if (mBody2.getIsMotionEnabled()) {
+            final Vector3 linearImpulseBody2 = deltaLambdaTranslation;
+            final Vector3 angularImpulseBody2 = Vector3.negate(deltaLambdaTranslation.cross(mR2World));
             v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
-            w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
+            w2.add(Matrix3x3.multiply(mI2, angularImpulseBody2));
         }
         final Vector2 JvRotation = new Vector2(-mB2CrossA1.dot(w1) + mB2CrossA1.dot(w2), -mC2CrossA1.dot(w1) + mC2CrossA1.dot(w2));
         final Vector2 deltaLambdaRotation = Matrix2x2.multiply(mInverseMassMatrixRotation, Vector2.subtract(Vector2.negate(JvRotation), mBRotation));
         mImpulseRotation.add(deltaLambdaRotation);
-        angularImpulseBody1.set(Vector3.subtract(Vector3.multiply(Vector3.negate(mB2CrossA1), deltaLambdaRotation.getX()), Vector3.multiply(mC2CrossA1, deltaLambdaRotation.getY())));
-        angularImpulseBody2.set(Vector3.negate(angularImpulseBody1));
         if (mBody1.getIsMotionEnabled()) {
-            w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
+            final Vector3 angularImpulseBody1 = Vector3.subtract(Vector3.multiply(Vector3.negate(mB2CrossA1), deltaLambdaRotation.getX()), Vector3.multiply(mC2CrossA1, deltaLambdaRotation.getY()));
+            w1.add(Matrix3x3.multiply(mI1, angularImpulseBody1));
         }
         if (mBody2.getIsMotionEnabled()) {
-            w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
+            final Vector3 angularImpulseBody2 = Vector3.add(Vector3.multiply(mB2CrossA1, deltaLambdaRotation.getX()), Vector3.multiply(mC2CrossA1, deltaLambdaRotation.getY()));
+            w2.add(Matrix3x3.multiply(mI2, angularImpulseBody2));
         }
         if (mIsLimitEnabled) {
             if (mIsLowerLimitViolated) {
@@ -297,13 +298,13 @@ public class HingeJoint extends Constraint {
                 final float lambdaTemp = mImpulseLowerLimit;
                 mImpulseLowerLimit = Math.max(mImpulseLowerLimit + deltaLambdaLower, 0);
                 deltaLambdaLower = mImpulseLowerLimit - lambdaTemp;
-                angularImpulseBody1.set(Vector3.multiply(-deltaLambdaLower, mA1));
-                angularImpulseBody2.set(Vector3.negate(angularImpulseBody1));
                 if (mBody1.getIsMotionEnabled()) {
-                    w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
+                    final Vector3 angularImpulseBody1 = Vector3.multiply(-deltaLambdaLower, mA1);
+                    w1.add(Matrix3x3.multiply(mI1, angularImpulseBody1));
                 }
                 if (mBody2.getIsMotionEnabled()) {
-                    w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
+                    final Vector3 angularImpulseBody2 = Vector3.multiply(deltaLambdaLower, mA1);
+                    w2.add(Matrix3x3.multiply(mI2, angularImpulseBody2));
                 }
             }
             if (mIsUpperLimitViolated) {
@@ -312,36 +313,182 @@ public class HingeJoint extends Constraint {
                 final float lambdaTemp = mImpulseUpperLimit;
                 mImpulseUpperLimit = Math.max(mImpulseUpperLimit + deltaLambdaUpper, 0);
                 deltaLambdaUpper = mImpulseUpperLimit - lambdaTemp;
-                angularImpulseBody1.set(Vector3.multiply(deltaLambdaUpper, mA1));
-                angularImpulseBody2.set(Vector3.negate(angularImpulseBody1));
                 if (mBody1.getIsMotionEnabled()) {
-                    w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
+                    final Vector3 angularImpulseBody1 = Vector3.multiply(deltaLambdaUpper, mA1);
+                    w1.add(Matrix3x3.multiply(mI1, angularImpulseBody1));
                 }
                 if (mBody2.getIsMotionEnabled()) {
-                    w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
+                    final Vector3 angularImpulseBody2 = Vector3.multiply(-deltaLambdaUpper, mA1);
+                    w2.add(Matrix3x3.multiply(mI2, angularImpulseBody2));
                 }
             }
         }
         if (mIsMotorEnabled) {
             final float JvMotor = mA1.dot(Vector3.subtract(w1, w2));
-            final float maxMotorImpulse = mMaxMotorForce * constraintSolverData.getTimeStep();
+            final float maxMotorImpulse = mMaxMotorTorque * constraintSolverData.getTimeStep();
             float deltaLambdaMotor = mInverseMassMatrixLimitMotor * (-JvMotor - mMotorSpeed);
             final float lambdaTemp = mImpulseMotor;
             mImpulseMotor = Mathematics.clamp(mImpulseMotor + deltaLambdaMotor, -maxMotorImpulse, maxMotorImpulse);
             deltaLambdaMotor = mImpulseMotor - lambdaTemp;
-            angularImpulseBody1.set(Vector3.multiply(-deltaLambdaMotor, mA1));
-            angularImpulseBody2.set(Vector3.negate(angularImpulseBody1));
             if (mBody1.getIsMotionEnabled()) {
-                w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
+                final Vector3 angularImpulseBody1 = Vector3.multiply(-deltaLambdaMotor, mA1);
+                w1.add(Matrix3x3.multiply(mI1, angularImpulseBody1));
             }
             if (mBody2.getIsMotionEnabled()) {
-                w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
+                final Vector3 angularImpulseBody2 = Vector3.multiply(deltaLambdaMotor, mA1);
+                w2.add(Matrix3x3.multiply(mI2, angularImpulseBody2));
             }
         }
     }
 
     @Override
     public void solvePositionConstraint(ConstraintSolverData constraintSolverData) {
+        if (mPositionCorrectionTechnique != JointsPositionCorrectionTechnique.NON_LINEAR_GAUSS_SEIDEL) {
+            return;
+        }
+        final Vector3 x1 = constraintSolverData.getPositions().get(mIndexBody1);
+        final Vector3 x2 = constraintSolverData.getPositions().get(mIndexBody2);
+        final Quaternion q1 = constraintSolverData.getOrientations().get(mIndexBody1);
+        final Quaternion q2 = constraintSolverData.getOrientations().get(mIndexBody2);
+        final float inverseMassBody1 = mBody1.getMassInverse();
+        final float inverseMassBody2 = mBody2.getMassInverse();
+        mI1.set(mBody1.getInertiaTensorInverseWorld());
+        mI2.set(mBody2.getInertiaTensorInverseWorld());
+        mR1World.set(Quaternion.multiply(q1, mLocalAnchorPointBody1));
+        mR2World.set(Quaternion.multiply(q2, mLocalAnchorPointBody2));
+        final float hingeAngle = computeCurrentHingeAngle(q1, q2);
+        final float lowerLimitError = hingeAngle - mLowerLimit;
+        final float upperLimitError = mUpperLimit - hingeAngle;
+        mIsLowerLimitViolated = lowerLimitError <= 0;
+        mIsUpperLimitViolated = upperLimitError <= 0;
+        mA1.set(Quaternion.multiply(q1, mHingeLocalAxisBody1));
+        final Vector3 a2 = Quaternion.multiply(q2, mHingeLocalAxisBody2);
+        mA1.normalize();
+        a2.normalize();
+        final Vector3 b2 = a2.getOneUnitOrthogonalVector();
+        final Vector3 c2 = a2.cross(b2);
+        mB2CrossA1.set(b2.cross(mA1));
+        mC2CrossA1.set(c2.cross(mA1));
+        final Matrix3x3 skewSymmetricMatrixU1 = Matrix3x3.computeSkewSymmetricMatrixForCrossProduct(mR1World);
+        final Matrix3x3 skewSymmetricMatrixU2 = Matrix3x3.computeSkewSymmetricMatrixForCrossProduct(mR2World);
+        float inverseMassBodies = 0;
+        if (mBody1.getIsMotionEnabled()) {
+            inverseMassBodies += mBody1.getMassInverse();
+        }
+        if (mBody2.getIsMotionEnabled()) {
+            inverseMassBodies += mBody2.getMassInverse();
+        }
+        final Matrix3x3 massMatrix = new Matrix3x3(
+                inverseMassBodies, 0, 0,
+                0, inverseMassBodies, 0,
+                0, 0, inverseMassBodies);
+        if (mBody1.getIsMotionEnabled()) {
+            massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU1, Matrix3x3.multiply(mI1, skewSymmetricMatrixU1.getTranspose())));
+        }
+        if (mBody2.getIsMotionEnabled()) {
+            massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU2, Matrix3x3.multiply(mI2, skewSymmetricMatrixU2.getTranspose())));
+        }
+        mInverseMassMatrixTranslation.setToZero();
+        if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
+            mInverseMassMatrixTranslation.set(massMatrix.getInverse());
+        }
+        final Vector3 errorTranslation = Vector3.subtract(Vector3.subtract(Vector3.add(x2, mR2World), x1), mR1World);
+        final Vector3 lambdaTranslation = Matrix3x3.multiply(mInverseMassMatrixTranslation, Vector3.negate(errorTranslation));
+        if (mBody1.getIsMotionEnabled()) {
+            final Vector3 linearImpulseBody1 = Vector3.negate(lambdaTranslation);
+            final Vector3 angularImpulseBody1 = lambdaTranslation.cross(mR1World);
+            final Vector3 v1 = Vector3.multiply(inverseMassBody1, linearImpulseBody1);
+            final Vector3 w1 = Matrix3x3.multiply(mI1, angularImpulseBody1);
+            x1.add(v1);
+            q1.add(Quaternion.multiply(Quaternion.multiply(new Quaternion(0, w1), q1), 0.5f));
+            q1.normalize();
+        }
+        if (mBody2.getIsMotionEnabled()) {
+            final Vector3 linearImpulseBody2 = lambdaTranslation;
+            final Vector3 angularImpulseBody2 = Vector3.negate(lambdaTranslation.cross(mR2World));
+            final Vector3 v2 = Vector3.multiply(inverseMassBody2, linearImpulseBody2);
+            final Vector3 w2 = Matrix3x3.multiply(mI2, angularImpulseBody2);
+            x2.add(v2);
+            q2.add(Quaternion.multiply(Quaternion.multiply(new Quaternion(0, w2), q2), 0.5f));
+            q2.normalize();
+        }
+        final Vector3 I1B2CrossA1 = new Vector3(0, 0, 0);
+        final Vector3 I1C2CrossA1 = new Vector3(0, 0, 0);
+        final Vector3 I2B2CrossA1 = new Vector3(0, 0, 0);
+        final Vector3 I2C2CrossA1 = new Vector3(0, 0, 0);
+        if (mBody1.getIsMotionEnabled()) {
+            I1B2CrossA1.set(Matrix3x3.multiply(mI1, mB2CrossA1));
+            I1C2CrossA1.set(Matrix3x3.multiply(mI1, mC2CrossA1));
+        }
+        if (mBody2.getIsMotionEnabled()) {
+            I2B2CrossA1.set(Matrix3x3.multiply(mI2, mB2CrossA1));
+            I2C2CrossA1.set(Matrix3x3.multiply(mI2, mC2CrossA1));
+        }
+        final float el11 = mB2CrossA1.dot(I1B2CrossA1) + mB2CrossA1.dot(I2B2CrossA1);
+        final float el12 = mB2CrossA1.dot(I1C2CrossA1) + mB2CrossA1.dot(I2C2CrossA1);
+        final float el21 = mC2CrossA1.dot(I1B2CrossA1) + mC2CrossA1.dot(I2B2CrossA1);
+        final float el22 = mC2CrossA1.dot(I1C2CrossA1) + mC2CrossA1.dot(I2C2CrossA1);
+        final Matrix2x2 matrixKRotation = new Matrix2x2(el11, el12, el21, el22);
+        mInverseMassMatrixRotation.setToZero();
+        if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
+            mInverseMassMatrixRotation.set(matrixKRotation.getInverse());
+        }
+        final Vector2 errorRotation = new Vector2(mA1.dot(b2), mA1.dot(c2));
+        final Vector2 lambdaRotation = Matrix2x2.multiply(mInverseMassMatrixRotation, Vector2.negate(errorRotation));
+        if (mBody1.getIsMotionEnabled()) {
+            final Vector3 angularImpulseBody1 = Vector3.subtract(Vector3.multiply(Vector3.negate(mB2CrossA1), lambdaRotation.getX()), Vector3.multiply(mC2CrossA1, lambdaRotation.getY()));
+            final Vector3 w1 = Matrix3x3.multiply(mI1, angularImpulseBody1);
+            q1.add(Quaternion.multiply(Quaternion.multiply(new Quaternion(0, w1), q1), 0.5f));
+            q1.normalize();
+        }
+        if (mBody2.getIsMotionEnabled()) {
+            final Vector3 angularImpulseBody2 = Vector3.add(Vector3.multiply(mB2CrossA1, lambdaRotation.getX()), Vector3.multiply(mC2CrossA1, lambdaRotation.getY()));
+            final Vector3 w2 = Matrix3x3.multiply(mI2, angularImpulseBody2);
+            q2.add(Quaternion.multiply(Quaternion.multiply(new Quaternion(0, w2), q2), 0.5f));
+            q2.normalize();
+        }
+        if (mIsLimitEnabled) {
+            if (mIsLowerLimitViolated || mIsUpperLimitViolated) {
+                mInverseMassMatrixLimitMotor = 0;
+                if (mBody1.getIsMotionEnabled()) {
+                    mInverseMassMatrixLimitMotor += mA1.dot(Matrix3x3.multiply(mI1, mA1));
+                }
+                if (mBody2.getIsMotionEnabled()) {
+                    mInverseMassMatrixLimitMotor += mA1.dot(Matrix3x3.multiply(mI2, mA1));
+                }
+                mInverseMassMatrixLimitMotor = (mInverseMassMatrixLimitMotor > 0) ? 1 / mInverseMassMatrixLimitMotor : 0;
+            }
+            if (mIsLowerLimitViolated) {
+                final float lambdaLowerLimit = mInverseMassMatrixLimitMotor * (-lowerLimitError);
+                if (mBody1.getIsMotionEnabled()) {
+                    final Vector3 angularImpulseBody1 = Vector3.multiply(-lambdaLowerLimit, mA1);
+                    final Vector3 w1 = Matrix3x3.multiply(mI1, angularImpulseBody1);
+                    q1.add(Quaternion.multiply(Quaternion.multiply(new Quaternion(0, w1), q1), 0.5f));
+                    q1.normalize();
+                }
+                if (mBody2.getIsMotionEnabled()) {
+                    final Vector3 angularImpulseBody2 = Vector3.multiply(lambdaLowerLimit, mA1);
+                    final Vector3 w2 = Matrix3x3.multiply(mI2, angularImpulseBody2);
+                    q2.add(Quaternion.multiply(Quaternion.multiply(new Quaternion(0, w2), q2), 0.5f));
+                    q2.normalize();
+                }
+            }
+            if (mIsUpperLimitViolated) {
+                final float lambdaUpperLimit = mInverseMassMatrixLimitMotor * (-upperLimitError);
+                if (mBody1.getIsMotionEnabled()) {
+                    final Vector3 angularImpulseBody1 = Vector3.multiply(lambdaUpperLimit, mA1);
+                    final Vector3 w1 = Matrix3x3.multiply(mI1, angularImpulseBody1);
+                    q1.add(Quaternion.multiply(Quaternion.multiply(new Quaternion(0, w1), q1), 0.5f));
+                    q1.normalize();
+                }
+                if (mBody2.getIsMotionEnabled()) {
+                    final Vector3 angularImpulseBody2 = Vector3.multiply(-lambdaUpperLimit, mA1);
+                    final Vector3 w2 = Matrix3x3.multiply(mI2, angularImpulseBody2);
+                    q2.add(Quaternion.multiply(Quaternion.multiply(new Quaternion(0, w2), q2), 0.5f));
+                    q2.normalize();
+                }
+            }
+        }
     }
 
     /**
@@ -417,16 +564,16 @@ public class HingeJoint extends Constraint {
     }
 
     /**
-     * Sets the maximum motor force.
+     * Sets the maximum motor torque.
      *
-     * @param maxMotorForce The maximum motor force
+     * @param maxMotorForce The maximum motor torque
      */
     public void setMaxMotorForce(float maxMotorForce) {
-        if (mMaxMotorForce < 0) {
-            throw new IllegalArgumentException("Max motor force must be greater or equal to 0");
+        if (mMaxMotorTorque < 0) {
+            throw new IllegalArgumentException("Max motor torque must be greater or equal to 0");
         }
-        if (maxMotorForce != mMaxMotorForce) {
-            mMaxMotorForce = maxMotorForce;
+        if (maxMotorForce != mMaxMotorTorque) {
+            mMaxMotorTorque = maxMotorForce;
             // TODO : Wake up the bodies of the joint here when sleeping is implemented
         }
     }
@@ -477,21 +624,21 @@ public class HingeJoint extends Constraint {
     }
 
     /**
-     * Returns the maximum motor force.
+     * Returns the maximum motor torque.
      *
-     * @return The maximum motor force
+     * @return The maximum motor torque
      */
-    public float getMaxMotorForce() {
-        return mMaxMotorForce;
+    public float getMaxMotorTorque() {
+        return mMaxMotorTorque;
     }
 
     /**
-     * Returns the intensity of the current force applied for the joint motor.
+     * Returns the intensity of the current torque applied for the joint motor.
      *
      * @param timeStep The simulation time step
-     * @return The motor force for the time step
+     * @return The motor torque for the time step
      */
-    public float getMotorForce(float timeStep) {
+    public float getMotorTorque(float timeStep) {
         return mImpulseMotor / timeStep;
     }
 
@@ -555,7 +702,7 @@ public class HingeJoint extends Constraint {
         private final float minAngleLimit;
         private final float maxAngleLimit;
         private final float motorSpeed;
-        private final float maxMotorForce;
+        private final float maxMotorTorque;
 
         /**
          * Constructs a new unlimited and non-motored hinge joint info from the both bodies, the initial anchor point in world space and the init axis, also in world space.
@@ -574,7 +721,7 @@ public class HingeJoint extends Constraint {
             minAngleLimit = -1;
             maxAngleLimit = 1;
             motorSpeed = 0;
-            maxMotorForce = 0;
+            maxMotorTorque = 0;
         }
 
         /**
@@ -597,12 +744,12 @@ public class HingeJoint extends Constraint {
             minAngleLimit = initMinAngleLimit;
             maxAngleLimit = initMaxAngleLimit;
             motorSpeed = 0;
-            maxMotorForce = 0;
+            maxMotorTorque = 0;
         }
 
         /**
          * Constructs a new limited and motored hinge joint info from the both bodies, the initial anchor point in world space, the initial axis, also in world space, the upper and lower limits of the
-         * joint, the motor speed and the maximum motor force.
+         * joint, the motor speed and the maximum motor torque.
          *
          * @param body1 The first body
          * @param body2 The second body
@@ -611,10 +758,10 @@ public class HingeJoint extends Constraint {
          * @param initMinAngleLimit The initial lower limit
          * @param initMaxAngleLimit The initial upper limit
          * @param initMotorSpeed The initial motor speed
-         * @param initMaxMotorForce The initial maximum motor force
+         * @param initMaxMotorTorque The initial maximum motor torque
          */
         public HingeJointInfo(RigidBody body1, RigidBody body2, Vector3 initAnchorPointWorldSpace, Vector3 initRotationAxisWorld, float initMinAngleLimit, float initMaxAngleLimit,
-                              float initMotorSpeed, float initMaxMotorForce) {
+                              float initMotorSpeed, float initMaxMotorTorque) {
             super(body1, body2, ConstraintType.HINGEJOINT);
             anchorPointWorldSpace = initAnchorPointWorldSpace;
             rotationAxisWorld = initRotationAxisWorld;
@@ -623,7 +770,7 @@ public class HingeJoint extends Constraint {
             minAngleLimit = initMinAngleLimit;
             maxAngleLimit = initMaxAngleLimit;
             motorSpeed = initMotorSpeed;
-            maxMotorForce = initMaxMotorForce;
+            maxMotorTorque = initMaxMotorTorque;
         }
 
         /**
@@ -690,12 +837,12 @@ public class HingeJoint extends Constraint {
         }
 
         /**
-         * Returns the max motor force.
+         * Returns the max motor torque.
          *
-         * @return The motor force
+         * @return The motor torque
          */
-        public float getMaxMotorForce() {
-            return maxMotorForce;
+        public float getMaxMotorTorque() {
+            return maxMotorTorque;
         }
     }
 }
