@@ -149,7 +149,7 @@ public class BallAndSocketJoint extends Constraint {
             final Vector3 linearImpulseBody2 = deltaLambda;
             final Vector3 angularImpulseBody2 = Vector3.negate(deltaLambda.cross(mR2World));
             v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
-            w2.add(Matrix3x3.multiply(mI1, angularImpulseBody2));
+            w2.add(Matrix3x3.multiply(mI2, angularImpulseBody2));
         }
     }
 
@@ -192,7 +192,6 @@ public class BallAndSocketJoint extends Constraint {
             mInverseMassMatrix.set(massMatrix.getInverse());
         }
         final Vector3 constraintError = Vector3.subtract(Vector3.subtract(Vector3.add(x2, mR2World), x1), mR1World);
-        // TODO : Do not solve the system by computing the inverse each time and multiplying with the right-hand side vector but instead use a method to directly solve the linear system.
         final Vector3 lambda = Matrix3x3.multiply(mInverseMassMatrix, Vector3.negate(constraintError));
         if (mBody1.getIsMotionEnabled()) {
             final Vector3 linearImpulseBody1 = Vector3.negate(lambda);

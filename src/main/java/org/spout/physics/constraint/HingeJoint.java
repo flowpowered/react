@@ -181,8 +181,8 @@ public class HingeJoint extends Constraint {
             I1C2CrossA1.set(Matrix3x3.multiply(mI1, mC2CrossA1));
         }
         if (mBody2.getIsMotionEnabled()) {
-            I2B2CrossA1.set(Matrix3x3.multiply(mI1, mB2CrossA1));
-            I2C2CrossA1.set(Matrix3x3.multiply(mI1, mC2CrossA1));
+            I2B2CrossA1.set(Matrix3x3.multiply(mI2, mB2CrossA1));
+            I2C2CrossA1.set(Matrix3x3.multiply(mI2, mC2CrossA1));
         }
         final float el11 = mB2CrossA1.dot(I1B2CrossA1) + mB2CrossA1.dot(I2B2CrossA1);
         final float el12 = mB2CrossA1.dot(I1C2CrossA1) + mB2CrossA1.dot(I2C2CrossA1);
@@ -210,7 +210,7 @@ public class HingeJoint extends Constraint {
                 mInverseMassMatrixLimitMotor += mA1.dot(Matrix3x3.multiply(mI1, mA1));
             }
             if (mBody2.getIsMotionEnabled()) {
-                mInverseMassMatrixLimitMotor += mA1.dot(Matrix3x3.multiply(mI1, mA1));
+                mInverseMassMatrixLimitMotor += mA1.dot(Matrix3x3.multiply(mI2, mA1));
             }
             mInverseMassMatrixLimitMotor = mInverseMassMatrixLimitMotor > 0 ? 1 / mInverseMassMatrixLimitMotor : 0;
             mBLowerLimit = 0;
@@ -232,8 +232,6 @@ public class HingeJoint extends Constraint {
         final Vector3 w2 = constraintSolverData.getAngularVelocities().get(mIndexBody2);
         final float inverseMassBody1 = mBody1.getMassInverse();
         final float inverseMassBody2 = mBody2.getMassInverse();
-        final Matrix3x3 I1 = mBody1.getInertiaTensorInverseWorld();
-        final Matrix3x3 I2 = mBody2.getInertiaTensorInverseWorld();
         final Vector3 rotationImpulse = Vector3.subtract(Vector3.multiply(Vector3.negate(mB2CrossA1), mImpulseRotation.getX()), Vector3.multiply(mC2CrossA1, mImpulseRotation.getY()));
         final Vector3 limitsImpulse = Vector3.multiply(mImpulseUpperLimit - mImpulseLowerLimit, mA1);
         final Vector3 motorImpulse = Vector3.multiply(-mImpulseMotor, mA1);
@@ -244,7 +242,7 @@ public class HingeJoint extends Constraint {
             angularImpulseBody1.add(limitsImpulse);
             angularImpulseBody1.add(motorImpulse);
             v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
-            w1.add(Matrix3x3.multiply(I1, angularImpulseBody1));
+            w1.add(Matrix3x3.multiply(mI1, angularImpulseBody1));
         }
         if (mBody2.getIsMotionEnabled()) {
             final Vector3 linearImpulseBody2 = mImpulseTranslation;
@@ -253,7 +251,7 @@ public class HingeJoint extends Constraint {
             angularImpulseBody2.add(Vector3.negate(limitsImpulse));
             angularImpulseBody2.add(Vector3.negate(motorImpulse));
             v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
-            w2.add(Matrix3x3.multiply(I2, angularImpulseBody2));
+            w2.add(Matrix3x3.multiply(mI2, angularImpulseBody2));
         }
     }
 
@@ -456,7 +454,7 @@ public class HingeJoint extends Constraint {
                 if (mBody2.getIsMotionEnabled()) {
                     mInverseMassMatrixLimitMotor += mA1.dot(Matrix3x3.multiply(mI2, mA1));
                 }
-                mInverseMassMatrixLimitMotor = (mInverseMassMatrixLimitMotor > 0) ? 1 / mInverseMassMatrixLimitMotor : 0;
+                mInverseMassMatrixLimitMotor = mInverseMassMatrixLimitMotor > 0 ? 1 / mInverseMassMatrixLimitMotor : 0;
             }
             if (mIsLowerLimitViolated) {
                 final float lambdaLowerLimit = mInverseMassMatrixLimitMotor * (-lowerLimitError);
@@ -662,11 +660,11 @@ public class HingeJoint extends Constraint {
         } else if (inputAngle > upperLimitAngle) {
             final float diffToUpperLimit = Math.abs(computeNormalizedAngle(inputAngle - upperLimitAngle));
             final float diffToLowerLimit = Math.abs(computeNormalizedAngle(inputAngle - lowerLimitAngle));
-            return (diffToUpperLimit > diffToLowerLimit) ? (inputAngle - ReactDefaults.PI_TIMES_2) : inputAngle;
+            return diffToUpperLimit > diffToLowerLimit ? inputAngle - ReactDefaults.PI_TIMES_2 : inputAngle;
         } else if (inputAngle < lowerLimitAngle) {
             final float diffToUpperLimit = Math.abs(computeNormalizedAngle(upperLimitAngle - inputAngle));
             final float diffToLowerLimit = Math.abs(computeNormalizedAngle(lowerLimitAngle - inputAngle));
-            return (diffToUpperLimit > diffToLowerLimit) ? inputAngle : (inputAngle + ReactDefaults.PI_TIMES_2);
+            return diffToUpperLimit > diffToLowerLimit ? inputAngle : inputAngle + ReactDefaults.PI_TIMES_2;
         } else {
             return inputAngle;
         }

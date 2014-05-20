@@ -92,7 +92,8 @@ public class FixedJoint extends Constraint {
         if (mBody2.getIsMotionEnabled()) {
             inverseMassBodies += mBody2.getMassInverse();
         }
-        final Matrix3x3 massMatrix = new Matrix3x3(inverseMassBodies, 0, 0,
+        final Matrix3x3 massMatrix = new Matrix3x3(
+                inverseMassBodies, 0, 0,
                 0, inverseMassBodies, 0,
                 0, 0, inverseMassBodies);
         if (mBody1.getIsMotionEnabled()) {
