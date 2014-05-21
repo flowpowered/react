@@ -161,7 +161,7 @@ public class HingeJoint extends Constraint {
             massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU1, Matrix3x3.multiply(mI1, skewSymmetricMatrixU1.getTranspose())));
         }
         if (mBody2.getIsMotionEnabled()) {
-            massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU2, Matrix3x3.multiply(mI1, skewSymmetricMatrixU2.getTranspose())));
+            massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU2, Matrix3x3.multiply(mI2, skewSymmetricMatrixU2.getTranspose())));
         }
         mInverseMassMatrixTranslation.setToZero();
         if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
