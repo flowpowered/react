@@ -531,7 +531,7 @@ public class Quaternion {
      */
     public static Vector3 multiply(Quaternion quaternion, Vector3 vector) {
         final Quaternion p = new Quaternion(vector.getX(), vector.getY(), vector.getZ(), 0);
-        return multiply(multiply(p, quaternion), quaternion.getConjugate()).getVectorV();
+        return multiply(multiply(quaternion, p), quaternion.getConjugate()).getVectorV();
     }
 
     /**
