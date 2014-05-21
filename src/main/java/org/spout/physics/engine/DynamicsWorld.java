@@ -244,58 +244,38 @@ public class DynamicsWorld extends CollisionWorld {
             throw new IllegalStateException("timer must be running");
         }
         mTimer.update();
-        final float dt = (float) mTimer.getTimeStep();
-        while (mTimer.isPossibleToTakeStep()) {
-            tick(dt);
-        }
         applyGravity();
-        setInterpolationFactorToAllBodies();
-        resetTorque();
-        disperseCache();
-    }
-
-    private void resetTorque() {
-        for (RigidBody rigidBody : getRigidBodies()) {
-            if (rigidBody == null) {
-                throw new IllegalStateException("rigid body cannot be null");
-            }
-            rigidBody.setExternalTorque(new Vector3(0f, 0f, 0f));
-        }
-    }
-
-    /**
-     * Ticks the simulation by the provided time delta. Note that this method should only be called externally if the simulation is stopped; to prevent issues with the timer and the {@link #update()}
-     * method. This method doesn't reapply gravity to bodies or set their interpolation factor. This is accomplished by the {@link #update()} method at the end of the update.
-     *
-     * @param dt The time delta
-     */
-    protected void tick(float dt) {
         isTicking = true;
-        mContactManifolds.clear();
-        mCollisionDetection.computeCollisionDetection();
-        integrateRigidBodiesVelocities(dt);
-        resetBodiesMovementVariable();
-        mTimer.nextStep();
-        solveContactsAndConstraints();
-        integrateRigidBodiesPositions(dt);
-        solvePositionCorrection();
-        updateRigidBodiesAABB();
-        mContactSolver.cleanup();
-        cleanupConstrainedVelocitiesArray();
+        while (mTimer.isPossibleToTakeStep()) {
+            mContactManifolds.clear();
+            mCollisionDetection.computeCollisionDetection();
+            integrateRigidBodiesVelocities();
+            resetBodiesMovementVariable();
+            mTimer.nextStep();
+            solveContactsAndConstraints();
+            integrateRigidBodiesPositions();
+            solvePositionCorrection();
+            updateRigidBodiesAABB();
+            mContactSolver.cleanup();
+            cleanupConstrainedVelocitiesArray();
+        }
         isTicking = false;
+        setInterpolationFactorToAllBodies();
+        disperseCache();
     }
 
     // Resets the boolean movement variable for each body.
     private void resetBodiesMovementVariable() {
-        for (RigidBody rigidBody : getRigidBodies()) {
+        for (RigidBody rigidBody : mRigidBodies) {
             rigidBody.setHasMoved(false);
         }
     }
 
     // Integrates the position and orientation of the rigid bodies using the provided time delta.
     // The positions and orientations of the bodies are integrated using the symplectic Euler time stepping scheme.
-    private void integrateRigidBodiesPositions(float dt) {
-        for (RigidBody rigidBody : getRigidBodies()) {
+    private void integrateRigidBodiesPositions() {
+        final float dt = (float) mTimer.getTimeStep();
+        for (RigidBody rigidBody : mRigidBodies) {
             if (rigidBody.getIsMotionEnabled()) {
                 final int indexArray = mMapBodyToConstrainedVelocityIndex.get(rigidBody);
                 final Vector3 newLinVelocity = mConstrainedLinearVelocities.get(indexArray);
@@ -318,26 +298,21 @@ public class DynamicsWorld extends CollisionWorld {
 
     // Updates the AABBs of the bodies
     private void updateRigidBodiesAABB() {
-        for (RigidBody rigidBody : getRigidBodies()) {
+        for (RigidBody rigidBody : mRigidBodies) {
             if (rigidBody.getHasMoved()) {
                 rigidBody.updateAABB();
             }
         }
     }
 
-    // Computes and set the interpolation factor for all bodies,
-    // using the interpolation factor from the timer.
-    private void setInterpolationFactorToAllBodies() {
-        setInterpolationFactorToAllBodies(mTimer.computeInterpolationFactor());
-    }
-
     // Computes and set the interpolation factor for all bodies.
-    private void setInterpolationFactorToAllBodies(float factor) {
+    private void setInterpolationFactorToAllBodies() {
+        final float factor = mTimer.computeInterpolationFactor();
         if (factor < 0 && factor > 1) {
             throw new IllegalStateException("interpolation factor must be greater or equal to zero"
                     + " and smaller or equal to one");
         }
-        for (RigidBody rigidBody : getRigidBodies()) {
+        for (RigidBody rigidBody : mRigidBodies) {
             if (rigidBody == null) {
                 throw new IllegalStateException("rigid body cannot be null");
             }
@@ -350,11 +325,12 @@ public class DynamicsWorld extends CollisionWorld {
     // the actual velocities of the bodies. The velocities updated in this method
     // might violate the constraints and will be corrected in the constraint and
     // contact solver.
-    private void integrateRigidBodiesVelocities(float dt) {
+    private void integrateRigidBodiesVelocities() {
         mConstrainedLinearVelocities.clear();
         mConstrainedLinearVelocities.ensureCapacity(mRigidBodies.size());
         mConstrainedAngularVelocities.clear();
         mConstrainedAngularVelocities.ensureCapacity(mRigidBodies.size());
+        final float dt = (float) mTimer.getTimeStep();
         int i = 0;
         for (RigidBody rigidBody : mRigidBodies) {
             mMapBodyToConstrainedVelocityIndex.put(rigidBody, i);
@@ -413,7 +389,9 @@ public class DynamicsWorld extends CollisionWorld {
             return;
         }
         // TODO : Use better memory allocation here
+        mConstrainedPositions.clear();
         mConstrainedPositions.ensureCapacity(mRigidBodies.size());
+        mConstrainedOrientations.clear();
         mConstrainedOrientations.ensureCapacity(mRigidBodies.size());
         for (int i = 0; i < mRigidBodies.size(); i++) {
             mConstrainedPositions.add(null);
@@ -423,8 +401,8 @@ public class DynamicsWorld extends CollisionWorld {
             if (mConstraintSolver.isConstrainedBody(rigidBody)) {
                 final int index = mMapBodyToConstrainedVelocityIndex.get(rigidBody);
                 final Transform transform = rigidBody.getTransform();
-                mConstrainedPositions.set(index, transform.getPosition());
-                mConstrainedOrientations.set(index, transform.getOrientation());
+                mConstrainedPositions.set(index, new Vector3(transform.getPosition()));
+                mConstrainedOrientations.set(index, new Quaternion(transform.getOrientation()));
             }
         }
         for (int i = 0; i < mNbPositionSolverIterations; i++) {
@@ -451,7 +429,7 @@ public class DynamicsWorld extends CollisionWorld {
     // Applies the gravity force to all bodies of the physics world.
     private void applyGravity() {
         if (mIsGravityOn) {
-            for (RigidBody rigidBody : getRigidBodies()) {
+            for (RigidBody rigidBody : mRigidBodies) {
                 if (rigidBody == null) {
                     throw new IllegalStateException("rigid body cannot be null");
                 }
@@ -641,7 +619,6 @@ public class DynamicsWorld extends CollisionWorld {
      * Disperses the cache of bodies added/removed during the physics tick.
      */
     public void disperseCache() {
-        //Only add bodies that aren't being removed
         mRigidBodiesToAddCache.removeAll(mRigidBodiesToDeleteCache);
         for (RigidBody body : mRigidBodiesToDeleteCache) {
             destroyRigidBody(body);

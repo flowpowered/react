@@ -40,7 +40,7 @@ public class RigidBody extends CollisionBody {
     private float mMass;
     private float mMassInverse;
     private final Matrix3x3 mInertiaTensorLocal = new Matrix3x3();
-    private final Matrix3x3 mInertiaTensorLocalInverse = new Matrix3x3();
+    private final Matrix3x3 mInertiaTensorLocalInverse;
     private final Vector3 mExternalForce = new Vector3();
     private final Vector3 mExternalTorque = new Vector3();
     private final Vector3 mLinearVelocity = new Vector3();
@@ -59,7 +59,7 @@ public class RigidBody extends CollisionBody {
         super(transform, collisionShape, id);
         mInertiaTensorLocal.set(inertiaTensorLocal);
         mMass = mass;
-        mInertiaTensorLocalInverse.set(inertiaTensorLocal.getInverse());
+        mInertiaTensorLocalInverse = inertiaTensorLocal.getInverse();
         mMassInverse = 1 / mass;
     }
 

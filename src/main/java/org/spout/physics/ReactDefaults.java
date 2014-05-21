@@ -71,7 +71,7 @@ public class ReactDefaults {
      */
     public static final int DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS = 15;
     /**
-     * Number of iterations when solving the position constraints of the Sequential Impulse technique. Default: 3
+     * Number of iterations when solving the position constraints of the Sequential Impulse technique. Default: 5
      */
     public static final int DEFAULT_POSITION_SOLVER_NB_ITERATIONS = 5;
     /**
@@ -88,11 +88,11 @@ public class ReactDefaults {
      */
     public static enum JointsPositionCorrectionTechnique {
         /**
-         * Faster but can be inaccurate in some situations. This is the option used by default.
+         * Faster but can be inaccurate in some situations.
          */
         BAUMGARTE_JOINTS,
         /**
-         * Slower but more precise.
+         * Slower but more precise. This is the option used by default.
          */
         NON_LINEAR_GAUSS_SEIDEL
     }
