@@ -37,6 +37,7 @@ import org.spout.physics.math.Vector3;
 public class RigidBody extends CollisionBody {
     private static final RigidBodyMaterial DEFAULT_MATERIAL = RigidBodyMaterial.asUnmodifiableMaterial(new RigidBodyMaterial());
     private RigidBodyMaterial mMaterial = DEFAULT_MATERIAL;
+    private boolean mIsGravityEnabled;
     private float mMass;
     private float mMassInverse;
     private final Matrix3x3 mInertiaTensorLocal = new Matrix3x3();
@@ -61,6 +62,25 @@ public class RigidBody extends CollisionBody {
         mMass = mass;
         mInertiaTensorLocalInverse = inertiaTensorLocal.getInverse();
         mMassInverse = 1 / mass;
+        mIsGravityEnabled = true;
+    }
+
+    /**
+     * Returns true if the gravity needs to be applied to this rigid body.
+     *
+     * @return Whether or not gravity should be applied to the body
+     */
+    public boolean isGravityEnabled() {
+        return mIsGravityEnabled;
+    }
+
+    /**
+     * Sets the variable to know if the gravity is applied to this rigid body.
+     *
+     * @param isEnabled The new gravity state
+     */
+    public void enableGravity(boolean isEnabled) {
+        mIsGravityEnabled = isEnabled;
     }
 
     /**

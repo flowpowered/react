@@ -244,7 +244,6 @@ public class DynamicsWorld extends CollisionWorld {
             throw new IllegalStateException("timer must be running");
         }
         mTimer.update();
-        applyGravity();
         isTicking = true;
         while (mTimer.isPossibleToTakeStep()) {
             mContactManifolds.clear();
@@ -344,6 +343,9 @@ public class DynamicsWorld extends CollisionWorld {
                                 Matrix3x3.multiply(dt, rigidBody.getInertiaTensorInverseWorld()),
                                 rigidBody.getExternalTorque())
                 ));
+                if (rigidBody.isGravityEnabled() && mIsGravityOn) {
+                    mConstrainedLinearVelocities.get(i).add(Vector3.multiply(dt * rigidBody.getMassInverse() * rigidBody.getMass(), mGravity));
+                }
                 rigidBody.updateOldTransform();
             } else {
                 mConstrainedLinearVelocities.add(i, new Vector3(0, 0, 0));
@@ -424,18 +426,6 @@ public class DynamicsWorld extends CollisionWorld {
         mConstrainedLinearVelocities.clear();
         mConstrainedAngularVelocities.clear();
         mMapBodyToConstrainedVelocityIndex.clear();
-    }
-
-    // Applies the gravity force to all bodies of the physics world.
-    private void applyGravity() {
-        if (mIsGravityOn) {
-            for (RigidBody rigidBody : mRigidBodies) {
-                if (rigidBody == null) {
-                    throw new IllegalStateException("rigid body cannot be null");
-                }
-                rigidBody.setExternalForce(Vector3.multiply(rigidBody.getMass(), mGravity));
-            }
-        }
     }
 
     /**
