@@ -48,14 +48,14 @@ public class ConeShape extends CollisionShape {
     public ConeShape(float radius, float height) {
         super(CollisionShapeType.CONE);
         mRadius = radius;
-        mHalfHeight = height / 2;
-        if (radius <= 0) {
+        mHalfHeight = height * 0.5f;
+        if (mRadius <= 0) {
             throw new IllegalArgumentException("Radius must be greater than zero");
         }
         if (mHalfHeight <= 0) {
             throw new IllegalArgumentException("Height must be greater than zero");
         }
-        mSinTheta = radius / (float) Math.sqrt(radius * radius + height * height);
+        mSinTheta = mRadius / (float) Math.sqrt(mRadius * mRadius + height * height);
     }
 
     /**
@@ -126,7 +126,7 @@ public class ConeShape extends CollisionShape {
         final Vector3 v = direction;
         final float sinThetaTimesLengthV = mSinTheta * v.length();
         final Vector3 supportPoint;
-        if (v.getY() >= sinThetaTimesLengthV) {
+        if (v.getY() > sinThetaTimesLengthV) {
             supportPoint = new Vector3(0, mHalfHeight, 0);
         } else {
             final float projectedLength = (float) Math.sqrt(v.getX() * v.getX() + v.getZ() * v.getZ());
@@ -134,7 +134,7 @@ public class ConeShape extends CollisionShape {
                 final float d = mRadius / projectedLength;
                 supportPoint = new Vector3(v.getX() * d, -mHalfHeight, v.getZ() * d);
             } else {
-                supportPoint = new Vector3(mRadius, -mHalfHeight, 0);
+                supportPoint = new Vector3(0, -mHalfHeight, 0);
             }
         }
         return supportPoint;
