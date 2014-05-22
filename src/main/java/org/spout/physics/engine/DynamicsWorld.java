@@ -218,6 +218,15 @@ public class DynamicsWorld extends CollisionWorld {
     }
 
     /**
+     * Returns a reference to the contact manifolds of the world.
+     *
+     * @return The contact manifolds
+     */
+    public List<ContactManifold> getContactManifolds() {
+        return mContactManifolds;
+    }
+
+    /**
      * Gets the number of contact manifolds in the world.
      *
      * @return The number of contact manifolds in the world
