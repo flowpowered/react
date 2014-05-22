@@ -457,7 +457,7 @@ public class HingeJoint extends Constraint {
                 mInverseMassMatrixLimitMotor = mInverseMassMatrixLimitMotor > 0 ? 1 / mInverseMassMatrixLimitMotor : 0;
             }
             if (mIsLowerLimitViolated) {
-                final float lambdaLowerLimit = mInverseMassMatrixLimitMotor * (-lowerLimitError);
+                final float lambdaLowerLimit = mInverseMassMatrixLimitMotor * -lowerLimitError;
                 if (mBody1.getIsMotionEnabled()) {
                     final Vector3 angularImpulseBody1 = Vector3.multiply(-lambdaLowerLimit, mA1);
                     final Vector3 w1 = Matrix3x3.multiply(mI1, angularImpulseBody1);
@@ -472,7 +472,7 @@ public class HingeJoint extends Constraint {
                 }
             }
             if (mIsUpperLimitViolated) {
-                final float lambdaUpperLimit = mInverseMassMatrixLimitMotor * (-upperLimitError);
+                final float lambdaUpperLimit = mInverseMassMatrixLimitMotor * -upperLimitError;
                 if (mBody1.getIsMotionEnabled()) {
                     final Vector3 angularImpulseBody1 = Vector3.multiply(lambdaUpperLimit, mA1);
                     final Vector3 w1 = Matrix3x3.multiply(mI1, angularImpulseBody1);
