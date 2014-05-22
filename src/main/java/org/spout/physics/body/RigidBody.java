@@ -27,6 +27,7 @@
 package org.spout.physics.body;
 
 import org.spout.physics.collision.shape.CollisionShape;
+import org.spout.physics.engine.Material;
 import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
@@ -35,8 +36,8 @@ import org.spout.physics.math.Vector3;
  * Represents a rigid body for the physics engine. A rigid body is a non-deformable body that has a constant mass. This class inherits from the CollisionBody class.
  */
 public class RigidBody extends CollisionBody {
-    private static final RigidBodyMaterial DEFAULT_MATERIAL = RigidBodyMaterial.asUnmodifiableMaterial(new RigidBodyMaterial());
-    private RigidBodyMaterial mMaterial = DEFAULT_MATERIAL;
+    private static final Material DEFAULT_MATERIAL = Material.asUnmodifiableMaterial(new Material());
+    private Material mMaterial = DEFAULT_MATERIAL;
     private boolean mIsGravityEnabled;
     private float mMass;
     private float mMassInverse;
@@ -238,7 +239,7 @@ public class RigidBody extends CollisionBody {
      *
      * @param material The material to set
      */
-    public void setMaterial(RigidBodyMaterial material) {
+    public void setMaterial(Material material) {
         mMaterial = material;
     }
 
@@ -247,25 +248,7 @@ public class RigidBody extends CollisionBody {
      *
      * @return The material
      */
-    public RigidBodyMaterial getMaterial() {
+    public Material getMaterial() {
         return mMaterial;
-    }
-
-    /**
-     * Gets the restitution for this body.
-     *
-     * @return The restitution
-     */
-    public float getRestitution() {
-        return mMaterial.getRestitution();
-    }
-
-    /**
-     * Gets the friction for this body.
-     *
-     * @return The friction
-     */
-    public float getFriction() {
-        return mMaterial.getFriction();
     }
 }

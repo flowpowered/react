@@ -161,14 +161,14 @@ public class ContactSolver {
 
     // Computes the collision restitution factor from the restitution factor of each body.
     private float computeMixedRestitutionFactor(RigidBody body1, RigidBody body2) {
-        final float restitution1 = body1.getRestitution();
-        final float restitution2 = body2.getRestitution();
+        final float restitution1 = body1.getMaterial().getBounciness();
+        final float restitution2 = body2.getMaterial().getBounciness();
         return (restitution1 > restitution2) ? restitution1 : restitution2;
     }
 
     // Computes the mixed friction coefficient from the friction coefficient of each body.
     private float computeMixedFrictionCoefficient(RigidBody body1, RigidBody body2) {
-        return (float) Math.sqrt(body1.getFriction() * body2.getFriction());
+        return (float) Math.sqrt(body1.getMaterial().getFrictionCoefficient() * body2.getMaterial().getFrictionCoefficient());
     }
 
     // Computes a penetration constraint impulse.

@@ -51,6 +51,10 @@ public class ReactDefaults {
      */
     public static final float DEFAULT_FRICTION_COEFFICIENT = 0.3f;
     /**
+     * Default bounciness factor for a rigid body. Default: 0.5
+     */
+    public static final float DEFAULT_BOUNCINESS = 0.5f;
+    /**
      * True if the deactivation (sleeping) of inactive bodies is enabled. Default: true
      */
     public static final boolean DEACTIVATION_ENABLED = true;
