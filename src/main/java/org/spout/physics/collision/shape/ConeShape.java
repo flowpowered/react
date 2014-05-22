@@ -35,9 +35,9 @@ import org.spout.physics.math.Vector3;
  * height. The "transform" of the corresponding rigid body gives an orientation and a position to the cone.
  */
 public class ConeShape extends CollisionShape {
-    private float mRadius;
-    private float mHalfHeight;
-    private float mSinTheta;
+    private final float mRadius;
+    private final float mHalfHeight;
+    private final float mSinTheta;
 
     /**
      * Constructs a new cone shape from the radius of the base and the height.
@@ -46,7 +46,18 @@ public class ConeShape extends CollisionShape {
      * @param height The height
      */
     public ConeShape(float radius, float height) {
-        super(CollisionShapeType.CONE);
+        this(radius, height, ReactDefaults.OBJECT_MARGIN);
+    }
+
+    /**
+     * Constructs a new cone shape from the radius of the base and the height and the AABB margin.
+     *
+     * @param radius The radius of the base
+     * @param height The height
+     * @param margin The margin
+     */
+    public ConeShape(float radius, float height, float margin) {
+        super(CollisionShapeType.CONE, margin);
         mRadius = radius;
         mHalfHeight = height * 0.5f;
         if (mRadius <= 0) {
@@ -54,6 +65,9 @@ public class ConeShape extends CollisionShape {
         }
         if (mHalfHeight <= 0) {
             throw new IllegalArgumentException("Height must be greater than zero");
+        }
+        if (margin <= 0) {
+            throw new IllegalArgumentException("Margin must be greater than 0");
         }
         mSinTheta = mRadius / (float) Math.sqrt(mRadius * mRadius + height * height);
     }
@@ -80,32 +94,12 @@ public class ConeShape extends CollisionShape {
     }
 
     /**
-     * Sets the radius of the base.
-     *
-     * @param radius The radius to set
-     */
-    public void setRadius(float radius) {
-        this.mRadius = radius;
-        mSinTheta = radius / (float) Math.sqrt(radius * radius + 4 * mHalfHeight * mHalfHeight);
-    }
-
-    /**
      * Gets the height of the cone.
      *
      * @return The height
      */
     public float getHeight() {
         return 2 * mHalfHeight;
-    }
-
-    /**
-     * Sets the height of the cone.
-     *
-     * @param height The height to set
-     */
-    public void setHeight(float height) {
-        this.mHalfHeight = height * 0.5f;
-        mSinTheta = mRadius / (float) Math.sqrt(mRadius * mRadius + height * height);
     }
 
     @Override
@@ -117,7 +111,7 @@ public class ConeShape extends CollisionShape {
         } else {
             unitVec = new Vector3(0, -1, 0);
         }
-        supportPoint.add(Vector3.multiply(unitVec, getMargin()));
+        supportPoint.add(Vector3.multiply(unitVec, mMargin));
         return supportPoint;
     }
 
@@ -141,13 +135,8 @@ public class ConeShape extends CollisionShape {
     }
 
     @Override
-    public Vector3 getLocalExtents(float margin) {
-        return new Vector3(mRadius + margin, mHalfHeight + margin, mRadius + margin);
-    }
-
-    @Override
-    public float getMargin() {
-        return ReactDefaults.OBJECT_MARGIN;
+    public Vector3 getLocalExtents() {
+        return new Vector3(mRadius + mMargin, mHalfHeight + mMargin, mRadius + mMargin);
     }
 
     @Override

@@ -35,7 +35,7 @@ import org.spout.physics.math.Vector3;
  * Represents a sphere collision shape that is centered at the origin and defined by its radius.
  */
 public class SphereShape extends CollisionShape {
-    private float mRadius;
+    private final float mRadius;
 
     /**
      * Constructs a new sphere from the radius.
@@ -43,8 +43,11 @@ public class SphereShape extends CollisionShape {
      * @param radius The radius
      */
     public SphereShape(float radius) {
-        super(CollisionShapeType.SPHERE);
+        super(CollisionShapeType.SPHERE, radius);
         mRadius = radius;
+        if (radius <= 0) {
+            throw new IllegalArgumentException("Radius must be greater than zero");
+        }
     }
 
     /**
@@ -66,22 +69,12 @@ public class SphereShape extends CollisionShape {
         return mRadius;
     }
 
-    /**
-     * Sets the radius.
-     *
-     * @param radius The radius
-     */
-    public void setRadius(float radius) {
-        this.mRadius = radius;
-    }
-
     @Override
     public Vector3 getLocalSupportPointWithMargin(Vector3 direction) {
-        final float margin = getMargin();
         if (direction.lengthSquare() >= ReactDefaults.MACHINE_EPSILON * ReactDefaults.MACHINE_EPSILON) {
-            return Vector3.multiply(margin, direction.getUnit());
+            return Vector3.multiply(mMargin, direction.getUnit());
         }
-        return new Vector3(0, margin, 0);
+        return new Vector3(0, mMargin, 0);
     }
 
     @Override
@@ -90,13 +83,8 @@ public class SphereShape extends CollisionShape {
     }
 
     @Override
-    public Vector3 getLocalExtents(float margin) {
-        return new Vector3(mRadius + margin, mRadius + margin, mRadius + margin);
-    }
-
-    @Override
-    public float getMargin() {
-        return mRadius + ReactDefaults.OBJECT_MARGIN;
+    public Vector3 getLocalExtents() {
+        return new Vector3(mRadius, mRadius, mRadius);
     }
 
     @Override
@@ -110,7 +98,7 @@ public class SphereShape extends CollisionShape {
 
     @Override
     public void updateAABB(AABB aabb, Transform transform) {
-        final Vector3 extents = getLocalExtents(ReactDefaults.OBJECT_MARGIN);
+        final Vector3 extents = getLocalExtents();
         final Vector3 minCoordinates = Vector3.subtract(transform.getPosition(), extents);
         final Vector3 maxCoordinates = Vector3.add(transform.getPosition(), extents);
         aabb.setMin(minCoordinates);

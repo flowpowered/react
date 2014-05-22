@@ -55,7 +55,7 @@ public class ReactDefaults {
      */
     public static final boolean DEACTIVATION_ENABLED = true;
     /**
-     * Object margin for collision detection in cm. Default: 0.04
+     * Object margin for collision detection in meters (for the GJK-EPA Algorithm). Default: 0.04
      */
     public static final float OBJECT_MARGIN = 0.04f;
     /**

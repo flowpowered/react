@@ -26,7 +26,6 @@
  */
 package org.spout.physics.collision.shape;
 
-import org.spout.physics.ReactDefaults;
 import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
@@ -37,20 +36,28 @@ import org.spout.physics.math.Vector3;
 public abstract class CollisionShape {
     protected final CollisionShapeType mType;
     private int mNbSimilarCreatedShapes;
+    protected final float mMargin;
 
     /**
      * Constructs a new collision shape from its type.
      *
      * @param type The type of the collision shape
      */
-    protected CollisionShape(CollisionShapeType type) {
+    protected CollisionShape(CollisionShapeType type, float margin) {
         mType = type;
         mNbSimilarCreatedShapes = 0;
+        mMargin = margin;
     }
 
+    /**
+     * Copy constructor.
+     *
+     * @param shape The shape to copy
+     */
     protected CollisionShape(CollisionShape shape) {
-        mType = shape.getType();
+        mType = shape.mType;
         mNbSimilarCreatedShapes = shape.mNbSimilarCreatedShapes;
+        mMargin = shape.mMargin;
     }
 
     /**
@@ -60,6 +67,15 @@ public abstract class CollisionShape {
      */
     public CollisionShapeType getType() {
         return mType;
+    }
+
+    /**
+     * Gets the margin distance around the shape.
+     *
+     * @return The margin for the shape
+     */
+    public float getMargin() {
+        return mMargin;
     }
 
     /**
@@ -79,19 +95,11 @@ public abstract class CollisionShape {
     public abstract Vector3 getLocalSupportPointWithoutMargin(Vector3 direction);
 
     /**
-     * Gets the local extents in x,y and z direction with the desired margin .
+     * Gets the local extents in x,y and z direction.
      *
-     * @param margin The required margin
      * @return The local extents
      */
-    public abstract Vector3 getLocalExtents(float margin);
-
-    /**
-     * Gets the margin distance around the shape.
-     *
-     * @return The margin for the shape
-     */
-    public abstract float getMargin();
+    public abstract Vector3 getLocalExtents();
 
     /**
      * Computes the local inertia tensor of the collision shape for the mass. Stores the results in the passed matrix3x3.
@@ -123,7 +131,7 @@ public abstract class CollisionShape {
      * @param transform The AABB's transform
      */
     public void updateAABB(AABB aabb, Transform transform) {
-        final Vector3 extents = getLocalExtents(ReactDefaults.OBJECT_MARGIN);
+        final Vector3 extents = getLocalExtents();
         final Matrix3x3 worldAxis = transform.getOrientation().getMatrix().getAbsoluteMatrix();
         final Vector3 worldExtents = new Vector3(
                 worldAxis.getColumn(Matrix3x3.FIRST_COLUMN).dot(extents),
@@ -167,7 +175,7 @@ public abstract class CollisionShape {
             return false;
         }
         final CollisionShape that = (CollisionShape) o;
-        return mType == that.mType && that.isEqualTo(this);
+        return mMargin == that.mMargin && mType == that.mType && that.isEqualTo(this);
     }
 
     @Override
@@ -189,6 +197,7 @@ public abstract class CollisionShape {
         BOX,
         SPHERE,
         CONE,
-        CYLINDER
+        CYLINDER,
+        CAPSULE
     }
 }

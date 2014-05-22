@@ -71,7 +71,7 @@ public class Dummies {
     }
 
     public static CollisionBody newCollisionBody(int id) {
-        return new RigidBody(Transform.identity(), 0, Matrix3x3.identity(), new BoxShape(new Vector3()), id);
+        return new RigidBody(Transform.identity(), 0, Matrix3x3.identity(), new BoxShape(new Vector3(1, 1, 1)), id);
     }
 
     public static AABB newAABB() {

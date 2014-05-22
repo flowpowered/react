@@ -35,8 +35,8 @@ import org.spout.physics.math.Vector3;
  * gives an orientation and a position to the cylinder.
  */
 public class CylinderShape extends CollisionShape {
-    private float mRadius;
-    private float mHalfHeight;
+    private final float mRadius;
+    private final float mHalfHeight;
 
     /**
      * Constructs a new cylinder from the radius of the base and the height.
@@ -45,9 +45,29 @@ public class CylinderShape extends CollisionShape {
      * @param height The height
      */
     public CylinderShape(float radius, float height) {
-        super(CollisionShapeType.CYLINDER);
+        this(radius, height, ReactDefaults.OBJECT_MARGIN);
+    }
+
+    /**
+     * Constructs a new cylinder from the radius of the base and the height and the AABB margin.
+     *
+     * @param radius The radius of the base
+     * @param height The height
+     * @param margin The margin
+     */
+    public CylinderShape(float radius, float height, float margin) {
+        super(CollisionShapeType.CYLINDER, margin);
         mRadius = radius;
         mHalfHeight = height / 2;
+        if (mRadius <= 0) {
+            throw new IllegalArgumentException("Radius must be greater than zero");
+        }
+        if (height <= 0) {
+            throw new IllegalArgumentException("Height must be greater than zero");
+        }
+        if (margin <= 0) {
+            throw new IllegalArgumentException("Margin must be greater than 0");
+        }
     }
 
     /**
@@ -79,24 +99,6 @@ public class CylinderShape extends CollisionShape {
         return mHalfHeight * 2;
     }
 
-    /**
-     * Sets the radius of the base.
-     *
-     * @param radius The radius to set
-     */
-    public void setRadius(float radius) {
-        this.mRadius = radius;
-    }
-
-    /**
-     * Sets the height of the cylinder.
-     *
-     * @param height The height of the cylinder to set
-     */
-    public void setHeight(float height) {
-        this.mHalfHeight = height * 0.5f;
-    }
-
     @Override
     public Vector3 getLocalSupportPointWithMargin(Vector3 direction) {
         final Vector3 supportPoint = getLocalSupportPointWithoutMargin(direction);
@@ -106,7 +108,7 @@ public class CylinderShape extends CollisionShape {
         } else {
             unitVec = new Vector3(0, 1, 0);
         }
-        supportPoint.add(Vector3.multiply(unitVec, getMargin()));
+        supportPoint.add(Vector3.multiply(unitVec, mMargin));
         return supportPoint;
     }
 
@@ -134,13 +136,8 @@ public class CylinderShape extends CollisionShape {
     }
 
     @Override
-    public Vector3 getLocalExtents(float margin) {
-        return new Vector3(mRadius + margin, mHalfHeight + margin, mRadius + margin);
-    }
-
-    @Override
-    public float getMargin() {
-        return ReactDefaults.OBJECT_MARGIN;
+    public Vector3 getLocalExtents() {
+        return new Vector3(mRadius + mMargin, mHalfHeight + mMargin, mRadius + mMargin);
     }
 
     @Override
