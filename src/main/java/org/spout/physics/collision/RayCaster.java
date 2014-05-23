@@ -33,6 +33,7 @@ import java.util.Map.Entry;
 
 import org.spout.physics.body.CollisionBody;
 import org.spout.physics.collision.shape.BoxShape;
+import org.spout.physics.collision.shape.CapsuleShape;
 import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.collision.shape.ConeShape;
 import org.spout.physics.collision.shape.CylinderShape;
@@ -54,8 +55,7 @@ public class RayCaster {
      * @param bodies The bodies to check for intersection
      * @return The closest body to the ray start and its intersection point
      */
-    public static IntersectedBody findClosestIntersectingBody(Vector3 rayStart, Vector3 rayDir,
-                                                              Collection<CollisionBody> bodies) {
+    public static IntersectedBody findClosestIntersectingBody(Vector3 rayStart, Vector3 rayDir, Collection<CollisionBody> bodies) {
         final Map<CollisionBody, Vector3> intersecting = findIntersectingBodies(rayStart, rayDir, bodies);
         CollisionBody closest = null;
         float closestDistance = Float.MAX_VALUE;
@@ -81,8 +81,7 @@ public class RayCaster {
      * @param bodies The bodies to check for intersection
      * @return The furthest body from the ray start and its intersection point
      */
-    public static IntersectedBody findFurthestIntersectingBody(Vector3 rayStart, Vector3 rayDir,
-                                                               Collection<CollisionBody> bodies) {
+    public static IntersectedBody findFurthestIntersectingBody(Vector3 rayStart, Vector3 rayDir, Collection<CollisionBody> bodies) {
         final Map<CollisionBody, Vector3> intersecting = findIntersectingBodies(rayStart, rayDir, bodies);
         CollisionBody furthest = null;
         float furthestDistance = Float.MIN_VALUE;
@@ -107,8 +106,7 @@ public class RayCaster {
      * @param bodies The bodies to check for intersection
      * @return All of the intersection bodies, in no particular order, mapped to the intersection point
      */
-    public static Map<CollisionBody, Vector3> findIntersectingBodies(Vector3 rayStart, Vector3 rayDir,
-                                                                     Collection<CollisionBody> bodies) {
+    public static Map<CollisionBody, Vector3> findIntersectingBodies(Vector3 rayStart, Vector3 rayDir, Collection<CollisionBody> bodies) {
         final Map<CollisionBody, Vector3> intersecting = new HashMap<>();
         final Vector3 intersectionPoint = new Vector3();
         for (CollisionBody body : bodies) {
@@ -120,9 +118,7 @@ public class RayCaster {
     }
 
     // Tests for intersection between a ray defined by a starting point and a direction and a collision shape
-    private static boolean intersects(Vector3 rayStart, Vector3 rayDir,
-                                      CollisionShape shape, Transform transform,
-                                      Vector3 intersectionPoint) {
+    private static boolean intersects(Vector3 rayStart, Vector3 rayDir, CollisionShape shape, Transform transform, Vector3 intersectionPoint) {
         final Transform worldToObject = transform.getInverse();
         final Vector3 objRayStart = Transform.multiply(worldToObject, rayStart);
         final Vector3 objRayDir = Matrix3x3.multiply(worldToObject.getOrientation().getMatrix(), rayDir);
@@ -140,6 +136,9 @@ public class RayCaster {
             case CYLINDER:
                 intersects = intersects(objRayStart, objRayDir, (CylinderShape) shape, intersectionPoint);
                 break;
+            case CAPSULE:
+                intersects = intersects(objRayStart, objRayDir, (CapsuleShape) shape, intersectionPoint);
+                break;
             default:
                 throw new IllegalArgumentException("unknown collision shape");
         }
@@ -151,8 +150,7 @@ public class RayCaster {
     }
 
     // Tests for intersection between a ray defined by a starting point and a direction and a box
-    private static boolean intersects(Vector3 rayStart, Vector3 rayDir,
-                                      BoxShape box, Vector3 intersectionPoint) {
+    private static boolean intersects(Vector3 rayStart, Vector3 rayDir, BoxShape box, Vector3 intersectionPoint) {
         final Vector3 extent = box.getExtent();
         final Vector3 min = Vector3.negate(extent);
         final Vector3 max = extent;
@@ -215,8 +213,7 @@ public class RayCaster {
     }
 
     // Tests for intersection between a ray defined by a starting point and a direction and a sphere
-    private static boolean intersects(Vector3 rayStart, Vector3 rayDir,
-                                      SphereShape sphere, Vector3 intersectionPoint) {
+    private static boolean intersects(Vector3 rayStart, Vector3 rayDir, SphereShape sphere, Vector3 intersectionPoint) {
         final float a = rayDir.dot(rayDir);
         final float b = Vector3.multiply(rayDir, 2).dot(rayStart);
         final float r = sphere.getRadius();
@@ -247,8 +244,7 @@ public class RayCaster {
     }
 
     // Tests for intersection between a ray defined by a starting point and a direction and a cone
-    private static boolean intersects(Vector3 rayStart, Vector3 rayDir,
-                                      ConeShape cone, Vector3 intersectionPoint) {
+    private static boolean intersects(Vector3 rayStart, Vector3 rayDir, ConeShape cone, Vector3 intersectionPoint) {
         final float vx = rayDir.getX();
         final float vy = rayDir.getY();
         final float vz = rayDir.getZ();
@@ -302,8 +298,7 @@ public class RayCaster {
     }
 
     // Tests for intersection between a ray defined by a starting point and a direction and a cylinder
-    private static boolean intersects(Vector3 rayStart, Vector3 rayDir,
-                                      CylinderShape cylinder, Vector3 intersectionPoint) {
+    private static boolean intersects(Vector3 rayStart, Vector3 rayDir, CylinderShape cylinder, Vector3 intersectionPoint) {
         final float vx = rayDir.getX();
         final float vy = rayDir.getY();
         final float vz = rayDir.getZ();
@@ -371,6 +366,52 @@ public class RayCaster {
             return true;
         }
         return false;
+    }
+
+    // Tests for intersection between a ray defined by a starting point and a direction and a capsule
+    private static boolean intersects(Vector3 rayStart, Vector3 rayDir, CapsuleShape capsule, Vector3 intersectionPoint) {
+        final float vx = rayDir.getX();
+        final float vy = rayDir.getY();
+        final float vz = rayDir.getZ();
+        final float px = rayStart.getX();
+        final float py = rayStart.getY();
+        final float pz = rayStart.getZ();
+        final float r = capsule.getRadius();
+        final float h = capsule.getHeight() / 2;
+        final float r2 = r * r;
+        final float a = vx * vx + vz * vz;
+        final float b = 2 * px * vx + 2 * pz * vz;
+        final float c = px * px + pz * pz - r2;
+        final float discriminant = b * b - 4 * a * c;
+        float tc0 = Float.MAX_VALUE;
+        float tc1 = Float.MAX_VALUE;
+        if (discriminant >= 0) {
+            final float discriminantRoot = (float) Math.sqrt(discriminant);
+            final float t0 = (-b + discriminantRoot) / (2 * a);
+            if (t0 >= 0) {
+                final float ry0 = py + vy * t0;
+                if (ry0 >= -h && ry0 <= h) {
+                    tc0 = t0;
+                }
+            }
+            final float t1 = (-b - discriminantRoot) / (2 * a);
+            if (t1 >= 0) {
+                final float ry1 = py + vy * t1;
+                if (ry1 >= -h && ry1 <= h) {
+                    tc1 = t1;
+                }
+            }
+        }
+        final float t = Math.min(tc0, tc1);
+        if (t != Float.MAX_VALUE) {
+            intersectionPoint.set(Vector3.add(rayStart, Vector3.multiply(rayDir, t)));
+            return true;
+        }
+        final SphereShape sphere = new SphereShape(capsule.getRadius());
+        final Vector3 dy = new Vector3(0, h, 0);
+        final Vector3 rayStartTop = Vector3.subtract(rayStart, dy);
+        final Vector3 rayStartBottom = Vector3.add(rayStart, dy);
+        return intersects(rayStartTop, rayDir, sphere, intersectionPoint) || intersects(rayStartBottom, rayDir, sphere, intersectionPoint);
     }
 
     /**

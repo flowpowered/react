@@ -96,7 +96,7 @@ public class CylinderShape extends CollisionShape {
      * @return The height
      */
     public float getHeight() {
-        return mHalfHeight * 2;
+        return mHalfHeight + mHalfHeight;
     }
 
     @Override

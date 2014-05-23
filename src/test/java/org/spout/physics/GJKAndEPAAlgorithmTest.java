@@ -36,6 +36,7 @@ import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.BroadPhasePair;
 import org.spout.physics.collision.narrowphase.GJK.GJKAlgorithm;
 import org.spout.physics.collision.shape.BoxShape;
+import org.spout.physics.collision.shape.CapsuleShape;
 import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.collision.shape.ConeShape;
 import org.spout.physics.collision.shape.CylinderShape;
@@ -86,28 +87,30 @@ public class GJKAndEPAAlgorithmTest {
                 final BoxShape box = (BoxShape) s1;
                 final Vector3 extend = box.getExtent();
                 in.setAllValues(
-                        RANDOM.nextInt((int) extend.getX() * 2 + 1) - extend.getX(),
-                        RANDOM.nextInt((int) extend.getY() * 2 + 1) - extend.getY(),
-                        RANDOM.nextInt((int) extend.getZ() * 2 + 1) - extend.getZ());
+                        RANDOM.nextFloat() * extend.getX() * 2 - extend.getX(),
+                        RANDOM.nextFloat() * extend.getY() * 2 - extend.getY(),
+                        RANDOM.nextFloat() * extend.getZ() * 2 - extend.getZ());
                 break;
             }
             case CONE: {
                 final ConeShape cone = (ConeShape) s1;
                 final float height = cone.getHeight();
-                final float y = RANDOM.nextInt((int) height + 1) - height / 2;
-                final float r = RANDOM.nextFloat() * (height - y - height / 2) * (cone.getRadius() / height);
-                final float x = r * (float) Math.cos(RANDOM.nextDouble() * 2 * Math.PI);
-                final float z = r * (float) Math.sin(RANDOM.nextDouble() * 2 * Math.PI);
+                final float y = RANDOM.nextFloat() * height - height / 2;
+                final float r = RANDOM.nextFloat() * (height / 2 - y) * (cone.getRadius() / height);
+                final double theta = RANDOM.nextDouble() * 2 * Math.PI;
+                final float x = r * (float) Math.cos(theta);
+                final float z = r * (float) Math.sin(theta);
                 in.setAllValues(x, y, z);
                 break;
             }
             case CYLINDER: {
                 final CylinderShape cylinder = (CylinderShape) s1;
+                final double theta = RANDOM.nextDouble() * 2 * Math.PI;
                 final float r = RANDOM.nextFloat() * cylinder.getRadius();
                 in.setAllValues(
-                        r * (float) Math.cos(RANDOM.nextDouble() * 2 * Math.PI),
-                        RANDOM.nextInt((int) cylinder.getHeight() + 1) - cylinder.getHeight() / 2,
-                        r * (float) Math.sin(RANDOM.nextDouble() * 2 * Math.PI));
+                        r * (float) Math.cos(theta),
+                        RANDOM.nextFloat() * cylinder.getHeight() - cylinder.getHeight() / 2,
+                        r * (float) Math.sin(theta));
                 break;
             }
             case SPHERE: {
@@ -119,6 +122,26 @@ public class GJKAndEPAAlgorithmTest {
                         r * (float) Math.sin(theta) * (float) Math.cos(phi),
                         r * (float) Math.sin(theta) * (float) Math.sin(phi),
                         r * (float) Math.cos(theta));
+                break;
+            }
+            case CAPSULE: {
+                final CapsuleShape capsule = (CapsuleShape) s1;
+                final float radius = capsule.getRadius();
+                final float halfHeight = capsule.getHeight() / 2;
+                final float totalHeight = capsule.getHeight() + radius * 2;
+                final float y = RANDOM.nextFloat() * totalHeight - totalHeight / 2;
+                final double theta = RANDOM.nextDouble() * 2 * Math.PI;
+                final float r;
+                if (y >= -halfHeight && y <= halfHeight) {
+                    r = RANDOM.nextFloat() * radius;
+                } else {
+                    final float dy = Math.abs(y) - halfHeight;
+                    r = RANDOM.nextFloat() * (float) Math.sqrt(radius * radius - dy * dy);
+                }
+                in.setAllValues(
+                        r * (float) Math.cos(theta),
+                        y,
+                        r * (float) Math.sin(theta));
                 break;
             }
             default:
@@ -133,20 +156,23 @@ public class GJKAndEPAAlgorithmTest {
                     case 0: {
                         surface.setAllValues(
                                 RANDOM.nextBoolean() ? extend.getX() : -extend.getX(),
-                                RANDOM.nextInt((int) extend.getY() * 2 + 1) - extend.getY(),
-                                RANDOM.nextInt((int) extend.getZ() * 2 + 1) - extend.getZ());
+                                RANDOM.nextFloat() * extend.getY() * 2 - extend.getY(),
+                                RANDOM.nextFloat() * extend.getZ() * 2 - extend.getZ());
+                        break;
                     }
                     case 1: {
                         surface.setAllValues(
-                                RANDOM.nextInt((int) extend.getX() * 2 + 1) - extend.getX(),
+                                RANDOM.nextFloat() * extend.getX() * 2 - extend.getX(),
                                 RANDOM.nextBoolean() ? extend.getY() : -extend.getY(),
-                                RANDOM.nextInt((int) extend.getZ() * 2 + 1) - extend.getZ());
+                                RANDOM.nextFloat() * extend.getZ() * 2 - extend.getZ());
+                        break;
                     }
                     case 2: {
                         surface.setAllValues(
-                                RANDOM.nextInt((int) extend.getX() * 2 + 1) - extend.getX(),
-                                RANDOM.nextInt((int) extend.getY() * 2 + 1) - extend.getY(),
+                                RANDOM.nextFloat() * extend.getX() * 2 - extend.getX(),
+                                RANDOM.nextFloat() * extend.getY() * 2 - extend.getY(),
                                 RANDOM.nextBoolean() ? extend.getZ() : -extend.getZ());
+                        break;
                     }
                 }
                 break;
@@ -154,24 +180,21 @@ public class GJKAndEPAAlgorithmTest {
             case CONE: {
                 final ConeShape cone = (ConeShape) s2;
                 final float height = cone.getHeight();
-                final float y = RANDOM.nextInt((int) height + 1) - height / 2;
-                final float r;
-                if (y == -height / 2) {
-                    r = RANDOM.nextFloat();
-                } else {
-                    r = (height - y - height / 2) * (cone.getRadius() / height);
-                }
-                final float x = r * (float) Math.cos(RANDOM.nextDouble() * 2 * Math.PI);
-                final float z = r * (float) Math.sin(RANDOM.nextDouble() * 2 * Math.PI);
+                final float y = RANDOM.nextFloat() * height - height / 2;
+                final float r = y == -height / 2 ? RANDOM.nextFloat() : (height / 2 - y) * (cone.getRadius() / height);
+                final double theta = RANDOM.nextDouble() * 2 * Math.PI;
+                final float x = r * (float) Math.cos(theta);
+                final float z = r * (float) Math.sin(theta);
                 surface.setAllValues(x, y, z);
                 break;
             }
             case CYLINDER: {
                 final CylinderShape cylinder = (CylinderShape) s2;
-                final float y = RANDOM.nextInt((int) cylinder.getHeight() + 1) - cylinder.getHeight() / 2;
+                final float y = RANDOM.nextFloat() * cylinder.getHeight() - cylinder.getHeight() / 2;
                 final float r = Math.abs(y) == cylinder.getHeight() / 2 ? RANDOM.nextFloat() : cylinder.getRadius();
-                final float x = r * (float) Math.cos(RANDOM.nextDouble() * 2 * Math.PI);
-                final float z = r * (float) Math.sin(RANDOM.nextDouble() * 2 * Math.PI);
+                final double theta = RANDOM.nextDouble() * 2 * Math.PI;
+                final float x = r * (float) Math.cos(theta);
+                final float z = r * (float) Math.sin(theta);
                 surface.setAllValues(x, y, z);
                 break;
             }
@@ -186,6 +209,26 @@ public class GJKAndEPAAlgorithmTest {
                         r * (float) Math.cos(theta));
                 break;
             }
+            case CAPSULE: {
+                final CapsuleShape capsule = (CapsuleShape) s2;
+                final float radius = capsule.getRadius();
+                final float halfHeight = capsule.getHeight() / 2;
+                final float totalHeight = capsule.getHeight() + radius * 2;
+                final float y = RANDOM.nextFloat() * totalHeight - totalHeight / 2;
+                final double theta = RANDOM.nextDouble() * 2 * Math.PI;
+                final float r;
+                if (y >= -halfHeight && y <= halfHeight) {
+                    r = radius;
+                } else {
+                    final float dy = Math.abs(y) - halfHeight;
+                    r = (float) Math.sqrt(radius * radius - dy * dy);
+                }
+                surface.setAllValues(
+                        r * (float) Math.cos(theta),
+                        y,
+                        r * (float) Math.sin(theta));
+                break;
+            }
             default:
                 throw new IllegalStateException("Unknown collision shape for s2");
         }
@@ -198,27 +241,32 @@ public class GJKAndEPAAlgorithmTest {
         final float radius1;
         switch (s1.getType()) {
             case BOX: {
-                BoxShape box = (BoxShape) s1;
+                final BoxShape box = (BoxShape) s1;
                 radius1 = box.getExtent().length();
                 break;
             }
             case CONE: {
-                ConeShape cone = (ConeShape) s1;
+                final ConeShape cone = (ConeShape) s1;
                 final float h = cone.getHeight() / 2;
                 final float r = cone.getRadius();
                 radius1 = (float) Math.sqrt(h * h + r * r);
                 break;
             }
             case CYLINDER: {
-                CylinderShape cylinder = (CylinderShape) s1;
+                final CylinderShape cylinder = (CylinderShape) s1;
                 final float h = cylinder.getHeight() / 2;
                 final float r = cylinder.getRadius();
                 radius1 = (float) Math.sqrt(h * h + r * r);
                 break;
             }
             case SPHERE: {
-                SphereShape sphere = (SphereShape) s1;
+                final SphereShape sphere = (SphereShape) s1;
                 radius1 = sphere.getRadius();
+                break;
+            }
+            case CAPSULE: {
+                final CapsuleShape capsule = (CapsuleShape) s1;
+                radius1 = capsule.getHeight() / 2 + capsule.getRadius();
                 break;
             }
             default:
@@ -227,27 +275,32 @@ public class GJKAndEPAAlgorithmTest {
         final float radius2;
         switch (s2.getType()) {
             case BOX: {
-                BoxShape box = (BoxShape) s2;
+                final BoxShape box = (BoxShape) s2;
                 radius2 = box.getExtent().length();
                 break;
             }
             case CONE: {
-                ConeShape cone = (ConeShape) s2;
+                final ConeShape cone = (ConeShape) s2;
                 final float h = cone.getHeight() / 2;
                 final float r = cone.getRadius();
                 radius2 = (float) Math.sqrt(h * h + r * r);
                 break;
             }
             case CYLINDER: {
-                CylinderShape cylinder = (CylinderShape) s2;
+                final CylinderShape cylinder = (CylinderShape) s2;
                 final float h = cylinder.getHeight() / 2;
                 final float r = cylinder.getRadius();
                 radius2 = (float) Math.sqrt(h * h + r * r);
                 break;
             }
             case SPHERE: {
-                SphereShape sphere = (SphereShape) s2;
+                final SphereShape sphere = (SphereShape) s2;
                 radius2 = sphere.getRadius();
+                break;
+            }
+            case CAPSULE: {
+                final CapsuleShape capsule = (CapsuleShape) s2;
+                radius2 = capsule.getHeight() / 2 + capsule.getRadius();
                 break;
             }
             default:

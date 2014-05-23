@@ -99,7 +99,7 @@ public class ConeShape extends CollisionShape {
      * @return The height
      */
     public float getHeight() {
-        return 2 * mHalfHeight;
+        return mHalfHeight + mHalfHeight;
     }
 
     @Override

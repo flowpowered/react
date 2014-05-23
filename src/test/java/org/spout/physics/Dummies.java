@@ -34,6 +34,7 @@ import org.spout.physics.collision.BroadPhasePair;
 import org.spout.physics.collision.CollisionDetection;
 import org.spout.physics.collision.shape.AABB;
 import org.spout.physics.collision.shape.BoxShape;
+import org.spout.physics.collision.shape.CapsuleShape;
 import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.collision.shape.ConeShape;
 import org.spout.physics.collision.shape.CylinderShape;
@@ -109,8 +110,12 @@ public class Dummies {
         return new SphereShape(RANDOM.nextInt(5) + 4);
     }
 
+    public static CapsuleShape newCapsuleShape() {
+        return new CapsuleShape(RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4);
+    }
+
     public static CollisionShape newCollisionShape() {
-        switch (RANDOM.nextInt(4)) {
+        switch (RANDOM.nextInt(5)) {
             case 0:
                 return newBoxShape();
             case 1:
@@ -119,6 +124,8 @@ public class Dummies {
                 return newCylinderShape();
             case 3:
                 return newSphereShape();
+            case 4:
+                return newCapsuleShape();
             default:
                 throw new IllegalStateException("random int larger than shape types count");
         }
