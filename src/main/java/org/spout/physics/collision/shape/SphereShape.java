@@ -32,7 +32,8 @@ import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
 
 /**
- * Represents a sphere collision shape that is centered at the origin and defined by its radius.
+ * Represents a sphere collision shape that is centered at the origin and defined by its radius. This collision shape does not have an explicit object margin distance. The margin is implicitly the
+ * radius of the sphere. Therefore, there is no need to specify an object margin for a sphere shape.
  */
 public class SphereShape extends CollisionShape {
     private final float mRadius;

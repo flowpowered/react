@@ -31,8 +31,10 @@ import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Vector3;
 
 /**
- * Represents a 3D box shape. Those axis are unit length. The three extents are half-lengths of the box along the three x, y, z local axes. The "transform" of the corresponding rigid body gives an
- * orientation and a position to the box.
+ * Represents a 3D box shape. Those axis are unit length. The three extents are half-lengths of the box along the three x, y, z local axes. The "transform" of the corresponding rigid body will give an
+ * orientation and a position to the box. This collision shape uses an extra margin distance around it for collision detection purpose. The default margin is 4cm (if your units are meters, which is
+ * recommended). In case, you want to simulate small objects (smaller than the margin distance), you might want to reduce the margin by specifying your own margin distance using the "margin" parameter
+ * in the constructor of the box shape. Otherwise, it is recommended to use the default margin distance by not using the "margin" parameter in the constructor.
  */
 public class BoxShape extends CollisionShape {
     private final Vector3 mExtent = new Vector3();
