@@ -147,6 +147,6 @@ public class BoxShape extends CollisionShape {
     @Override
     public boolean isEqualTo(CollisionShape otherCollisionShape) {
         final BoxShape otherShape = (BoxShape) otherCollisionShape;
-        return mExtent == otherShape.mExtent;
+        return mExtent.equals(otherShape.mExtent);
     }
 }

@@ -83,6 +83,8 @@ public class GJKAndEPAAlgorithmTest {
     private static void collideShapes(CollisionShape s1, Transform t1, CollisionShape s2, Transform t2) {
         final Vector3 in = new Vector3();
         switch (s1.getType()) {
+            case CONVEX_MESH:
+                s1 = new BoxShape(new Vector3(1, 1, 1));
             case BOX: {
                 final BoxShape box = (BoxShape) s1;
                 final Vector3 extend = box.getExtent();
@@ -149,6 +151,8 @@ public class GJKAndEPAAlgorithmTest {
         }
         final Vector3 surface = new Vector3();
         switch (s2.getType()) {
+            case CONVEX_MESH:
+                s2 = new BoxShape(new Vector3(1, 1, 1));
             case BOX: {
                 final BoxShape box = (BoxShape) s2;
                 final Vector3 extend = box.getExtent();
@@ -240,6 +244,8 @@ public class GJKAndEPAAlgorithmTest {
     private static void nonCollideShapes(CollisionShape s1, Transform t1, CollisionShape s2, Transform t2) {
         final float radius1;
         switch (s1.getType()) {
+            case CONVEX_MESH:
+                s1 = new BoxShape(new Vector3(1, 1, 1));
             case BOX: {
                 final BoxShape box = (BoxShape) s1;
                 radius1 = box.getExtent().length();
@@ -274,6 +280,8 @@ public class GJKAndEPAAlgorithmTest {
         }
         final float radius2;
         switch (s2.getType()) {
+            case CONVEX_MESH:
+                s2 = new BoxShape(new Vector3(1, 1, 1));
             case BOX: {
                 final BoxShape box = (BoxShape) s2;
                 radius2 = box.getExtent().length();

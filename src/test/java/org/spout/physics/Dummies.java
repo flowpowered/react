@@ -37,6 +37,7 @@ import org.spout.physics.collision.shape.BoxShape;
 import org.spout.physics.collision.shape.CapsuleShape;
 import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.collision.shape.ConeShape;
+import org.spout.physics.collision.shape.ConvexMeshShape;
 import org.spout.physics.collision.shape.CylinderShape;
 import org.spout.physics.collision.shape.SphereShape;
 import org.spout.physics.constraint.ContactPoint.ContactPointInfo;
@@ -51,6 +52,33 @@ import org.spout.physics.math.Vector3;
  */
 public class Dummies {
     private static final Random RANDOM = new Random();
+    /*
+           2------4
+         / |    / |
+       6------7   |
+       |   0--|---1
+       | /    | /
+       3------5
+     */
+    private static final float[] CUBE_MESH_VERTICES = {
+            -1, -1, -1,
+            1, -1, -1,
+            -1, 1, -1,
+            -1, -1, 1,
+            1, 1, -1,
+            1, -1, 1,
+            -1, 1, 1,
+            1, 1, 1
+    };
+    private static final int NB_CUBE_MESH_VERTICES = CUBE_MESH_VERTICES.length / 3;
+    private static final int CUBE_MESH_VERTEX_STRIDE = 3 * 4;
+    private static final int[][] CUBE_MESH_EDGES = {
+            {0, 1}, {0, 2}, {0, 3},
+            {1, 4}, {1, 5},
+            {2, 4}, {2, 6},
+            {3, 5}, {3, 6},
+            {7, 4}, {7, 5}, {7, 6}
+    };
 
     public static Vector3 newPosition() {
         return new Vector3(RANDOM.nextInt(21) - 10, RANDOM.nextInt(21) - 10, RANDOM.nextInt(21) - 10);
@@ -114,8 +142,17 @@ public class Dummies {
         return new CapsuleShape(RANDOM.nextInt(5) + 4, RANDOM.nextInt(5) + 4);
     }
 
+    public static ConvexMeshShape newConvexMeshShape() {
+        final ConvexMeshShape shape = new ConvexMeshShape(CUBE_MESH_VERTICES, NB_CUBE_MESH_VERTICES, CUBE_MESH_VERTEX_STRIDE);
+        for (int[] edge : CUBE_MESH_EDGES) {
+            shape.addEdge(edge[0], edge[1]);
+        }
+        shape.setIsEdgesInformationUsed(true);
+        return shape;
+    }
+
     public static CollisionShape newCollisionShape() {
-        switch (RANDOM.nextInt(5)) {
+        switch (RANDOM.nextInt(6)) {
             case 0:
                 return newBoxShape();
             case 1:
@@ -126,6 +163,8 @@ public class Dummies {
                 return newSphereShape();
             case 4:
                 return newCapsuleShape();
+            case 5:
+                return newConvexMeshShape();
             default:
                 throw new IllegalStateException("random int larger than shape types count");
         }
