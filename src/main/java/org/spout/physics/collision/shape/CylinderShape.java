@@ -138,8 +138,13 @@ public class CylinderShape extends CollisionShape {
     }
 
     @Override
-    public Vector3 getLocalExtents() {
-        return new Vector3(mRadius + mMargin, mHalfHeight + mMargin, mRadius + mMargin);
+    public void getLocalBounds(Vector3 min, Vector3 max) {
+        max.setX(mRadius + mMargin);
+        max.setY(mHalfHeight + mMargin);
+        max.setZ(max.getX());
+        min.setX(-max.getX());
+        min.setY(-max.getY());
+        min.setZ(min.getX());
     }
 
     @Override

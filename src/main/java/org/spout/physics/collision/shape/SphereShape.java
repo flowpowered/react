@@ -84,8 +84,13 @@ public class SphereShape extends CollisionShape {
     }
 
     @Override
-    public Vector3 getLocalExtents() {
-        return new Vector3(mRadius, mRadius, mRadius);
+    public void getLocalBounds(Vector3 min, Vector3 max) {
+        max.setX(mRadius);
+        max.setY(mRadius);
+        max.setZ(mRadius);
+        min.setX(-mRadius);
+        min.setY(min.getX());
+        min.setZ(min.getX());
     }
 
     @Override
@@ -99,11 +104,9 @@ public class SphereShape extends CollisionShape {
 
     @Override
     public void updateAABB(AABB aabb, Transform transform) {
-        final Vector3 extents = getLocalExtents();
-        final Vector3 minCoordinates = Vector3.subtract(transform.getPosition(), extents);
-        final Vector3 maxCoordinates = Vector3.add(transform.getPosition(), extents);
-        aabb.setMin(minCoordinates);
-        aabb.setMax(maxCoordinates);
+        final Vector3 extents = new Vector3(mRadius, mRadius, mRadius);
+        aabb.setMin(Vector3.subtract(transform.getPosition(), extents));
+        aabb.setMax(Vector3.add(transform.getPosition(), extents));
     }
 
     @Override

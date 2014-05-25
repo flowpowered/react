@@ -121,8 +121,9 @@ public class BoxShape extends CollisionShape {
     }
 
     @Override
-    public Vector3 getLocalExtents() {
-        return Vector3.add(mExtent, new Vector3(mMargin, mMargin, mMargin));
+    public void getLocalBounds(Vector3 min, Vector3 max) {
+        max.set(Vector3.add(mExtent, new Vector3(mMargin, mMargin, mMargin)));
+        min.set(Vector3.negate(max));
     }
 
     @Override

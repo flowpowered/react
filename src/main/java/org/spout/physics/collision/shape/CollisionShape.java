@@ -97,9 +97,10 @@ public abstract class CollisionShape {
     /**
      * Gets the local extents in x,y and z direction.
      *
-     * @return The local extents
+     * @param min Where to store the minimum point of the bounds
+     * @param max Where to store the maximum point of the bounds
      */
-    public abstract Vector3 getLocalExtents();
+    public abstract void getLocalBounds(Vector3 min, Vector3 max);
 
     /**
      * Computes the local inertia tensor of the collision shape for the mass. Stores the results in the passed matrix3x3.
@@ -131,14 +132,20 @@ public abstract class CollisionShape {
      * @param transform The AABB's transform
      */
     public void updateAABB(AABB aabb, Transform transform) {
-        final Vector3 extents = getLocalExtents();
+        final Vector3 minBounds = new Vector3();
+        final Vector3 maxBounds = new Vector3();
+        getLocalBounds(minBounds, maxBounds);
         final Matrix3x3 worldAxis = transform.getOrientation().getMatrix().getAbsoluteMatrix();
-        final Vector3 worldExtents = new Vector3(
-                worldAxis.getColumn(Matrix3x3.FIRST_COLUMN).dot(extents),
-                worldAxis.getColumn(Matrix3x3.SECOND_COLUMN).dot(extents),
-                worldAxis.getColumn(Matrix3x3.THIRD_COLUMN).dot(extents));
-        final Vector3 minCoordinates = Vector3.subtract(transform.getPosition(), worldExtents);
-        final Vector3 maxCoordinates = Vector3.add(transform.getPosition(), worldExtents);
+        final Vector3 worldMinBounds = new Vector3(
+                worldAxis.getColumn(0).dot(minBounds),
+                worldAxis.getColumn(1).dot(minBounds),
+                worldAxis.getColumn(2).dot(minBounds));
+        final Vector3 worldMaxBounds = new Vector3(
+                worldAxis.getColumn(0).dot(maxBounds),
+                worldAxis.getColumn(1).dot(maxBounds),
+                worldAxis.getColumn(2).dot(maxBounds));
+        final Vector3 minCoordinates = Vector3.add(transform.getPosition(), worldMinBounds);
+        final Vector3 maxCoordinates = Vector3.add(transform.getPosition(), worldMaxBounds);
         aabb.setMin(minCoordinates);
         aabb.setMax(maxCoordinates);
     }
@@ -198,6 +205,7 @@ public abstract class CollisionShape {
         SPHERE,
         CONE,
         CYLINDER,
-        CAPSULE
+        CAPSULE,
+        CONVEX_MESH
     }
 }

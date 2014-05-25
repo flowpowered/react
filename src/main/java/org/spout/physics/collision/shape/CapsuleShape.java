@@ -115,8 +115,13 @@ public class CapsuleShape extends CollisionShape {
     }
 
     @Override
-    public Vector3 getLocalExtents() {
-        return new Vector3(mRadius, mHalfHeight + mRadius, mRadius);
+    public void getLocalBounds(Vector3 min, Vector3 max) {
+        max.setX(mRadius);
+        max.setY(mHalfHeight + mRadius);
+        max.setZ(mRadius);
+        min.setX(-mRadius);
+        min.setY(-max.getY());
+        min.setZ(min.getX());
     }
 
     @Override
