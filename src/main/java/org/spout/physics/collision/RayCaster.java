@@ -139,6 +139,10 @@ public class RayCaster {
             case CAPSULE:
                 intersects = intersects(objRayStart, objRayDir, (CapsuleShape) shape, intersectionPoint);
                 break;
+            case CONVEX_MESH:
+                // TODO: implement this
+                intersects = false;
+                break;
             default:
                 throw new IllegalArgumentException("unknown collision shape");
         }
