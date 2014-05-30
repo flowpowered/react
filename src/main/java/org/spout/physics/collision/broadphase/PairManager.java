@@ -73,16 +73,6 @@ public class PairManager {
         return pair2ID1 != pair1.getFirstBody().getID() || pair2ID2 != pair1.getSecondBody().getID();
     }
 
-    // Return the next power of two of a 32bits integer using a SWAR algorithm
-    private int computeNextPowerOfTwo(int number) {
-        number |= number >> 1;
-        number |= number >> 2;
-        number |= number >> 4;
-        number |= number >> 8;
-        number |= number >> 16;
-        return number + 1;
-    }
-
     // Sort the bodies according to their IDs (smallest ID first)
     private BodyPair sortBodiesUsingID(CollisionBody body1, CollisionBody body2) {
         if (body1.getID() > body2.getID()) {
@@ -330,6 +320,21 @@ public class PairManager {
         }
         mOverlappingPairs = newOverlappingPairs;
         mOffsetNextPair = newOffsetNextPair;
+    }
+
+    /**
+     * Returns the next power of two of a 32bit integer using a SWAR algorithm.
+     *
+     * @param number The number
+     * @return The next power of two
+     */
+    public static int computeNextPowerOfTwo(int number) {
+        number |= number >> 1;
+        number |= number >> 2;
+        number |= number >> 4;
+        number |= number >> 8;
+        number |= number >> 16;
+        return number + 1;
     }
 
     /**

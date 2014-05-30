@@ -26,10 +26,11 @@
  */
 package org.spout.physics.collision.broadphase;
 
+import gnu.trove.iterator.TObjectIntIterator;
+import gnu.trove.list.TIntList;
+import gnu.trove.list.array.TIntArrayList;
 import gnu.trove.map.TObjectIntMap;
 import gnu.trove.map.hash.TObjectIntHashMap;
-import gnu.trove.stack.TIntStack;
-import gnu.trove.stack.array.TIntArrayStack;
 
 import org.spout.physics.body.CollisionBody;
 import org.spout.physics.collision.CollisionDetection;
@@ -47,7 +48,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
     private final EndPoint[][] mEndPoints = {null, null, null};
     private int mNbBoxes = 0;
     private int mNbMaxBoxes = 0;
-    private final TIntStack mFreeBoxIndices = new TIntArrayStack();
+    private final TIntList mFreeBoxIndices = new TIntArrayList();
     private final TObjectIntMap<CollisionBody> mMapBodyToBoxIndex = new TObjectIntHashMap<>();
 
     /**
@@ -82,7 +83,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
         }
         final int boxIndex;
         if (mFreeBoxIndices.size() != 0) {
-            boxIndex = mFreeBoxIndices.pop();
+            boxIndex = mFreeBoxIndices.removeAt(mFreeBoxIndices.size() - 1);
         } else {
             if (mNbBoxes == mNbMaxBoxes) {
                 resizeArrays();
@@ -151,11 +152,14 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
             final EndPoint newMaxLimitEndPoint = mEndPoints[axis][indexLimitEndPoint - 2];
             newMaxLimitEndPoint.setValues(maxLimitEndPoint.getBoxID(), maxLimitEndPoint.isMin(), maxLimitEndPoint.getValue());
         }
-        mFreeBoxIndices.push(boxIndex);
+        mFreeBoxIndices.add(boxIndex);
         mMapBodyToBoxIndex.remove(body);
         mNbBoxes--;
+        final int nextPowerOf2 = PairManager.computeNextPowerOfTwo((mNbBoxes - 1) / 100);
+        if (nextPowerOf2 * 100 < mNbMaxBoxes) {
+            shrinkArrays();
+        }
     }
-
 
     @Override
     public void updateObject(CollisionBody body, AABB aabb) {
@@ -340,6 +344,75 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
         mNbMaxBoxes = newNbMaxBoxes;
     }
 
+    // Shrinks the boxes and end-points arrays when too much memory is allocated.
+    private void shrinkArrays() {
+        final int nextPowerOf2 = PairManager.computeNextPowerOfTwo((mNbBoxes - 1) / 100);
+        final int newNbMaxBoxes = mNbBoxes > 100 ? nextPowerOf2 * 100 : 100;
+        final int nbEndPoints = mNbBoxes * 2 + NB_SENTINELS;
+        final int newNbEndPoints = newNbMaxBoxes * 2 + NB_SENTINELS;
+        if (newNbMaxBoxes >= mNbMaxBoxes) {
+            throw new IllegalStateException("The new maximum number of boxes can't be greater or equal to the old one");
+        }
+        mFreeBoxIndices.sort();
+        final TObjectIntMap<CollisionBody> newMapBodyToBoxIndex = new TObjectIntHashMap<>();
+        final TObjectIntIterator<CollisionBody> it = mMapBodyToBoxIndex.iterator();
+        while (it.hasNext()) {
+            it.advance();
+            final CollisionBody body = it.key();
+            final int boxIndex = it.value();
+            if (boxIndex >= mNbBoxes) {
+                if (mFreeBoxIndices.isEmpty()) {
+                    throw new IllegalStateException("The list of free box indices can't be empty");
+                }
+                final int newBoxIndex = mFreeBoxIndices.removeAt(0);
+                if (newBoxIndex >= mNbBoxes) {
+                    throw new IllegalStateException("The new box index can't be greater or equal to number of boxes");
+                }
+                final BoxAABB oldBox = mBoxes[boxIndex];
+                final BoxAABB newBox = mBoxes[newBoxIndex];
+                if (oldBox.getBody().getID() != body.getID()) {
+                    throw new IllegalStateException("The old box body ID can't be equal to body ID");
+                }
+                newBox.setBody(oldBox.getBody());
+                for (int axis = 0; axis < 3; axis++) {
+                    newBox.setMin(axis, oldBox.getMin()[axis]);
+                    newBox.setMax(axis, oldBox.getMax()[axis]);
+                    final EndPoint minimumEndPoint = mEndPoints[axis][newBox.getMin()[axis]];
+                    final EndPoint maximumEndPoint = mEndPoints[axis][newBox.getMax()[axis]];
+                    if (minimumEndPoint.getBoxID() != boxIndex) {
+                        throw new IllegalStateException("The minimum end point box ID can't be equal to box index");
+                    }
+                    if (maximumEndPoint.getBoxID() != boxIndex) {
+                        throw new IllegalStateException("The maximum end point box ID can't be equal to box index");
+                    }
+                    minimumEndPoint.setBoxID(newBoxIndex);
+                    maximumEndPoint.setBoxID(newBoxIndex);
+                }
+                newMapBodyToBoxIndex.put(body, newBoxIndex);
+            } else {
+                newMapBodyToBoxIndex.put(body, boxIndex);
+            }
+        }
+        if (newMapBodyToBoxIndex.size() != mMapBodyToBoxIndex.size()) {
+            throw new IllegalStateException("The size of the new map from body to box index must be the same as the old one");
+        }
+        mMapBodyToBoxIndex.clear();
+        mMapBodyToBoxIndex.putAll(newMapBodyToBoxIndex);
+        final BoxAABB[] newBoxesArray = new BoxAABB[newNbMaxBoxes];
+        final EndPoint[] newEndPointsXArray = new EndPoint[newNbEndPoints];
+        final EndPoint[] newEndPointsYArray = new EndPoint[newNbEndPoints];
+        final EndPoint[] newEndPointsZArray = new EndPoint[newNbEndPoints];
+        System.arraycopy(mBoxes, 0, newBoxesArray, 0, mNbBoxes);
+        System.arraycopy(mEndPoints[0], 0, newEndPointsXArray, 0, nbEndPoints);
+        System.arraycopy(mEndPoints[1], 0, newEndPointsYArray, 0, nbEndPoints);
+        System.arraycopy(mEndPoints[2], 0, newEndPointsZArray, 0, nbEndPoints);
+        mBoxes = newBoxesArray;
+        mEndPoints[0] = newEndPointsXArray;
+        mEndPoints[1] = newEndPointsYArray;
+        mEndPoints[2] = newEndPointsZArray;
+        mNbMaxBoxes = newNbMaxBoxes;
+    }
+
     // Encodes a floating value into a integer value in order to work with integer
     // comparisons in the Sweep-And-Prune algorithm, for performance.
     // The main issue when encoding a floating number into an integer is keeping
@@ -380,6 +453,10 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
             return boxID;
         }
 
+        private void setBoxID(int boxID) {
+            this.boxID = boxID;
+        }
+
         private boolean isMin() {
             return isMin;
         }
@@ -404,7 +481,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
         }
     }
 
-    // Represents an AABB in the Sweep-And-Prune algorithm
+    // Represents an AABB in the Sweep-And-Prune algorithm.
     private static class BoxAABB {
         private final int[] min = new int[3];
         private final int[] max = new int[3];
@@ -414,8 +491,16 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
             return min;
         }
 
+        private void setMin(int i, int v) {
+            min[i] = v;
+        }
+
         private int[] getMax() {
             return max;
+        }
+
+        private void setMax(int i, int v) {
+            max[i] = v;
         }
 
         private CollisionBody getBody() {
