@@ -41,8 +41,8 @@ import org.spout.physics.math.Vector3;
  * www.codercorner.com/SAP.pdf.
  */
 public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
-    private static final int NB_SENTINELS = 2;
     private static final int INVALID_INDEX = Integer.MAX_VALUE;
+    private static final int NB_SENTINELS = 2;
     private BoxAABB[] mBoxes = null;
     private final EndPoint[][] mEndPoints = {null, null, null};
     private int mNbBoxes = 0;
@@ -112,8 +112,8 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
         }
         final BoxAABB box = mBoxes[boxIndex];
         box.setBody(body);
-        final long minEndPointValue = encodeFloatIntoInteger(Float.MAX_VALUE) - 2;
         final long maxEndPointValue = encodeFloatIntoInteger(Float.MAX_VALUE) - 1;
+        final long minEndPointValue = encodeFloatIntoInteger(Float.MAX_VALUE) - 2;
         for (int axis = 0; axis < 3; axis++) {
             box.getMin()[axis] = indexLimitEndPoint;
             box.getMax()[axis] = indexLimitEndPoint + 1;
@@ -132,25 +132,38 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
 
     @Override
     public void removeObject(CollisionBody body) {
-        final float max = Float.MAX_VALUE;
-        final Vector3 maxVector = new Vector3(max, max, max);
-        final AABB aabb = new AABB(maxVector, maxVector);
-        updateObject(body, aabb);
+        final long maxEndPointValue = encodeFloatIntoInteger(Float.MAX_VALUE) - 1;
+        final long minEndPointValue = encodeFloatIntoInteger(Float.MAX_VALUE) - 2;
+        final AABBInt aabbInt = new AABBInt(minEndPointValue, maxEndPointValue);
+        updateObjectIntegerAABB(body, aabbInt);
+        final int boxIndex = mMapBodyToBoxIndex.get(body);
         final int indexLimitEndPoint = 2 * mNbBoxes + NB_SENTINELS - 1;
         for (int axis = 0; axis < 3; axis++) {
-            mEndPoints[axis][indexLimitEndPoint - 2] = mEndPoints[axis][indexLimitEndPoint];
-            mEndPoints[axis][indexLimitEndPoint - 1] = null;
-            mEndPoints[axis][indexLimitEndPoint] = null;
+            final EndPoint maxLimitEndPoint = mEndPoints[axis][indexLimitEndPoint];
+            if (mEndPoints[axis][0].getBoxID() != INVALID_INDEX || !mEndPoints[axis][0].isMin()) {
+                throw new IllegalStateException("The box ID for the first end point of the axis must" +
+                        " be equal to INVALID_INDEX and the end point must be a minimum");
+            }
+            if (maxLimitEndPoint.getBoxID() != INVALID_INDEX || maxLimitEndPoint.isMin()) {
+                throw new IllegalStateException("The box ID for the limit end point of the axis must" +
+                        " be equal to INVALID_INDEX and the end point must be a maximum");
+            }
+            final EndPoint newMaxLimitEndPoint = mEndPoints[axis][indexLimitEndPoint - 2];
+            newMaxLimitEndPoint.setValues(maxLimitEndPoint.getBoxID(), maxLimitEndPoint.isMin(), maxLimitEndPoint.getValue());
         }
-        final int boxIndex = mMapBodyToBoxIndex.get(body);
         mFreeBoxIndices.push(boxIndex);
         mMapBodyToBoxIndex.remove(body);
         mNbBoxes--;
     }
 
+
     @Override
     public void updateObject(CollisionBody body, AABB aabb) {
         final AABBInt aabbInt = new AABBInt(aabb);
+        updateObjectIntegerAABB(body, aabbInt);
+    }
+
+    public void updateObjectIntegerAABB(CollisionBody body, AABBInt aabbInt) {
         final int boxIndex = mMapBodyToBoxIndex.get(body);
         final BoxAABB box = mBoxes[boxIndex];
         for (int axis = 0; axis < 3; axis++) {
@@ -450,10 +463,21 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
         }
 
         private AABBInt(AABB aabb) {
-            for (int axis = 0; axis < 3; axis++) {
-                min[axis] = encodeFloatIntoInteger(aabb.getMin().get(axis));
-                max[axis] = encodeFloatIntoInteger(aabb.getMax().get(axis));
-            }
+            min[0] = encodeFloatIntoInteger(aabb.getMin().getX());
+            min[1] = encodeFloatIntoInteger(aabb.getMin().getY());
+            min[2] = encodeFloatIntoInteger(aabb.getMin().getZ());
+            max[0] = encodeFloatIntoInteger(aabb.getMax().getX());
+            max[1] = encodeFloatIntoInteger(aabb.getMax().getY());
+            max[2] = encodeFloatIntoInteger(aabb.getMax().getZ());
+        }
+
+        private AABBInt(long minValue, long maxValue) {
+            min[0] = minValue;
+            min[1] = minValue;
+            min[2] = minValue;
+            max[0] = maxValue;
+            max[1] = maxValue;
+            max[2] = maxValue;
         }
     }
 }
