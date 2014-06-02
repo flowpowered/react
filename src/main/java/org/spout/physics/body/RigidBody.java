@@ -47,6 +47,8 @@ public class RigidBody extends CollisionBody {
     private final Vector3 mExternalTorque = new Vector3();
     private final Vector3 mLinearVelocity = new Vector3();
     private final Vector3 mAngularVelocity = new Vector3();
+    private float mLinearDamping;
+    private float mAngularDamping;
 
     /**
      * Constructs a new rigid body from its transform, mass, local inertia tensor, collision shape and ID.
@@ -64,6 +66,8 @@ public class RigidBody extends CollisionBody {
         mInertiaTensorLocalInverse = inertiaTensorLocal.getInverse();
         mMassInverse = 1 / mass;
         mIsGravityEnabled = true;
+        mLinearDamping = 0;
+        mAngularDamping = 0;
     }
 
     /**
@@ -250,5 +254,47 @@ public class RigidBody extends CollisionBody {
      */
     public Material getMaterial() {
         return mMaterial;
+    }
+
+    /**
+     * Returns the linear velocity damping factor.
+     *
+     * @return The linear damping
+     */
+    public float getLinearDamping() {
+        return mLinearDamping;
+    }
+
+    /**
+     * Sets the linear damping factor.
+     *
+     * @param linearDamping The liner damping
+     */
+    public void setLinearDamping(float linearDamping) {
+        if (linearDamping < 0) {
+            throw new IllegalArgumentException("Linear damping must be greater or equal to 0");
+        }
+        mLinearDamping = linearDamping;
+    }
+
+    /**
+     * Returns the angular velocity damping factor.
+     *
+     * @return The angular damping
+     */
+    public float getAngularDamping() {
+        return mAngularDamping;
+    }
+
+    /**
+     * Sets the angular damping factor.
+     *
+     * @param angularDamping The angular damping
+     */
+    public void setAngularDamping(float angularDamping) {
+        if (angularDamping < 0) {
+            throw new IllegalArgumentException("Angular damping must be greater or equal to 0");
+        }
+        mAngularDamping = angularDamping;
     }
 }

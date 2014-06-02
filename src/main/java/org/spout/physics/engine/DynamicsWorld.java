@@ -53,6 +53,7 @@ import org.spout.physics.constraint.HingeJoint;
 import org.spout.physics.constraint.HingeJoint.HingeJointInfo;
 import org.spout.physics.constraint.SliderJoint;
 import org.spout.physics.constraint.SliderJoint.SliderJointInfo;
+import org.spout.physics.math.Mathematics;
 import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Quaternion;
 import org.spout.physics.math.Transform;
@@ -355,6 +356,12 @@ public class DynamicsWorld extends CollisionWorld {
                 if (rigidBody.isGravityEnabled() && mIsGravityOn) {
                     mConstrainedLinearVelocities.get(i).add(Vector3.multiply(dt * rigidBody.getMassInverse() * rigidBody.getMass(), mGravity));
                 }
+                final float linDampingFactor = rigidBody.getLinearDamping();
+                final float angDampingFactor = rigidBody.getAngularDamping();
+                final float linearDamping = Mathematics.clamp(1 - dt * linDampingFactor, 0, 1);
+                final float angularDamping = Mathematics.clamp(1 - dt * angDampingFactor, 0, 1);
+                mConstrainedLinearVelocities.get(i).multiply(Mathematics.clamp(linearDamping, 0, 1));
+                mConstrainedAngularVelocities.get(i).multiply(Mathematics.clamp(angularDamping, 0, 1));
                 rigidBody.updateOldTransform();
             } else {
                 mConstrainedLinearVelocities.add(i, new Vector3(0, 0, 0));
