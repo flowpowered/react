@@ -115,12 +115,12 @@
 
 	<!-- Project dependencies -->
 	<dependencies>
-		<!-- Provided by third-party -->
+		<!-- Compile -->
 		<dependency>
 			<groupId>net.sf.trove4j</groupId>
 			<artifactId>trove4j</artifactId>
 			<version>3.0.3</version>
-			<scope>provided</scope>
+			<scope>compile</scope>
 		</dependency>
 		<!-- Testing only -->
 		<dependency>
