@@ -57,7 +57,7 @@ public class ReactDefaults {
     /**
      * True if the deactivation (sleeping) of inactive bodies is enabled. Default: true
      */
-    public static final boolean DEACTIVATION_ENABLED = true;
+    public static final boolean SLEEPING_ENABLED = true;
     /**
      * Object margin for collision detection in meters (for the GJK-EPA Algorithm). Default: 0.04
      */

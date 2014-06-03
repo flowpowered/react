@@ -37,6 +37,7 @@ import gnu.trove.map.hash.TObjectIntHashMap;
 import org.spout.physics.ReactDefaults;
 import org.spout.physics.ReactDefaults.ContactsPositionCorrectionTechnique;
 import org.spout.physics.Utilities.IntPair;
+import org.spout.physics.body.CollisionBody;
 import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.BroadPhasePair;
 import org.spout.physics.collision.shape.CollisionShape;
@@ -44,6 +45,7 @@ import org.spout.physics.constraint.BallAndSocketJoint;
 import org.spout.physics.constraint.BallAndSocketJoint.BallAndSocketJointInfo;
 import org.spout.physics.constraint.Constraint;
 import org.spout.physics.constraint.Constraint.ConstraintInfo;
+import org.spout.physics.constraint.Constraint.JointListElement;
 import org.spout.physics.constraint.ConstraintSolver;
 import org.spout.physics.constraint.ContactPoint;
 import org.spout.physics.constraint.ContactPoint.ContactPointInfo;
@@ -53,6 +55,7 @@ import org.spout.physics.constraint.HingeJoint;
 import org.spout.physics.constraint.HingeJoint.HingeJointInfo;
 import org.spout.physics.constraint.SliderJoint;
 import org.spout.physics.constraint.SliderJoint.SliderJointInfo;
+import org.spout.physics.engine.ContactManifold.ContactManifoldListElement;
 import org.spout.physics.math.Mathematics;
 import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Quaternion;
@@ -68,7 +71,7 @@ public class DynamicsWorld extends CollisionWorld {
     private final ConstraintSolver mConstraintSolver;
     private int mNbVelocitySolverIterations;
     private int mNbPositionSolverIterations;
-    private boolean mIsDeactivationActive;
+    private boolean mIsSleepingEnabled;
     private final Set<RigidBody> mRigidBodies = new HashSet<>();
     private final List<ContactManifold> mContactManifolds = new ArrayList<>();
     private final Set<Constraint> mJoints = new HashSet<>();
@@ -79,6 +82,9 @@ public class DynamicsWorld extends CollisionWorld {
     private final ArrayList<Vector3> mConstrainedPositions = new ArrayList<>();
     private final ArrayList<Quaternion> mConstrainedOrientations = new ArrayList<>();
     private final TObjectIntMap<RigidBody> mMapBodyToConstrainedVelocityIndex = new TObjectIntHashMap<>();
+    private int mNbIslands;
+    private int mNbIslandsCapacity;
+    private Island[] mIslands;
     private boolean isTicking = false;
     // Tick cache
     private final Set<RigidBody> mRigidBodiesToAddCache = new HashSet<>();
@@ -107,7 +113,10 @@ public class DynamicsWorld extends CollisionWorld {
                 mMapBodyToConstrainedVelocityIndex);
         mNbVelocitySolverIterations = ReactDefaults.DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS;
         mNbPositionSolverIterations = ReactDefaults.DEFAULT_POSITION_SOLVER_NB_ITERATIONS;
-        mIsDeactivationActive = ReactDefaults.DEACTIVATION_ENABLED;
+        mIsSleepingEnabled = ReactDefaults.SLEEPING_ENABLED;
+        mNbIslands = 0;
+        mNbIslandsCapacity = 0;
+        mIslands = null;
     }
 
     /**
@@ -257,10 +266,12 @@ public class DynamicsWorld extends CollisionWorld {
         isTicking = true;
         while (mTimer.isPossibleToTakeStep()) {
             mContactManifolds.clear();
+            resetContactManifoldListsOfBodies();
             mCollisionDetection.computeCollisionDetection();
             integrateRigidBodiesVelocities();
             resetBodiesMovementVariable();
             mTimer.nextStep();
+            computeIslands();
             solveContactsAndConstraints();
             integrateRigidBodiesPositions();
             solvePositionCorrection();
@@ -518,6 +529,7 @@ public class DynamicsWorld extends CollisionWorld {
                     destroyJoint(joint);
                 }
             }
+            rigidBody.resetContactManifoldsList();
         } else {
             mRigidBodiesToDeleteCache.add(rigidBody);
         }
@@ -559,6 +571,7 @@ public class DynamicsWorld extends CollisionWorld {
             mCollisionDetection.addNoCollisionPair(jointInfo.getFirstBody(), jointInfo.getSecondBody());
         }
         mJoints.add(newJoint);
+        addJointToBody(newJoint);
         return newJoint;
     }
 
@@ -575,6 +588,149 @@ public class DynamicsWorld extends CollisionWorld {
             mCollisionDetection.removeNoCollisionPair(joint.getFirstBody(), joint.getSecondBody());
         }
         mJoints.remove(joint);
+        joint.getFirstBody().removeJointFromJointsList(joint);
+        joint.getSecondBody().removeJointFromJointsList(joint);
+    }
+
+    /**
+     * Adds the joint to the list of joints of the two bodies involved in the joint.
+     *
+     * @param joint The joint to add
+     */
+    public void addJointToBody(Constraint joint) {
+        if (joint == null) {
+            throw new IllegalArgumentException("Joint cannot be null");
+        }
+        final JointListElement jointListElement1 = new JointListElement(joint, joint.getFirstBody().getJointsList());
+        joint.getFirstBody().setJointsList(jointListElement1);
+        final JointListElement jointListElement2 = new JointListElement(joint, joint.getSecondBody().getJointsList());
+        joint.getSecondBody().setJointsList(jointListElement2);
+    }
+
+    /**
+     * Adds a contact manifold to the linked list of contact manifolds of the two bodies involved in the corresponding contact.
+     *
+     * @param contactManifold The contact manifold to add
+     * @param body1 The first body in the manifold
+     * @param body2 The second body in the manifold
+     */
+    public void addContactManifoldToBody(ContactManifold contactManifold, CollisionBody body1, CollisionBody body2) {
+        if (contactManifold == null) {
+            throw new IllegalArgumentException("The contact manifold cannot be null");
+        }
+        final ContactManifoldListElement listElement1 = new ContactManifoldListElement(contactManifold, body1.getContactManifoldsLists());
+        body1.setContactManifoldsList(listElement1);
+        final ContactManifoldListElement listElement2 = new ContactManifoldListElement(contactManifold, body2.getContactManifoldsLists());
+        body2.setContactManifoldsList(listElement2);
+    }
+
+    /**
+     * Resets all the contact manifolds linked list of each body.
+     */
+    public void resetContactManifoldListsOfBodies() {
+        for (RigidBody rigidBody : mRigidBodies) {
+            rigidBody.resetContactManifoldsList();
+        }
+    }
+
+    // Computes the islands of awake bodies.
+    // An island is an isolated group of rigid bodies that have constraints (joints or contacts)
+    // between each other. This method computes the islands at each time step as follows: For each
+    // awake rigid body, we run a Depth First Search (DFS) through the constraint graph of that body
+    // (graph where nodes are the bodies and where the edges are the constraints between the bodies) to
+    // find all the bodies that are connected with it (the bodies that share joints or contacts with
+    // it). Then, we create an island with this group of connected bodies.
+    private void computeIslands() {
+        final int nbBodies = mRigidBodies.size();
+        for (int i = 0; i < mNbIslands; i++) {
+            mIslands[i] = null;
+        }
+        if (mNbIslandsCapacity != nbBodies && nbBodies > 0) {
+            mNbIslandsCapacity = nbBodies;
+            mIslands = new Island[mNbIslandsCapacity];
+        }
+        mNbIslands = 0;
+        for (RigidBody rigidBody : mRigidBodies) {
+            rigidBody.setIsAlreadyInIsland(false);
+        }
+        for (ContactManifold contactManifold : mContactManifolds) {
+            contactManifold.setIsAlreadyInIsland(false);
+        }
+        for (Constraint joint : mJoints) {
+            joint.setIsAlreadyInIsland(false);
+        }
+        final RigidBody[] stackBodiesToVisit = new RigidBody[nbBodies];
+        int idIsland = 0;
+        for (RigidBody body : mRigidBodies) {
+            if (body.isAlreadyInIsland()) {
+                continue;
+            }
+            if (!body.getIsMotionEnabled()) {
+                continue;
+            }
+            if (body.isSleeping()) {
+                continue;
+            }
+            int stackIndex = 0;
+            stackBodiesToVisit[stackIndex] = body;
+            stackIndex++;
+            body.setIsAlreadyInIsland(true);
+            mIslands[mNbIslands] = new Island(idIsland, nbBodies, mContactManifolds.size(), mJoints.size());
+            idIsland++;
+            while (stackIndex > 0) {
+                stackIndex--;
+                final RigidBody bodyToVisit = stackBodiesToVisit[stackIndex];
+                bodyToVisit.setIsSleeping(false);
+                mIslands[mNbIslands].addBody(bodyToVisit);
+                if (!bodyToVisit.getIsMotionEnabled()) {
+                    continue;
+                }
+                ContactManifoldListElement contactElement;
+                for (contactElement = bodyToVisit.getContactManifoldsLists(); contactElement != null;
+                     contactElement = contactElement.getNext()) {
+                    final ContactManifold contactManifold = contactElement.getContactManifold();
+                    if (contactManifold.isAlreadyInIsland()) {
+                        continue;
+                    }
+                    mIslands[mNbIslands].addContactManifold(contactManifold);
+                    contactManifold.setIsAlreadyInIsland(true);
+                    final RigidBody body1 = (RigidBody) contactManifold.getFirstBody();
+                    final RigidBody body2 = (RigidBody) contactManifold.getSecondBody();
+                    final RigidBody otherBody = (body1.getID() == bodyToVisit.getID()) ? body2 : body1;
+                    if (otherBody.isAlreadyInIsland()) {
+                        continue;
+                    }
+                    stackBodiesToVisit[stackIndex] = otherBody;
+                    stackIndex++;
+                    otherBody.setIsAlreadyInIsland(true);
+                }
+                JointListElement jointElement;
+                for (jointElement = bodyToVisit.getJointsList(); jointElement != null;
+                     jointElement = jointElement.getNext()) {
+                    final Constraint joint = jointElement.getJoint();
+                    if (joint.isAlreadyInIsland()) {
+                        continue;
+                    }
+                    mIslands[mNbIslands].addJoint(joint);
+                    joint.setIsAlreadyInIsland(true);
+                    final RigidBody body1 = joint.getFirstBody();
+                    final RigidBody body2 = joint.getSecondBody();
+                    final RigidBody otherBody = (body1.getID() == bodyToVisit.getID()) ? body2 : body1;
+                    if (otherBody.isAlreadyInIsland()) {
+                        continue;
+                    }
+                    stackBodiesToVisit[stackIndex] = otherBody;
+                    stackIndex++;
+                    otherBody.setIsAlreadyInIsland(true);
+                }
+            }
+            for (int i = 0; i < mIslands[mNbIslands].getNbBodies(); i++) {
+                if (!mIslands[mNbIslands].getBodies()[i].getIsMotionEnabled()) {
+                    mIslands[mNbIslands].getBodies()[i].setIsAlreadyInIsland(false);
+                }
+            }
+            mNbIslands++;
+        }
     }
 
     @Override
@@ -610,6 +766,7 @@ public class DynamicsWorld extends CollisionWorld {
         }
         overlappingPair.addContact(contact);
         mContactManifolds.add(overlappingPair.getContactManifold());
+        addContactManifoldToBody(overlappingPair.getContactManifold(), overlappingPair.getFirstBody(), overlappingPair.getSecondBody());
     }
 
     /**

@@ -42,6 +42,7 @@ public abstract class Constraint {
     protected int mIndexBody2;
     protected final JointsPositionCorrectionTechnique mPositionCorrectionTechnique;
     protected final boolean mIsCollisionEnabled;
+    protected boolean mIsAlreadyInIsland;
 
     /**
      * Constructs a new constraint from the provided constraint info.
@@ -61,6 +62,7 @@ public abstract class Constraint {
         mType = constraintInfo.getType();
         mPositionCorrectionTechnique = constraintInfo.getPositionCorrectionTechnique();
         mIsCollisionEnabled = constraintInfo.isCollisionEnabled();
+        mIsAlreadyInIsland = false;
     }
 
     /**
@@ -134,6 +136,24 @@ public abstract class Constraint {
      */
     public boolean isCollisionEnabled() {
         return mIsCollisionEnabled;
+    }
+
+    /**
+     * Returns true if the joint has already been added into an island.
+     *
+     * @return Whether or not the joint is already in an island
+     */
+    public boolean isAlreadyInIsland() {
+        return mIsAlreadyInIsland;
+    }
+
+    /**
+     * Sets whether or not this joint has already been added into an island.
+     *
+     * @param isAlreadyInIsland Whether or not the joint is already in an island
+     */
+    public void setIsAlreadyInIsland(boolean isAlreadyInIsland) {
+        mIsAlreadyInIsland = isAlreadyInIsland;
     }
 
     /**
@@ -264,6 +284,61 @@ public abstract class Constraint {
          */
         public void setPositionCorrectionTechnique(JointsPositionCorrectionTechnique positionCorrectionTechnique) {
             this.positionCorrectionTechnique = positionCorrectionTechnique;
+        }
+    }
+
+    /**
+     * This structure represents a single element of a linked list of joints.
+     */
+    public static class JointListElement {
+        private Constraint joint;
+        private JointListElement next;
+
+        /**
+         * Constructs a new joint list element from the initial joint and next list element.
+         *
+         * @param initJoint The joint
+         * @param initNext The next element
+         */
+        public JointListElement(Constraint initJoint, JointListElement initNext) {
+            joint = initJoint;
+            next = initNext;
+        }
+
+        /**
+         * Returns the joint in this list element.
+         *
+         * @return The joint
+         */
+        public Constraint getJoint() {
+            return joint;
+        }
+
+        /**
+         * Sets the joint in this list element.
+         *
+         * @param joint The joint
+         */
+        public void setJoint(Constraint joint) {
+            this.joint = joint;
+        }
+
+        /**
+         * Returns the next element in the list.
+         *
+         * @return The next element
+         */
+        public JointListElement getNext() {
+            return next;
+        }
+
+        /**
+         * Sets the next element in the list.
+         *
+         * @param next The next element
+         */
+        public void setNext(JointListElement next) {
+            this.next = next;
         }
     }
 }

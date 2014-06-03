@@ -31,6 +31,9 @@ package org.spout.physics.body;
  */
 public class Body {
     protected final int mID;
+    protected boolean mIsAlreadyInIsland;
+    protected boolean mIsAllowedToSleep;
+    protected boolean mIsSleeping;
 
     /**
      * Construct a new body from its ID.
@@ -48,6 +51,60 @@ public class Body {
      */
     public int getID() {
         return mID;
+    }
+
+    /**
+     * Returns true if the body has already been added in an island (for the sleeping technique).
+     *
+     * @return Whether or not the body is already in an island
+     */
+    public boolean isAlreadyInIsland() {
+        return mIsAlreadyInIsland;
+    }
+
+    /**
+     * Sets the value of to know if the body has already been added into an island.
+     *
+     * @param isAlreadyInIsland Whether or not the body is in an island
+     */
+    public void setIsAlreadyInIsland(boolean isAlreadyInIsland) {
+        mIsAlreadyInIsland = isAlreadyInIsland;
+    }
+
+    /**
+     * Returns whether or not the body is allowed to sleep.
+     *
+     * @return Whether or not the body can sleep
+     */
+    public boolean isAllowedToSleep() {
+        return mIsAllowedToSleep;
+    }
+
+    /**
+     * Set whether or not the body is allowed to go to sleep.
+     *
+     * @param isAllowedToSleep Whether or not the body should be able to sleep
+     */
+    public void setIsAllowedToSleep(boolean isAllowedToSleep) {
+        mIsAllowedToSleep = isAllowedToSleep;
+    }
+
+    /**
+     * Returns whether or not the body is sleeping.
+     *
+     * @return Whether or not the body is sleeping
+     */
+    public boolean isSleeping() {
+        return mIsSleeping;
+    }
+
+    /**
+     * Set the variable to know whether or not the body is sleeping.
+     *
+     * @param isSleeping Whether or not the body is sleeping
+     */
+    public void setIsSleeping(boolean isSleeping) {
+        mIsSleeping = isSleeping;
     }
 
     /**

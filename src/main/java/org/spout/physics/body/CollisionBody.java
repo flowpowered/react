@@ -28,6 +28,7 @@ package org.spout.physics.body;
 
 import org.spout.physics.collision.shape.AABB;
 import org.spout.physics.collision.shape.CollisionShape;
+import org.spout.physics.engine.ContactManifold.ContactManifoldListElement;
 import org.spout.physics.math.Transform;
 
 /**
@@ -43,6 +44,7 @@ public class CollisionBody extends Body {
     protected boolean mIsCollisionEnabled;
     protected final AABB mAabb = new AABB();
     protected boolean mHasMoved;
+    protected ContactManifoldListElement mContactManifoldsList;
 
     /**
      * Constructs a new collision body from its transform, collision shape, and ID.
@@ -65,6 +67,7 @@ public class CollisionBody extends Body {
         mInterpolationFactor = 0;
         mOldTransform = transform;
         mCollisionShape.updateAABB(mAabb, transform);
+        mContactManifoldsList = null;
     }
 
     /**
@@ -219,5 +222,30 @@ public class CollisionBody extends Body {
         if (mHasMoved) {
             mCollisionShape.updateAABB(mAabb, mTransform);
         }
+    }
+
+    /**
+     * Returns the first element of the linked list of contact manifolds involving this body.
+     *
+     * @return The first element of the list
+     */
+    public ContactManifoldListElement getContactManifoldsLists() {
+        return mContactManifoldsList;
+    }
+
+    /**
+     * Sets the first element in the contact element list, discarding the entire list.
+     *
+     * @param contactManifoldsList The first element in the list
+     */
+    public void setContactManifoldsList(ContactManifoldListElement contactManifoldsList) {
+        mContactManifoldsList = contactManifoldsList;
+    }
+
+    /**
+     * Resets the contact manifold lists.
+     */
+    public void resetContactManifoldsList() {
+        mContactManifoldsList = null;
     }
 }

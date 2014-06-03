@@ -27,6 +27,7 @@
 package org.spout.physics.engine;
 
 import org.spout.physics.ReactDefaults;
+import org.spout.physics.body.CollisionBody;
 import org.spout.physics.constraint.ContactPoint;
 import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
@@ -39,6 +40,8 @@ import org.spout.physics.math.Vector3;
  */
 public class ContactManifold {
     public static final int MAX_CONTACT_POINTS_IN_MANIFOLD = 4;
+    private final CollisionBody mBody1;
+    private final CollisionBody mBody2;
     private final ContactPoint[] mContactPoints = new ContactPoint[MAX_CONTACT_POINTS_IN_MANIFOLD];
     private int mNbContactPoints = 0;
     private final Vector3 mFrictionVector1 = new Vector3();
@@ -46,6 +49,37 @@ public class ContactManifold {
     private float mFrictionImpulse1 = 0;
     private float mFrictionImpulse2 = 0;
     private float mFrictionTwistImpulse = 0;
+    private boolean mIsAlreadyInIsland;
+
+    /**
+     * Constructs a new contact manifold from the first and second body.
+     *
+     * @param body1 The first body
+     * @param body2 The second body
+     */
+    public ContactManifold(CollisionBody body1, CollisionBody body2) {
+        mBody1 = body1;
+        mBody2 = body2;
+        mIsAlreadyInIsland = false;
+    }
+
+    /**
+     * Returns the first body in the manifold.
+     *
+     * @return The first body
+     */
+    public CollisionBody getFirstBody() {
+        return mBody1;
+    }
+
+    /**
+     * Returns the second body in the manifold.
+     *
+     * @return The second body
+     */
+    public CollisionBody getSecondBody() {
+        return mBody2;
+    }
 
     /**
      * Gets the number of contact points in the manifold.
@@ -161,6 +195,24 @@ public class ContactManifold {
     }
 
     /**
+     * Returns true if the contact manifold has already been added into an island.
+     *
+     * @return Whether or not the contact manifold is already in an island
+     */
+    public boolean isAlreadyInIsland() {
+        return mIsAlreadyInIsland;
+    }
+
+    /**
+     * Sets whether or not this contact manifold has already been added into an island.
+     *
+     * @param isAlreadyInIsland Whether or not the contact manifold is already in an island
+     */
+    public void setIsAlreadyInIsland(boolean isAlreadyInIsland) {
+        mIsAlreadyInIsland = isAlreadyInIsland;
+    }
+
+    /**
      * Adds a contact point in the manifold.
      *
      * @param contact The contact point to add
@@ -272,7 +324,8 @@ public class ContactManifold {
     // Area = 0.5 * ||AC x BD|| where AC and BD form the diagonals of the quadrilateral.
     // Note that when we compute this area, we do not calculate it exactly but only estimate it,
     // because we do not compute the actual diagonals of the quadrilateral.
-    // Therefore, this is only a guess, which is faster to compute.
+    // Therefore, this is only a guess, which is faster to compute. This idea comes from the Bullet Physics library
+    // by Erwin Coumans (http://wwww.bulletphysics.org).
     private int getIndexToRemove(int indexMaxPenetration, Vector3 newPoint) {
         if (mNbContactPoints != MAX_CONTACT_POINTS_IN_MANIFOLD) {
             throw new IllegalStateException("nbContactPoints must be equal to MAX_CONTACT_POINTS_IN_MANIFOLD");
@@ -346,6 +399,61 @@ public class ContactManifold {
                     return 0;
                 }
             }
+        }
+    }
+
+    /**
+     * This structure represents a single element of a linked list of contact manifolds.
+     */
+    public static class ContactManifoldListElement {
+        private ContactManifold contactManifold;
+        private ContactManifoldListElement next;
+
+        /**
+         * Constructs a new contact manifold list element from the initial contact manifold and next list element.
+         *
+         * @param initContactManifold The contact manifold
+         * @param initNext The next element
+         */
+        public ContactManifoldListElement(ContactManifold initContactManifold, ContactManifoldListElement initNext) {
+            contactManifold = initContactManifold;
+            next = initNext;
+        }
+
+        /**
+         * Returns the contact manifold in this list element.
+         *
+         * @return The contact manifold
+         */
+        public ContactManifold getContactManifold() {
+            return contactManifold;
+        }
+
+        /**
+         * Sets the contact manifold in this list element.
+         *
+         * @param contactManifold The contact manifold
+         */
+        public void setContactManifold(ContactManifold contactManifold) {
+            this.contactManifold = contactManifold;
+        }
+
+        /**
+         * Returns the next element in the list.
+         *
+         * @return The next element
+         */
+        public ContactManifoldListElement getNext() {
+            return next;
+        }
+
+        /**
+         * Sets the next element in the list.
+         *
+         * @param next The next element
+         */
+        public void setNext(ContactManifoldListElement next) {
+            this.next = next;
         }
     }
 }

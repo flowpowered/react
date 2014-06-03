@@ -27,6 +27,8 @@
 package org.spout.physics.body;
 
 import org.spout.physics.collision.shape.CollisionShape;
+import org.spout.physics.constraint.Constraint;
+import org.spout.physics.constraint.Constraint.JointListElement;
 import org.spout.physics.engine.Material;
 import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Transform;
@@ -49,6 +51,7 @@ public class RigidBody extends CollisionBody {
     private final Vector3 mAngularVelocity = new Vector3();
     private float mLinearDamping;
     private float mAngularDamping;
+    private JointListElement mJointsList;
 
     /**
      * Constructs a new rigid body from its transform, mass, local inertia tensor, collision shape and ID.
@@ -68,6 +71,7 @@ public class RigidBody extends CollisionBody {
         mIsGravityEnabled = true;
         mLinearDamping = 0;
         mAngularDamping = 0;
+        mJointsList = null;
     }
 
     /**
@@ -296,5 +300,50 @@ public class RigidBody extends CollisionBody {
             throw new IllegalArgumentException("Angular damping must be greater or equal to 0");
         }
         mAngularDamping = angularDamping;
+    }
+
+    /**
+     * Returns the first element of the linked list of joints involving this body.
+     *
+     * @return The first element of the list
+     */
+    public JointListElement getJointsList() {
+        return mJointsList;
+    }
+
+    /**
+     * Sets the first element in the joint list, discarding the entire list.
+     *
+     * @param jointsList The first element in the list
+     */
+    public void setJointsList(JointListElement jointsList) {
+        mJointsList = jointsList;
+    }
+
+    /**
+     * Removes a joint from the joints list.
+     *
+     * @param joint The joint to remove
+     */
+    public void removeJointFromJointsList(Constraint joint) {
+        if (joint == null) {
+            throw new IllegalArgumentException("Joint cannot be null");
+        }
+        if (mJointsList == null) {
+            throw new IllegalStateException("The joint list is already empty");
+        }
+        if (mJointsList.getJoint() == joint) {
+            final JointListElement elementToRemove = mJointsList;
+            mJointsList = elementToRemove.getNext();
+        } else {
+            final JointListElement currentElement = mJointsList;
+            while (currentElement.getNext() != null) {
+                if (currentElement.getNext().getJoint() == joint) {
+                    final JointListElement elementToRemove = currentElement.getNext();
+                    currentElement.setNext(elementToRemove.getNext());
+                    break;
+                }
+            }
+        }
     }
 }
