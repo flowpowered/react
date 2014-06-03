@@ -26,13 +26,12 @@
  */
 package org.spout.physics.constraint;
 
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import gnu.trove.map.TObjectIntMap;
 
 import org.spout.physics.body.RigidBody;
+import org.spout.physics.engine.Island;
 import org.spout.physics.math.Quaternion;
 import org.spout.physics.math.Vector3;
 
@@ -82,10 +81,8 @@ import org.spout.physics.math.Vector3;
  * contact manifold, we need two constraints for tangential friction but also another twist friction constraint to prevent spin of the body around the contact manifold center.
  */
 public class ConstraintSolver {
-    private final Set<Constraint> mJoints;
-    private final Set<RigidBody> mConstraintBodies = new HashSet<>();
-    private final List<Vector3> mLinearVelocities;
-    private final List<Vector3> mAngularVelocities;
+    private Vector3[] mLinearVelocities;
+    private Vector3[] mAngularVelocities;
     private final List<Vector3> mPositions;
     private final List<Quaternion> mOrientations;
     private final TObjectIntMap<RigidBody> mMapBodyToConstrainedVelocityIndex;
@@ -94,71 +91,109 @@ public class ConstraintSolver {
     private final ConstraintSolverData mConstraintSolverData;
 
     /**
-     * Constructs a new constraint solver from the joints, linear and angular velocities and body to constrained velocity index map.
+     * Constructs a new constraint solver from positions, orientations and body to constrained velocity index map.
      *
-     * @param joints The joints
-     * @param linearVelocities The linear velocities
-     * @param angularVelocities The angular velocities
+     * @param positions The positions
+     * @param orientations The orientations
      * @param mapBodyToConstrainedVelocityIndex The map from body to constrained velocity
      */
-    public ConstraintSolver(Set<Constraint> joints, List<Vector3> linearVelocities, List<Vector3> angularVelocities, List<Vector3> positions, List<Quaternion> orientations,
-                            TObjectIntMap<RigidBody> mapBodyToConstrainedVelocityIndex) {
-        mJoints = joints;
-        mLinearVelocities = linearVelocities;
-        mAngularVelocities = angularVelocities;
+    public ConstraintSolver(List<Vector3> positions, List<Quaternion> orientations, TObjectIntMap<RigidBody> mapBodyToConstrainedVelocityIndex) {
+        mLinearVelocities = null;
+        mAngularVelocities = null;
         mPositions = positions;
         mOrientations = orientations;
         mMapBodyToConstrainedVelocityIndex = mapBodyToConstrainedVelocityIndex;
         mIsWarmStartingActive = true;
-        mConstraintSolverData = new ConstraintSolverData(linearVelocities, angularVelocities, positions, orientations, mapBodyToConstrainedVelocityIndex);
+        mConstraintSolverData = new ConstraintSolverData(positions, orientations, mapBodyToConstrainedVelocityIndex);
     }
 
     /**
-     * Initializes the constraint solver.
+     * Initializes the constraint solver for a given island.
      *
      * @param dt The time delta
+     * @param island The island
      */
-    public void initialize(float dt) {
+    public void initializeForIsland(float dt, Island island) {
+        if (mLinearVelocities == null) {
+            throw new IllegalStateException("Linear velocities cannot be null");
+        }
+        if (mAngularVelocities == null) {
+            throw new IllegalStateException("Angular velocities cannot be null");
+        }
+        if (island == null) {
+            throw new IllegalArgumentException("Island cannot be null");
+        }
+        if (island.getNbBodies() <= 0) {
+            throw new IllegalArgumentException("The number of bodies in the island must be greater than zero");
+        }
+        if (island.getNbJoints() <= 0) {
+            throw new IllegalArgumentException("The number of joints in the island must be greater than zero");
+        }
         mTimeStep = dt;
         mConstraintSolverData.setTimeStep(mTimeStep);
         mConstraintSolverData.setWarmStartingActive(mIsWarmStartingActive);
-        for (Constraint joint : mJoints) {
-            final RigidBody body1 = joint.getFirstBody();
-            final RigidBody body2 = joint.getSecondBody();
-            mConstraintBodies.add(body1);
-            mConstraintBodies.add(body2);
-            joint.initBeforeSolve(mConstraintSolverData);
+        final Constraint[] joints = island.getJoints();
+        for (int i = 0; i < island.getNbJoints(); i++) {
+            joints[i].initBeforeSolve(mConstraintSolverData);
             if (mIsWarmStartingActive) {
-                joint.warmstart(mConstraintSolverData);
+                joints[i].warmstart(mConstraintSolverData);
             }
         }
     }
 
     /**
      * Solves the velocity constraints.
+     *
+     * @param island The island to solve
      */
-    public void solveVelocityConstraints() {
-        for (Constraint joint : mJoints) {
-            joint.solveVelocityConstraint(mConstraintSolverData);
+    public void solveVelocityConstraints(Island island) {
+        if (island == null) {
+            throw new IllegalArgumentException("Island cannot be null");
+        }
+        if (island.getNbJoints() <= 0) {
+            throw new IllegalArgumentException("The number of joints in the island must be greater than zero");
+        }
+        final Constraint[] joints = island.getJoints();
+        for (int i = 0; i < island.getNbJoints(); i++) {
+            joints[i].solveVelocityConstraint(mConstraintSolverData);
         }
     }
 
     /**
      * Solves the position constraints.
+     *
+     * @param island The island to solve
      */
-    public void solvePositionConstraints() {
-        for (Constraint joint : mJoints) {
-            joint.solvePositionConstraint(mConstraintSolverData);
+    public void solvePositionConstraints(Island island) {
+        if (island == null) {
+            throw new IllegalArgumentException("Island cannot be null");
+        }
+        if (island.getNbJoints() <= 0) {
+            throw new IllegalArgumentException("The number of joints in the island must be greater than zero");
+        }
+        final Constraint[] joints = island.getJoints();
+        for (int i = 0; i < island.getNbJoints(); i++) {
+            joints[i].solvePositionConstraint(mConstraintSolverData);
         }
     }
 
     /**
-     * Returns true if the body is in at least one constraint.
+     * Sets the constrained velocities arrays.
      *
-     * @return Whether or not the body is in at least one constraint
+     * @param constrainedLinearVelocities The constrained linear velocities
+     * @param constrainedAngularVelocities The constrained angular velocities
      */
-    public boolean isConstrainedBody(RigidBody body) {
-        return mConstraintBodies.contains(body);
+    public void setConstrainedVelocitiesArrays(Vector3[] constrainedLinearVelocities, Vector3[] constrainedAngularVelocities) {
+        if (constrainedLinearVelocities == null) {
+            throw new IllegalArgumentException("The constrained linear velocities cannot be null");
+        }
+        if (constrainedAngularVelocities == null) {
+            throw new IllegalArgumentException("The constrained angular velocities cannot be null");
+        }
+        mLinearVelocities = constrainedLinearVelocities;
+        mAngularVelocities = constrainedAngularVelocities;
+        mConstraintSolverData.setLinearVelocities(mLinearVelocities);
+        mConstraintSolverData.setAngularVelocities(mAngularVelocities);
     }
 
     /**
@@ -166,24 +201,24 @@ public class ConstraintSolver {
      */
     public static class ConstraintSolverData {
         private float timeStep;
-        private final List<Vector3> linearVelocities;
-        private final List<Vector3> angularVelocities;
+        private Vector3[] linearVelocities;
+        private Vector3[] angularVelocities;
         private final List<Vector3> positions;
         private final List<Quaternion> orientations;
         private final TObjectIntMap<RigidBody> mapBodyToConstrainedVelocityIndex;
         private boolean isWarmStartingActive;
 
         /**
-         * Constructs a new constraint solver data from the linear and angular velocities and the map from body to constrained velocity index.
+         * Constructs a new constraint solver data from the position, the orientations and the map from body to constrained velocity index.
          *
-         * @param refLinearVelocities The linear velocities
-         * @param refAngularVelocities The angular velocities
+         * @param refPositions The positions
+         * @param refOrientations The orientations
          * @param refMapBodyToConstrainedVelocityIndex The map from body to constrained velocity index
          */
-        public ConstraintSolverData(List<Vector3> refLinearVelocities, List<Vector3> refAngularVelocities, List<Vector3> refPositions, List<Quaternion> refOrientations,
+        public ConstraintSolverData(List<Vector3> refPositions, List<Quaternion> refOrientations,
                                     TObjectIntMap<RigidBody> refMapBodyToConstrainedVelocityIndex) {
-            this.linearVelocities = refLinearVelocities;
-            this.angularVelocities = refAngularVelocities;
+            this.linearVelocities = null;
+            this.angularVelocities = null;
             this.positions = refPositions;
             this.orientations = refOrientations;
             this.mapBodyToConstrainedVelocityIndex = refMapBodyToConstrainedVelocityIndex;
@@ -212,8 +247,17 @@ public class ConstraintSolver {
          *
          * @return The linear velocities
          */
-        public List<Vector3> getLinearVelocities() {
+        public Vector3[] getLinearVelocities() {
             return linearVelocities;
+        }
+
+        /**
+         * Sets the linear velocities.
+         *
+         * @param linearVelocities The linear velocities
+         */
+        public void setLinearVelocities(Vector3[] linearVelocities) {
+            this.linearVelocities = linearVelocities;
         }
 
         /**
@@ -221,8 +265,17 @@ public class ConstraintSolver {
          *
          * @return The angular velocities
          */
-        public List<Vector3> getAngularVelocities() {
+        public Vector3[] getAngularVelocities() {
             return angularVelocities;
+        }
+
+        /**
+         * Sets the angular velocities.
+         *
+         * @param angularVelocities The angular velocities
+         */
+        public void setAngularVelocities(Vector3[] angularVelocities) {
+            this.angularVelocities = angularVelocities;
         }
 
         /**

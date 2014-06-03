@@ -108,10 +108,10 @@ public class BallAndSocketJoint extends Constraint {
 
     @Override
     public void warmstart(ConstraintSolverData constraintSolverData) {
-        final Vector3 v1 = constraintSolverData.getLinearVelocities().get(mIndexBody1);
-        final Vector3 v2 = constraintSolverData.getLinearVelocities().get(mIndexBody2);
-        final Vector3 w1 = constraintSolverData.getAngularVelocities().get(mIndexBody1);
-        final Vector3 w2 = constraintSolverData.getAngularVelocities().get(mIndexBody2);
+        final Vector3 v1 = constraintSolverData.getLinearVelocities()[mIndexBody1];
+        final Vector3 v2 = constraintSolverData.getLinearVelocities()[mIndexBody2];
+        final Vector3 w1 = constraintSolverData.getAngularVelocities()[mIndexBody1];
+        final Vector3 w2 = constraintSolverData.getAngularVelocities()[mIndexBody2];
         final float inverseMassBody1 = mBody1.getMassInverse();
         final float inverseMassBody2 = mBody2.getMassInverse();
         if (mBody1.getIsMotionEnabled()) {
@@ -130,10 +130,10 @@ public class BallAndSocketJoint extends Constraint {
 
     @Override
     public void solveVelocityConstraint(ConstraintSolverData constraintSolverData) {
-        final Vector3 v1 = constraintSolverData.getLinearVelocities().get(mIndexBody1);
-        final Vector3 v2 = constraintSolverData.getLinearVelocities().get(mIndexBody2);
-        final Vector3 w1 = constraintSolverData.getAngularVelocities().get(mIndexBody1);
-        final Vector3 w2 = constraintSolverData.getAngularVelocities().get(mIndexBody2);
+        final Vector3 v1 = constraintSolverData.getLinearVelocities()[mIndexBody1];
+        final Vector3 v2 = constraintSolverData.getLinearVelocities()[mIndexBody2];
+        final Vector3 w1 = constraintSolverData.getAngularVelocities()[mIndexBody1];
+        final Vector3 w2 = constraintSolverData.getAngularVelocities()[mIndexBody2];
         float inverseMassBody1 = mBody1.getMassInverse();
         float inverseMassBody2 = mBody2.getMassInverse();
         final Vector3 Jv = Vector3.subtract(Vector3.subtract(Vector3.add(v2, w2.cross(mR2World)), v1), w1.cross(mR1World));

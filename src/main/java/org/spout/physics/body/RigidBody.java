@@ -336,13 +336,14 @@ public class RigidBody extends CollisionBody {
             final JointListElement elementToRemove = mJointsList;
             mJointsList = elementToRemove.getNext();
         } else {
-            final JointListElement currentElement = mJointsList;
+            JointListElement currentElement = mJointsList;
             while (currentElement.getNext() != null) {
                 if (currentElement.getNext().getJoint() == joint) {
                     final JointListElement elementToRemove = currentElement.getNext();
                     currentElement.setNext(elementToRemove.getNext());
                     break;
                 }
+                currentElement = currentElement.getNext();
             }
         }
     }

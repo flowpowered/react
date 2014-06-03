@@ -76,15 +76,18 @@ public class DynamicsWorld extends CollisionWorld {
     private final List<ContactManifold> mContactManifolds = new ArrayList<>();
     private final Set<Constraint> mJoints = new HashSet<>();
     private final Vector3 mGravity;
-    private boolean mIsGravityOn = true;
-    private final ArrayList<Vector3> mConstrainedLinearVelocities = new ArrayList<>();
-    private final ArrayList<Vector3> mConstrainedAngularVelocities = new ArrayList<>();
+    private boolean mIsGravityOn;
+    private Vector3[] mConstrainedLinearVelocities;
+    private Vector3[] mConstrainedAngularVelocities;
+    private Vector3[] mSplitLinearVelocities;
+    private Vector3[] mSplitAngularVelocities;
     private final ArrayList<Vector3> mConstrainedPositions = new ArrayList<>();
     private final ArrayList<Quaternion> mConstrainedOrientations = new ArrayList<>();
     private final TObjectIntMap<RigidBody> mMapBodyToConstrainedVelocityIndex = new TObjectIntHashMap<>();
     private int mNbIslands;
     private int mNbIslandsCapacity;
     private Island[] mIslands;
+    private int mNbBodiesCapacity;
     private boolean isTicking = false;
     // Tick cache
     private final Set<RigidBody> mRigidBodiesToAddCache = new HashSet<>();
@@ -108,15 +111,20 @@ public class DynamicsWorld extends CollisionWorld {
     public DynamicsWorld(Vector3 gravity, float timeStep) {
         mTimer = new Timer(timeStep);
         mGravity = gravity;
-        mContactSolver = new ContactSolver(mContactManifolds, mConstrainedLinearVelocities, mConstrainedAngularVelocities, mMapBodyToConstrainedVelocityIndex);
-        mConstraintSolver = new ConstraintSolver(mJoints, mConstrainedLinearVelocities, mConstrainedAngularVelocities, mConstrainedPositions, mConstrainedOrientations,
-                mMapBodyToConstrainedVelocityIndex);
+        mIsGravityOn = true;
+        mConstrainedLinearVelocities = null;
+        mConstrainedAngularVelocities = null;
+        mContactSolver = new ContactSolver(mMapBodyToConstrainedVelocityIndex);
+        mConstraintSolver = new ConstraintSolver(mConstrainedPositions, mConstrainedOrientations, mMapBodyToConstrainedVelocityIndex);
         mNbVelocitySolverIterations = ReactDefaults.DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS;
         mNbPositionSolverIterations = ReactDefaults.DEFAULT_POSITION_SOLVER_NB_ITERATIONS;
         mIsSleepingEnabled = ReactDefaults.SLEEPING_ENABLED;
+        mSplitLinearVelocities = null;
+        mSplitAngularVelocities = null;
         mNbIslands = 0;
         mNbIslandsCapacity = 0;
         mIslands = null;
+        mNbBodiesCapacity = 0;
     }
 
     /**
@@ -276,8 +284,6 @@ public class DynamicsWorld extends CollisionWorld {
             integrateRigidBodiesPositions();
             solvePositionCorrection();
             updateRigidBodiesAABB();
-            mContactSolver.cleanup();
-            cleanupConstrainedVelocitiesArray();
         }
         isTicking = false;
         setInterpolationFactorToAllBodies();
@@ -298,13 +304,13 @@ public class DynamicsWorld extends CollisionWorld {
         for (RigidBody rigidBody : mRigidBodies) {
             if (rigidBody.getIsMotionEnabled()) {
                 final int indexArray = mMapBodyToConstrainedVelocityIndex.get(rigidBody);
-                final Vector3 newLinVelocity = mConstrainedLinearVelocities.get(indexArray);
-                final Vector3 newAngVelocity = mConstrainedAngularVelocities.get(indexArray);
+                final Vector3 newLinVelocity = mConstrainedLinearVelocities[indexArray];
+                final Vector3 newAngVelocity = mConstrainedAngularVelocities[indexArray];
                 rigidBody.setLinearVelocity(newLinVelocity);
                 rigidBody.setAngularVelocity(newAngVelocity);
-                if (mContactSolver.isConstrainedBody(rigidBody) && mContactSolver.isSplitImpulseActive()) {
-                    newLinVelocity.add(mContactSolver.getSplitLinearVelocityOfBody(rigidBody));
-                    newAngVelocity.add(mContactSolver.getSplitAngularVelocityOfBody(rigidBody));
+                if (mContactSolver.isSplitImpulseActive()) {
+                    newLinVelocity.add(mSplitLinearVelocities[indexArray]);
+                    newAngVelocity.add(mSplitAngularVelocities[indexArray]);
                 }
                 final Vector3 currentPosition = rigidBody.getTransform().getPosition();
                 final Quaternion currentOrientation = rigidBody.getTransform().getOrientation();
@@ -340,43 +346,56 @@ public class DynamicsWorld extends CollisionWorld {
         }
     }
 
+    // Initialize the bodies velocities arrays for the next simulation step.
+    private void initVelocityArrays() {
+        final int nbBodies = mRigidBodies.size();
+        if (mNbBodiesCapacity != nbBodies && nbBodies > 0) {
+            mNbBodiesCapacity = nbBodies;
+            mSplitLinearVelocities = new Vector3[mNbBodiesCapacity];
+            mSplitAngularVelocities = new Vector3[mNbBodiesCapacity];
+            mConstrainedLinearVelocities = new Vector3[mNbBodiesCapacity];
+            mConstrainedAngularVelocities = new Vector3[mNbBodiesCapacity];
+        }
+        for (int i = 0; i < mNbBodiesCapacity; i++) {
+            mSplitLinearVelocities[i] = new Vector3(0, 0, 0);
+            mSplitAngularVelocities[i] = new Vector3(0, 0, 0);
+        }
+    }
+
     // Integrates the constrained velocities array using the provided time delta.
     // This method only sets the temporary velocities and does not update
     // the actual velocities of the bodies. The velocities updated in this method
     // might violate the constraints and will be corrected in the constraint and
     // contact solver.
     private void integrateRigidBodiesVelocities() {
-        mConstrainedLinearVelocities.clear();
-        mConstrainedLinearVelocities.ensureCapacity(mRigidBodies.size());
-        mConstrainedAngularVelocities.clear();
-        mConstrainedAngularVelocities.ensureCapacity(mRigidBodies.size());
+        initVelocityArrays();
         final float dt = (float) mTimer.getTimeStep();
         int i = 0;
+        mMapBodyToConstrainedVelocityIndex.clear();
         for (RigidBody rigidBody : mRigidBodies) {
             mMapBodyToConstrainedVelocityIndex.put(rigidBody, i);
             if (rigidBody.getIsMotionEnabled()) {
-                mConstrainedLinearVelocities.add(i, Vector3.add(
+                mConstrainedLinearVelocities[i] = Vector3.add(
                         rigidBody.getLinearVelocity(),
-                        Vector3.multiply(dt * rigidBody.getMassInverse(), rigidBody.getExternalForce())));
-                mConstrainedAngularVelocities.add(i, Vector3.add(
+                        Vector3.multiply(dt * rigidBody.getMassInverse(), rigidBody.getExternalForce()));
+                mConstrainedAngularVelocities[i] = Vector3.add(
                         rigidBody.getAngularVelocity(),
                         Matrix3x3.multiply(
                                 Matrix3x3.multiply(dt, rigidBody.getInertiaTensorInverseWorld()),
-                                rigidBody.getExternalTorque())
-                ));
+                                rigidBody.getExternalTorque()));
                 if (rigidBody.isGravityEnabled() && mIsGravityOn) {
-                    mConstrainedLinearVelocities.get(i).add(Vector3.multiply(dt * rigidBody.getMassInverse() * rigidBody.getMass(), mGravity));
+                    mConstrainedLinearVelocities[i].add(Vector3.multiply(dt * rigidBody.getMassInverse() * rigidBody.getMass(), mGravity));
                 }
                 final float linDampingFactor = rigidBody.getLinearDamping();
                 final float angDampingFactor = rigidBody.getAngularDamping();
                 final float linearDamping = Mathematics.clamp(1 - dt * linDampingFactor, 0, 1);
                 final float angularDamping = Mathematics.clamp(1 - dt * angDampingFactor, 0, 1);
-                mConstrainedLinearVelocities.get(i).multiply(Mathematics.clamp(linearDamping, 0, 1));
-                mConstrainedAngularVelocities.get(i).multiply(Mathematics.clamp(angularDamping, 0, 1));
+                mConstrainedLinearVelocities[i].multiply(Mathematics.clamp(linearDamping, 0, 1));
+                mConstrainedAngularVelocities[i].multiply(Mathematics.clamp(angularDamping, 0, 1));
                 rigidBody.updateOldTransform();
             } else {
-                mConstrainedLinearVelocities.add(i, new Vector3(0, 0, 0));
-                mConstrainedAngularVelocities.add(i, new Vector3(0, 0, 0));
+                mConstrainedLinearVelocities[i] = new Vector3(0, 0, 0);
+                mConstrainedAngularVelocities[i] = new Vector3(0, 0, 0);
             }
             i++;
         }
@@ -388,28 +407,34 @@ public class DynamicsWorld extends CollisionWorld {
     // Solves the contacts and constraints
     private void solveContactsAndConstraints() {
         final float dt = (float) mTimer.getTimeStep();
-        final boolean isConstraintsToSolve = !mJoints.isEmpty();
-        final boolean isContactsToSolve = !mContactManifolds.isEmpty();
-        if (!isConstraintsToSolve && !isContactsToSolve) {
-            return;
-        }
-        if (isContactsToSolve) {
-            mContactSolver.initialize(dt);
-            mContactSolver.warmStart();
-        }
-        if (isConstraintsToSolve) {
-            mConstraintSolver.initialize(dt);
-        }
-        for (int i = 0; i < mNbVelocitySolverIterations; i++) {
-            if (isConstraintsToSolve) {
-                mConstraintSolver.solveVelocityConstraints();
+        mContactSolver.setSplitVelocitiesArrays(mSplitLinearVelocities, mSplitAngularVelocities);
+        mContactSolver.setConstrainedVelocitiesArrays(mConstrainedLinearVelocities, mConstrainedAngularVelocities);
+        mConstraintSolver.setConstrainedVelocitiesArrays(mConstrainedLinearVelocities, mConstrainedAngularVelocities);
+        for (int islandIndex = 0; islandIndex < mNbIslands; islandIndex++) {
+            final boolean isConstraintsToSolve = mIslands[islandIndex].getNbJoints() > 0;
+            final boolean isContactsToSolve = mIslands[islandIndex].getNbContactManifolds() > 0;
+            if (!isConstraintsToSolve && !isContactsToSolve) {
+                continue;
             }
             if (isContactsToSolve) {
-                mContactSolver.solve();
+                mContactSolver.initializeForIsland(dt, mIslands[islandIndex]);
+                mContactSolver.warmStart();
             }
-        }
-        if (isContactsToSolve) {
-            mContactSolver.storeImpulses();
+            if (isConstraintsToSolve) {
+                mConstraintSolver.initializeForIsland(dt, mIslands[islandIndex]);
+            }
+            for (int i = 0; i < mNbVelocitySolverIterations; i++) {
+                if (isConstraintsToSolve) {
+                    mConstraintSolver.solveVelocityConstraints(mIslands[islandIndex]);
+                }
+                if (isContactsToSolve) {
+                    mContactSolver.solve();
+                }
+            }
+            if (isContactsToSolve) {
+                mContactSolver.storeImpulses();
+                mContactSolver.cleanup();
+            }
         }
     }
 
@@ -417,7 +442,6 @@ public class DynamicsWorld extends CollisionWorld {
         if (mJoints.isEmpty()) {
             return;
         }
-        // TODO : Use better memory allocation here
         mConstrainedPositions.clear();
         mConstrainedPositions.ensureCapacity(mRigidBodies.size());
         mConstrainedOrientations.clear();
@@ -426,33 +450,25 @@ public class DynamicsWorld extends CollisionWorld {
             mConstrainedPositions.add(null);
             mConstrainedOrientations.add(null);
         }
-        for (RigidBody rigidBody : mRigidBodies) {
-            if (mConstraintSolver.isConstrainedBody(rigidBody)) {
-                final int index = mMapBodyToConstrainedVelocityIndex.get(rigidBody);
-                final Transform transform = rigidBody.getTransform();
+        for (int islandIndex = 0; islandIndex < mNbIslands; islandIndex++) {
+            final RigidBody[] bodies = mIslands[islandIndex].getBodies();
+            for (int b = 0; b < mIslands[islandIndex].getNbBodies(); b++) {
+                final int index = mMapBodyToConstrainedVelocityIndex.get(bodies[b]);
+                final Transform transform = bodies[b].getTransform();
                 mConstrainedPositions.set(index, new Vector3(transform.getPosition()));
                 mConstrainedOrientations.set(index, new Quaternion(transform.getOrientation()));
             }
-        }
-        for (int i = 0; i < mNbPositionSolverIterations; i++) {
-            mConstraintSolver.solvePositionConstraints();
-        }
-        for (RigidBody rigidBody : mRigidBodies) {
-            if (mConstraintSolver.isConstrainedBody(rigidBody)) {
-                final int index = mMapBodyToConstrainedVelocityIndex.get(rigidBody);
+            for (int i = 0; i < mNbPositionSolverIterations; i++) {
+                mConstraintSolver.solvePositionConstraints(mIslands[islandIndex]);
+            }
+            for (int b = 0; b < mIslands[islandIndex].getNbBodies(); b++) {
+                final int index = mMapBodyToConstrainedVelocityIndex.get(bodies[b]);
                 final Vector3 newPosition = mConstrainedPositions.get(index);
                 final Quaternion newOrientation = mConstrainedOrientations.get(index);
                 final Transform newTransform = new Transform(newPosition, newOrientation.getUnit());
-                rigidBody.setTransform(newTransform);
+                bodies[b].setTransform(newTransform);
             }
         }
-    }
-
-    // Cleans up the constrained velocities array at each step.
-    private void cleanupConstrainedVelocitiesArray() {
-        mConstrainedLinearVelocities.clear();
-        mConstrainedAngularVelocities.clear();
-        mMapBodyToConstrainedVelocityIndex.clear();
     }
 
     /**

@@ -243,10 +243,10 @@ public class SliderJoint extends Constraint {
 
     @Override
     public void warmstart(ConstraintSolverData constraintSolverData) {
-        final Vector3 v1 = constraintSolverData.getLinearVelocities().get(mIndexBody1);
-        final Vector3 v2 = constraintSolverData.getLinearVelocities().get(mIndexBody2);
-        final Vector3 w1 = constraintSolverData.getAngularVelocities().get(mIndexBody1);
-        final Vector3 w2 = constraintSolverData.getAngularVelocities().get(mIndexBody2);
+        final Vector3 v1 = constraintSolverData.getLinearVelocities()[mIndexBody1];
+        final Vector3 v2 = constraintSolverData.getLinearVelocities()[mIndexBody2];
+        final Vector3 w1 = constraintSolverData.getAngularVelocities()[mIndexBody1];
+        final Vector3 w2 = constraintSolverData.getAngularVelocities()[mIndexBody2];
         final float inverseMassBody1 = mBody1.getMassInverse();
         final float inverseMassBody2 = mBody2.getMassInverse();
         final float impulseLimits = mImpulseUpperLimit - mImpulseLowerLimit;
@@ -277,10 +277,10 @@ public class SliderJoint extends Constraint {
 
     @Override
     public void solveVelocityConstraint(ConstraintSolverData constraintSolverData) {
-        final Vector3 v1 = constraintSolverData.getLinearVelocities().get(mIndexBody1);
-        final Vector3 v2 = constraintSolverData.getLinearVelocities().get(mIndexBody2);
-        final Vector3 w1 = constraintSolverData.getAngularVelocities().get(mIndexBody1);
-        final Vector3 w2 = constraintSolverData.getAngularVelocities().get(mIndexBody2);
+        final Vector3 v1 = constraintSolverData.getLinearVelocities()[mIndexBody1];
+        final Vector3 v2 = constraintSolverData.getLinearVelocities()[mIndexBody2];
+        final Vector3 w1 = constraintSolverData.getAngularVelocities()[mIndexBody1];
+        final Vector3 w2 = constraintSolverData.getAngularVelocities()[mIndexBody2];
         final float inverseMassBody1 = mBody1.getMassInverse();
         final float inverseMassBody2 = mBody2.getMassInverse();
         final float el1 = -mN1.dot(v1) - w1.dot(mR1PlusUCrossN1) + mN1.dot(v2) + w2.dot(mR2CrossN1);

@@ -27,7 +27,6 @@
 package org.spout.physics.engine;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import gnu.trove.map.TObjectIntMap;
@@ -65,71 +64,64 @@ public class ContactSolver {
     private static final float BETA_SPLIT_IMPULSE = 0.2f;
     private static final float SLOP = 0.01f;
     private final boolean mIsWarmStartingActive = true;
-    private final List<ContactManifold> mContactManifolds;
-    private Vector3[] mSplitLinearVelocities = null;
-    private Vector3[] mSplitAngularVelocities = null;
+    private Vector3[] mSplitLinearVelocities;
+    private Vector3[] mSplitAngularVelocities;
     private float mTimeStep;
-    private ContactManifoldSolver[] mContactConstraints = null;
+    private ContactManifoldSolver[] mContactConstraints;
     private int mNbContactManifolds;
     private final Set<RigidBody> mConstraintBodies = new HashSet<>();
-    private final List<Vector3> mLinearVelocities;
-    private final List<Vector3> mAngularVelocities;
+    private Vector3[] mLinearVelocities;
+    private Vector3[] mAngularVelocities;
     private final TObjectIntMap<RigidBody> mMapBodyToConstrainedVelocityIndex;
     private boolean mIsSplitImpulseActive = true;
     private boolean mIsSolveFrictionAtContactManifoldCenterActive = true;
 
     /**
-     * Constructs a new contact solver from the dynamics world, the constrained linear and angular velocities, and the body to velocity index map.
+     * Constructs a new contact solver from the body to velocity index map.
      *
-     * @param contactManifolds The contact manifolds
-     * @param constrainedLinearVelocities The constrained linear velocities
-     * @param constrainedAngularVelocities The constrained angular velocities
      * @param mapBodyToVelocityIndex The body to velocity index map
      */
-    public ContactSolver(List<ContactManifold> contactManifolds, List<Vector3> constrainedLinearVelocities,
-                         List<Vector3> constrainedAngularVelocities, TObjectIntMap<RigidBody> mapBodyToVelocityIndex) {
-        mContactManifolds = contactManifolds;
-        mLinearVelocities = constrainedLinearVelocities;
-        mAngularVelocities = constrainedAngularVelocities;
+    public ContactSolver(TObjectIntMap<RigidBody> mapBodyToVelocityIndex) {
+        mSplitLinearVelocities = null;
+        mSplitAngularVelocities = null;
+        mContactConstraints = null;
+        mLinearVelocities = null;
+        mAngularVelocities = null;
         mMapBodyToConstrainedVelocityIndex = mapBodyToVelocityIndex;
     }
 
     /**
-     * Returns true if the body is in at least one constraint.
+     * Sets the split velocities arrays.
      *
-     * @param body The body to check
-     * @return Whether or not the body is in at least one constraint
+     * @param splitLinearVelocities The split linear velocities
+     * @param splitAngularVelocities The split angular velocities
      */
-    public boolean isConstrainedBody(RigidBody body) {
-        return mConstraintBodies.contains(body);
+    public void setSplitVelocitiesArrays(Vector3[] splitLinearVelocities, Vector3[] splitAngularVelocities) {
+        if (splitLinearVelocities == null) {
+            throw new IllegalArgumentException("The constrained linear velocities cannot be null");
+        }
+        if (splitAngularVelocities == null) {
+            throw new IllegalArgumentException("The constrained angular velocities cannot be null");
+        }
+        mSplitLinearVelocities = splitLinearVelocities;
+        mSplitAngularVelocities = splitAngularVelocities;
     }
 
     /**
-     * Gets the split linear velocity for the body.
+     * Sets the constrained velocities arrays.
      *
-     * @param body The to get the split linear velocity for
-     * @return The split linear velocity
+     * @param constrainedLinearVelocities The constrained linear velocities
+     * @param constrainedAngularVelocities The constrained angular velocities
      */
-    public Vector3 getSplitLinearVelocityOfBody(RigidBody body) {
-        if (!isConstrainedBody(body)) {
-            throw new IllegalArgumentException("body must be a constrained body");
+    public void setConstrainedVelocitiesArrays(Vector3[] constrainedLinearVelocities, Vector3[] constrainedAngularVelocities) {
+        if (constrainedLinearVelocities == null) {
+            throw new IllegalArgumentException("The constrained linear velocities cannot be null");
         }
-        final int indexBody = mMapBodyToConstrainedVelocityIndex.get(body);
-        return mSplitLinearVelocities[indexBody];
-    }
-
-    /**
-     * Gets the split angular velocity.
-     *
-     * @param body The to get the split angular velocity for
-     * @return The split angular velocity
-     */
-    public Vector3 getSplitAngularVelocityOfBody(RigidBody body) {
-        if (!isConstrainedBody(body)) {
-            throw new IllegalArgumentException("body must be a constrained body");
+        if (constrainedAngularVelocities == null) {
+            throw new IllegalArgumentException("The constrained angular velocities cannot be null");
         }
-        final int indexBody = mMapBodyToConstrainedVelocityIndex.get(body);
-        return mSplitAngularVelocities[indexBody];
+        mLinearVelocities = constrainedLinearVelocities;
+        mAngularVelocities = constrainedAngularVelocities;
     }
 
     /**
@@ -199,26 +191,40 @@ public class ContactSolver {
     }
 
     /**
-     * Initializes the constraint solver.
+     * Initializes the constraint solver for a given island.
      *
      * @param dt The time delta
+     * @param island The island
      */
-    public void initialize(float dt) {
+    public void initializeForIsland(float dt, Island island) {
+        if (island == null) {
+            throw new IllegalArgumentException("Island cannot be null");
+        }
+        if (island.getNbBodies() <= 0) {
+            throw new IllegalArgumentException("The number of bodies in the island must be greater than zero");
+        }
+        if (island.getNbContactManifolds() <= 0) {
+            throw new IllegalArgumentException("The number of contact manifolds in the island must be greater than zero");
+        }
+        if (mLinearVelocities == null) {
+            throw new IllegalStateException("Linear velocities cannot be null");
+        }
+        if (mAngularVelocities == null) {
+            throw new IllegalStateException("Angular velocities cannot be null");
+        }
         mTimeStep = dt;
-        mContactConstraints = new ContactManifoldSolver[mContactManifolds.size()];
-        mNbContactManifolds = 0;
-        for (ContactManifold externalManifold : mContactManifolds) {
-            if (mContactConstraints[mNbContactManifolds] == null) {
-                mContactConstraints[mNbContactManifolds] = new ContactManifoldSolver();
-            }
-            final ContactManifoldSolver internalManifold = mContactConstraints[mNbContactManifolds];
+        mNbContactManifolds = island.getNbContactManifolds();
+        mContactConstraints = new ContactManifoldSolver[mNbContactManifolds];
+        final ContactManifold[] contactManifolds = island.getContactManifolds();
+        for (int i = 0; i < mNbContactManifolds; i++) {
+            final ContactManifold externalManifold = contactManifolds[i];
+            final ContactManifoldSolver internalManifold = new ContactManifoldSolver();
+            mContactConstraints[i] = new ContactManifoldSolver();
             if (externalManifold.getNbContactPoints() <= 0) {
                 throw new IllegalStateException("external manifold must have at least one contact point");
             }
             final RigidBody body1 = externalManifold.getContactPoint(0).getFirstBody();
             final RigidBody body2 = externalManifold.getContactPoint(0).getSecondBody();
-            mConstraintBodies.add(body1);
-            mConstraintBodies.add(body2);
             final Vector3 x1 = body1.getTransform().getPosition();
             final Vector3 x2 = body2.getTransform().getPosition();
             internalManifold.indexBody1 = mMapBodyToConstrainedVelocityIndex.get(body1);
@@ -279,39 +285,8 @@ public class ContactSolver {
                     internalManifold.frictionTwistImpulse = 0;
                 }
             }
-            mNbContactManifolds++;
         }
-        mSplitLinearVelocities = new Vector3[mMapBodyToConstrainedVelocityIndex.size()];
-        mSplitAngularVelocities = new Vector3[mMapBodyToConstrainedVelocityIndex.size()];
-        if (mConstraintBodies.size() <= 0) {
-            throw new IllegalStateException("the number of constraint bodies must be greater than zero");
-        }
-        if (mMapBodyToConstrainedVelocityIndex.size() < mConstraintBodies.size()) {
-            throw new IllegalStateException("the number of constrained velocities must be greater"
-                    + " or equal to the number of constraint bodies");
-        }
-        if (mLinearVelocities.size() < mConstraintBodies.size()) {
-            throw new IllegalStateException("the number of constrained linear velocities must be greater"
-                    + " or equal to the number of constraint bodies");
-        }
-        if (mAngularVelocities.size() < mConstraintBodies.size()) {
-            throw new IllegalStateException("the number of constrained angular velocities must be greater"
-                    + " or equal to the number of constraint bodies");
-        }
-        initializeSplitImpulseVelocities();
         initializeContactConstraints();
-    }
-
-    // Initializes the split impulse velocities.
-    private void initializeSplitImpulseVelocities() {
-        for (RigidBody rigidBody : mConstraintBodies) {
-            if (rigidBody == null) {
-                throw new IllegalStateException("the rigid body cannot be null");
-            }
-            final int bodyNumber = mMapBodyToConstrainedVelocityIndex.get(rigidBody);
-            mSplitLinearVelocities[bodyNumber] = new Vector3(0, 0, 0);
-            mSplitAngularVelocities[bodyNumber] = new Vector3(0, 0, 0);
-        }
     }
 
     // Initializes the contact constraints before solving the system.
@@ -323,10 +298,10 @@ public class ContactSolver {
             if (mIsSolveFrictionAtContactManifoldCenterActive) {
                 manifold.normal.setAllValues(0, 0, 0);
             }
-            final Vector3 v1 = mLinearVelocities.get(manifold.indexBody1);
-            final Vector3 w1 = mAngularVelocities.get(manifold.indexBody1);
-            final Vector3 v2 = mLinearVelocities.get(manifold.indexBody2);
-            final Vector3 w2 = mAngularVelocities.get(manifold.indexBody2);
+            final Vector3 v1 = mLinearVelocities[manifold.indexBody1];
+            final Vector3 w1 = mAngularVelocities[manifold.indexBody1];
+            final Vector3 v2 = mLinearVelocities[manifold.indexBody2];
+            final Vector3 w2 = mAngularVelocities[manifold.indexBody2];
             for (int i = 0; i < manifold.nbContacts; i++) {
                 final ContactPointSolver contactPoint = manifold.contacts[i];
                 final ContactPoint externalContact = contactPoint.externalContact;
@@ -504,10 +479,10 @@ public class ContactSolver {
         for (int c = 0; c < mNbContactManifolds; c++) {
             ContactManifoldSolver contactManifold = mContactConstraints[c];
             float sumPenetrationImpulse = 0;
-            final Vector3 v1 = mLinearVelocities.get(contactManifold.indexBody1);
-            final Vector3 w1 = mAngularVelocities.get(contactManifold.indexBody1);
-            final Vector3 v2 = mLinearVelocities.get(contactManifold.indexBody2);
-            final Vector3 w2 = mAngularVelocities.get(contactManifold.indexBody2);
+            final Vector3 v1 = mLinearVelocities[contactManifold.indexBody1];
+            final Vector3 w1 = mAngularVelocities[contactManifold.indexBody1];
+            final Vector3 v2 = mLinearVelocities[contactManifold.indexBody2];
+            final Vector3 w2 = mAngularVelocities[contactManifold.indexBody2];
             for (int i = 0; i < contactManifold.nbContacts; i++) {
                 final ContactPointSolver contactPoint = contactManifold.contacts[i];
                 // --------- Penetration --------- //
@@ -665,12 +640,12 @@ public class ContactSolver {
     // Applies an impulse to the two bodies of a constraint.
     private void applyImpulse(Impulse impulse, ContactManifoldSolver manifold) {
         if (manifold.isBody1Moving) {
-            mLinearVelocities.get(manifold.indexBody1).add(Vector3.multiply(manifold.massInverseBody1, impulse.getLinearImpulseFirstBody()));
-            mAngularVelocities.get(manifold.indexBody1).add(Matrix3x3.multiply(manifold.inverseInertiaTensorBody1, impulse.getAngularImpulseFirstBody()));
+            mLinearVelocities[manifold.indexBody1].add(Vector3.multiply(manifold.massInverseBody1, impulse.getLinearImpulseFirstBody()));
+            mAngularVelocities[manifold.indexBody1].add(Matrix3x3.multiply(manifold.inverseInertiaTensorBody1, impulse.getAngularImpulseFirstBody()));
         }
         if (manifold.isBody2Moving) {
-            mLinearVelocities.get(manifold.indexBody2).add(Vector3.multiply(manifold.massInverseBody2, impulse.getLinearImpulseSecondBody()));
-            mAngularVelocities.get(manifold.indexBody2).add(Matrix3x3.multiply(manifold.inverseInertiaTensorBody2, impulse.getAngularImpulseSecondBody()));
+            mLinearVelocities[manifold.indexBody2].add(Vector3.multiply(manifold.massInverseBody2, impulse.getLinearImpulseSecondBody()));
+            mAngularVelocities[manifold.indexBody2].add(Matrix3x3.multiply(manifold.inverseInertiaTensorBody2, impulse.getAngularImpulseSecondBody()));
         }
     }
 
@@ -724,15 +699,8 @@ public class ContactSolver {
      * Clean up the constraint solver. Clear the last computed data.
      */
     public void cleanup() {
-        mConstraintBodies.clear();
         if (mContactConstraints != null) {
             mContactConstraints = null;
-        }
-        if (mSplitLinearVelocities != null) {
-            mSplitLinearVelocities = null;
-        }
-        if (mSplitAngularVelocities != null) {
-            mSplitAngularVelocities = null;
         }
     }
 
