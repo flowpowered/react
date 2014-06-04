@@ -219,7 +219,7 @@ public class ContactSolver {
         for (int i = 0; i < mNbContactManifolds; i++) {
             final ContactManifold externalManifold = contactManifolds[i];
             final ContactManifoldSolver internalManifold = new ContactManifoldSolver();
-            mContactConstraints[i] = new ContactManifoldSolver();
+            mContactConstraints[i] = internalManifold;
             if (externalManifold.getNbContactPoints() <= 0) {
                 throw new IllegalStateException("external manifold must have at least one contact point");
             }

@@ -347,4 +347,15 @@ public class RigidBody extends CollisionBody {
             }
         }
     }
+
+    @Override
+    public void setIsSleeping(boolean isSleeping) {
+        if (isSleeping) {
+            mLinearVelocity.setToZero();
+            mAngularVelocity.setToZero();
+            mExternalForce.setToZero();
+            mExternalTorque.setToZero();
+        }
+        super.setIsSleeping(isSleeping);
+    }
 }

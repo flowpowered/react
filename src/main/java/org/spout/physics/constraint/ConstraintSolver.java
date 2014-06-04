@@ -168,9 +168,10 @@ public class ConstraintSolver {
         if (island == null) {
             throw new IllegalArgumentException("Island cannot be null");
         }
-        if (island.getNbJoints() <= 0) {
-            throw new IllegalArgumentException("The number of joints in the island must be greater than zero");
-        }
+        // TODO: this doesn't make sense
+        //if (island.getNbJoints() <= 0) {
+        //    throw new IllegalArgumentException("The number of joints in the island must be greater than zero");
+        //}
         final Constraint[] joints = island.getJoints();
         for (int i = 0; i < island.getNbJoints(); i++) {
             joints[i].solvePositionConstraint(mConstraintSolverData);

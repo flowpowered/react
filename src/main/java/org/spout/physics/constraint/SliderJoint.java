@@ -549,7 +549,8 @@ public class SliderJoint extends Constraint {
     public void enableMotor(boolean isMotorEnabled) {
         mIsMotorEnabled = isMotorEnabled;
         mImpulseMotor = 0;
-        // TODO : Wake up the bodies of the joint here when sleeping is implemented
+        mBody1.setIsSleeping(false);
+        mBody2.setIsSleeping(false);
     }
 
     /**
@@ -586,7 +587,8 @@ public class SliderJoint extends Constraint {
     private void resetLimits() {
         mImpulseLowerLimit = 0;
         mImpulseUpperLimit = 0;
-        // TODO : Wake up the bodies of the joint here when sleeping is implemented
+        mBody1.setIsSleeping(false);
+        mBody2.setIsSleeping(false);
     }
 
     /**
@@ -597,7 +599,8 @@ public class SliderJoint extends Constraint {
     public void setMotorSpeed(float motorSpeed) {
         if (motorSpeed != mMotorSpeed) {
             mMotorSpeed = motorSpeed;
-            // TODO : Wake up the bodies of the joint here when sleeping is implemented
+            mBody1.setIsSleeping(false);
+            mBody2.setIsSleeping(false);
         }
     }
 
@@ -612,7 +615,8 @@ public class SliderJoint extends Constraint {
         }
         if (maxMotorForce != mMaxMotorForce) {
             mMaxMotorForce = maxMotorForce;
-            // TODO : Wake up the bodies of the joint here when sleeping is implemented
+            mBody1.setIsSleeping(false);
+            mBody2.setIsSleeping(false);
         }
     }
 

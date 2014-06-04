@@ -34,6 +34,7 @@ public class Body {
     protected boolean mIsAlreadyInIsland;
     protected boolean mIsAllowedToSleep;
     protected boolean mIsSleeping;
+    protected float mSleepTime;
 
     /**
      * Construct a new body from its ID.
@@ -42,6 +43,10 @@ public class Body {
      */
     public Body(int id) {
         mID = id;
+        mIsAlreadyInIsland = false;
+        mIsAllowedToSleep = true;
+        mIsSleeping = false;
+        mSleepTime = 0;
     }
 
     /**
@@ -87,6 +92,9 @@ public class Body {
      */
     public void setIsAllowedToSleep(boolean isAllowedToSleep) {
         mIsAllowedToSleep = isAllowedToSleep;
+        if (!mIsAllowedToSleep) {
+            setIsSleeping(false);
+        }
     }
 
     /**
@@ -104,7 +112,32 @@ public class Body {
      * @param isSleeping Whether or not the body is sleeping
      */
     public void setIsSleeping(boolean isSleeping) {
+        if (isSleeping) {
+            mSleepTime = 0;
+        } else {
+            if (mIsSleeping) {
+                mSleepTime = 0;
+            }
+        }
         mIsSleeping = isSleeping;
+    }
+
+    /**
+     * Returns the sleep time.
+     *
+     * @return The sleep time
+     */
+    public float getSleepTime() {
+        return mSleepTime;
+    }
+
+    /**
+     * Sets the sleep time.
+     *
+     * @param sleepTime The sleep time
+     */
+    public void setSleepTime(float sleepTime) {
+        mSleepTime = sleepTime;
     }
 
     /**

@@ -76,7 +76,7 @@ public class DynamicsWorld extends CollisionWorld {
     private final List<ContactManifold> mContactManifolds = new ArrayList<>();
     private final Set<Constraint> mJoints = new HashSet<>();
     private final Vector3 mGravity;
-    private boolean mIsGravityOn;
+    private boolean mIsGravityEnabled;
     private Vector3[] mConstrainedLinearVelocities;
     private Vector3[] mConstrainedAngularVelocities;
     private Vector3[] mSplitLinearVelocities;
@@ -88,6 +88,9 @@ public class DynamicsWorld extends CollisionWorld {
     private int mNbIslandsCapacity;
     private Island[] mIslands;
     private int mNbBodiesCapacity;
+    private float mSleepLinearVelocity;
+    private float mSleepAngularVelocity;
+    private float mTimeBeforeSleep;
     private boolean isTicking = false;
     // Tick cache
     private final Set<RigidBody> mRigidBodiesToAddCache = new HashSet<>();
@@ -111,7 +114,7 @@ public class DynamicsWorld extends CollisionWorld {
     public DynamicsWorld(Vector3 gravity, float timeStep) {
         mTimer = new Timer(timeStep);
         mGravity = gravity;
-        mIsGravityOn = true;
+        mIsGravityEnabled = true;
         mConstrainedLinearVelocities = null;
         mConstrainedAngularVelocities = null;
         mContactSolver = new ContactSolver(mMapBodyToConstrainedVelocityIndex);
@@ -125,6 +128,9 @@ public class DynamicsWorld extends CollisionWorld {
         mNbIslandsCapacity = 0;
         mIslands = null;
         mNbBodiesCapacity = 0;
+        mSleepLinearVelocity = ReactDefaults.DEFAULT_SLEEP_LINEAR_VELOCITY;
+        mSleepAngularVelocity = ReactDefaults.DEFAULT_SLEEP_ANGULAR_VELOCITY;
+        mTimeBeforeSleep = ReactDefaults.DEFAULT_TIME_BEFORE_SLEEP;
     }
 
     /**
@@ -195,17 +201,91 @@ public class DynamicsWorld extends CollisionWorld {
      *
      * @return Whether or not the gravity is on
      */
-    public boolean isGravityOn() {
-        return mIsGravityOn;
+    public boolean isGravityEnabled() {
+        return mIsGravityEnabled;
     }
 
     /**
      * Sets the gravity on if true, off is false.
      *
-     * @param gravityOn True to turn on the gravity, false to turn it off
+     * @param isGravityEnabled True to turn on the gravity, false to turn it off
      */
-    public void setGravityOn(boolean gravityOn) {
-        mIsGravityOn = gravityOn;
+    public void setIsGravityEnabled(boolean isGravityEnabled) {
+        mIsGravityEnabled = isGravityEnabled;
+    }
+
+    /**
+     * Returns true if the sleeping technique is enabled.
+     *
+     * @return Whether or not sleeping is enabled
+     */
+    public boolean isSleepingEnabled() {
+        return mIsSleepingEnabled;
+    }
+
+    /**
+     * Returns the current sleep linear velocity.
+     *
+     * @return The sleep linear velocity
+     */
+    public float getSleepLinearVelocity() {
+        return mSleepLinearVelocity;
+    }
+
+    /**
+     * Sets the sleep linear velocity. When the velocity of a body becomes smaller than the sleep linear/angular velocity for a given amount of time, the body starts sleeping and does not need to be
+     * simulated anymore.
+     *
+     * @param sleepLinearVelocity The sleep linear velocity
+     */
+    public void setSleepLinearVelocity(float sleepLinearVelocity) {
+        if (sleepLinearVelocity < 0) {
+            throw new IllegalArgumentException("Sleep linear angular velocity must be greater or equal to zero");
+        }
+        mSleepLinearVelocity = sleepLinearVelocity;
+    }
+
+    /**
+     * Returns the current sleep angular velocity.
+     *
+     * @return The sleep angular velocity
+     */
+    public float getSleepAngularVelocity() {
+        return mSleepAngularVelocity;
+    }
+
+    /**
+     * Sets the sleep angular velocity. When the velocity of a body becomes smaller than the sleep linear/angular velocity for a given amount of time, the body starts sleeping and does not need  to be
+     * simulated anymore.
+     *
+     * @param sleepAngularVelocity The sleep angular velocity
+     */
+    public void setSleepAngularVelocity(float sleepAngularVelocity) {
+        if (sleepAngularVelocity < 0) {
+            throw new IllegalArgumentException("Sleep angular velocity must be greater or equal to zero");
+        }
+        mSleepAngularVelocity = sleepAngularVelocity;
+    }
+
+    /**
+     * Returns the time a body is required to stay still before sleeping.
+     *
+     * @return The time before sleep
+     */
+    public float getTimeBeforeSleep() {
+        return mTimeBeforeSleep;
+    }
+
+    /**
+     * Sets the time a body is required to stay still before sleeping.
+     *
+     * @param timeBeforeSleep The time before sleep
+     */
+    public void setTimeBeforeSleep(float timeBeforeSleep) {
+        if (timeBeforeSleep < 0) {
+            throw new IllegalArgumentException("Time before sleep must be greater or equal to zero");
+        }
+        mTimeBeforeSleep = timeBeforeSleep;
     }
 
     /**
@@ -276,13 +356,16 @@ public class DynamicsWorld extends CollisionWorld {
             mContactManifolds.clear();
             resetContactManifoldListsOfBodies();
             mCollisionDetection.computeCollisionDetection();
+            computeIslands();
             integrateRigidBodiesVelocities();
             resetBodiesMovementVariable();
             mTimer.nextStep();
-            computeIslands();
             solveContactsAndConstraints();
             integrateRigidBodiesPositions();
             solvePositionCorrection();
+            if (mIsSleepingEnabled) {
+                updateSleepingBodies();
+            }
             updateRigidBodiesAABB();
         }
         isTicking = false;
@@ -301,23 +384,26 @@ public class DynamicsWorld extends CollisionWorld {
     // The positions and orientations of the bodies are integrated using the symplectic Euler time stepping scheme.
     private void integrateRigidBodiesPositions() {
         final float dt = (float) mTimer.getTimeStep();
-        for (RigidBody rigidBody : mRigidBodies) {
-            if (rigidBody.getIsMotionEnabled()) {
-                final int indexArray = mMapBodyToConstrainedVelocityIndex.get(rigidBody);
-                final Vector3 newLinVelocity = mConstrainedLinearVelocities[indexArray];
-                final Vector3 newAngVelocity = mConstrainedAngularVelocities[indexArray];
-                rigidBody.setLinearVelocity(newLinVelocity);
-                rigidBody.setAngularVelocity(newAngVelocity);
-                if (mContactSolver.isSplitImpulseActive()) {
-                    newLinVelocity.add(mSplitLinearVelocities[indexArray]);
-                    newAngVelocity.add(mSplitAngularVelocities[indexArray]);
+        for (int i = 0; i < mNbIslands; i++) {
+            final RigidBody[] bodies = mIslands[i].getBodies();
+            for (int b = 0; b < mIslands[i].getNbBodies(); b++) {
+                if (bodies[b].getIsMotionEnabled()) {
+                    final int indexArray = mMapBodyToConstrainedVelocityIndex.get(bodies[b]);
+                    final Vector3 newLinVelocity = mConstrainedLinearVelocities[indexArray];
+                    final Vector3 newAngVelocity = mConstrainedAngularVelocities[indexArray];
+                    bodies[b].setLinearVelocity(newLinVelocity);
+                    bodies[b].setAngularVelocity(newAngVelocity);
+                    if (mContactSolver.isSplitImpulseActive()) {
+                        newLinVelocity.add(mSplitLinearVelocities[indexArray]);
+                        newAngVelocity.add(mSplitAngularVelocities[indexArray]);
+                    }
+                    final Vector3 currentPosition = bodies[b].getTransform().getPosition();
+                    final Quaternion currentOrientation = bodies[b].getTransform().getOrientation();
+                    final Vector3 newPosition = Vector3.add(currentPosition, Vector3.multiply(newLinVelocity, dt));
+                    final Quaternion newOrientation = Quaternion.add(currentOrientation, Quaternion.multiply(Quaternion.multiply(new Quaternion(0, newAngVelocity), currentOrientation), 0.5f * dt));
+                    final Transform newTransform = new Transform(newPosition, newOrientation.getUnit());
+                    bodies[b].setTransform(newTransform);
                 }
-                final Vector3 currentPosition = rigidBody.getTransform().getPosition();
-                final Quaternion currentOrientation = rigidBody.getTransform().getOrientation();
-                final Vector3 newPosition = Vector3.add(currentPosition, Vector3.multiply(newLinVelocity, dt));
-                final Quaternion newOrientation = Quaternion.add(currentOrientation, Quaternion.multiply(Quaternion.multiply(new Quaternion(0, newAngVelocity), currentOrientation), 0.5f * dt));
-                final Transform newTransform = new Transform(newPosition, newOrientation.getUnit());
-                rigidBody.setTransform(newTransform);
             }
         }
     }
@@ -339,9 +425,6 @@ public class DynamicsWorld extends CollisionWorld {
                     + " and smaller or equal to one");
         }
         for (RigidBody rigidBody : mRigidBodies) {
-            if (rigidBody == null) {
-                throw new IllegalStateException("rigid body cannot be null");
-            }
             rigidBody.setInterpolationFactor(factor);
         }
     }
@@ -360,6 +443,12 @@ public class DynamicsWorld extends CollisionWorld {
             mSplitLinearVelocities[i] = new Vector3(0, 0, 0);
             mSplitAngularVelocities[i] = new Vector3(0, 0, 0);
         }
+        mMapBodyToConstrainedVelocityIndex.clear();
+        int indexBody = 0;
+        for (RigidBody rigidBody : mRigidBodies) {
+            mMapBodyToConstrainedVelocityIndex.put(rigidBody, indexBody);
+            indexBody++;
+        }
     }
 
     // Integrates the constrained velocities array using the provided time delta.
@@ -370,37 +459,30 @@ public class DynamicsWorld extends CollisionWorld {
     private void integrateRigidBodiesVelocities() {
         initVelocityArrays();
         final float dt = (float) mTimer.getTimeStep();
-        int i = 0;
-        mMapBodyToConstrainedVelocityIndex.clear();
-        for (RigidBody rigidBody : mRigidBodies) {
-            mMapBodyToConstrainedVelocityIndex.put(rigidBody, i);
-            if (rigidBody.getIsMotionEnabled()) {
-                mConstrainedLinearVelocities[i] = Vector3.add(
-                        rigidBody.getLinearVelocity(),
-                        Vector3.multiply(dt * rigidBody.getMassInverse(), rigidBody.getExternalForce()));
-                mConstrainedAngularVelocities[i] = Vector3.add(
-                        rigidBody.getAngularVelocity(),
-                        Matrix3x3.multiply(
-                                Matrix3x3.multiply(dt, rigidBody.getInertiaTensorInverseWorld()),
-                                rigidBody.getExternalTorque()));
-                if (rigidBody.isGravityEnabled() && mIsGravityOn) {
-                    mConstrainedLinearVelocities[i].add(Vector3.multiply(dt * rigidBody.getMassInverse() * rigidBody.getMass(), mGravity));
+        for (int i = 0; i < mNbIslands; i++) {
+            final RigidBody[] bodies = mIslands[i].getBodies();
+            for (int b = 0; b < mIslands[i].getNbBodies(); b++) {
+                int indexBody = mMapBodyToConstrainedVelocityIndex.get(bodies[b]);
+                if (bodies[b].getIsMotionEnabled()) {
+                    mConstrainedLinearVelocities[indexBody] = Vector3.add(bodies[b].getLinearVelocity(), Vector3.multiply(dt * bodies[b].getMassInverse(), bodies[b].getExternalForce()));
+                    mConstrainedAngularVelocities[indexBody] = Vector3.add(bodies[b].getAngularVelocity(),
+                            Matrix3x3.multiply(Matrix3x3.multiply(dt, bodies[b].getInertiaTensorInverseWorld()), bodies[b].getExternalTorque()));
+                    if (bodies[b].isGravityEnabled() && mIsGravityEnabled) {
+                        mConstrainedLinearVelocities[indexBody].add(Vector3.multiply(dt * bodies[b].getMassInverse() * bodies[b].getMass(), mGravity));
+                    }
+                    final float linDampingFactor = bodies[b].getLinearDamping();
+                    final float angDampingFactor = bodies[b].getAngularDamping();
+                    final float linearDamping = Mathematics.clamp(1 - dt * linDampingFactor, 0, 1);
+                    final float angularDamping = Mathematics.clamp(1 - dt * angDampingFactor, 0, 1);
+                    mConstrainedLinearVelocities[indexBody].multiply(Mathematics.clamp(linearDamping, 0, 1));
+                    mConstrainedAngularVelocities[indexBody].multiply(Mathematics.clamp(angularDamping, 0, 1));
+                    bodies[b].updateOldTransform();
+                } else {
+                    mConstrainedLinearVelocities[indexBody] = new Vector3(0, 0, 0);
+                    mConstrainedAngularVelocities[indexBody] = new Vector3(0, 0, 0);
                 }
-                final float linDampingFactor = rigidBody.getLinearDamping();
-                final float angDampingFactor = rigidBody.getAngularDamping();
-                final float linearDamping = Mathematics.clamp(1 - dt * linDampingFactor, 0, 1);
-                final float angularDamping = Mathematics.clamp(1 - dt * angDampingFactor, 0, 1);
-                mConstrainedLinearVelocities[i].multiply(Mathematics.clamp(linearDamping, 0, 1));
-                mConstrainedAngularVelocities[i].multiply(Mathematics.clamp(angularDamping, 0, 1));
-                rigidBody.updateOldTransform();
-            } else {
-                mConstrainedLinearVelocities[i] = new Vector3(0, 0, 0);
-                mConstrainedAngularVelocities[i] = new Vector3(0, 0, 0);
+                indexBody++;
             }
-            i++;
-        }
-        if (mMapBodyToConstrainedVelocityIndex.size() != mRigidBodies.size()) {
-            throw new IllegalStateException("The size of the map from body to constrained velocity index should be the same as the number of rigid bodies");
         }
     }
 
@@ -603,6 +685,8 @@ public class DynamicsWorld extends CollisionWorld {
         if (!joint.isCollisionEnabled()) {
             mCollisionDetection.removeNoCollisionPair(joint.getFirstBody(), joint.getSecondBody());
         }
+        joint.getFirstBody().setIsSleeping(false);
+        joint.getSecondBody().setIsSleeping(false);
         mJoints.remove(joint);
         joint.getFirstBody().removeJointFromJointsList(joint);
         joint.getSecondBody().removeJointFromJointsList(joint);
@@ -702,8 +786,7 @@ public class DynamicsWorld extends CollisionWorld {
                     continue;
                 }
                 ContactManifoldListElement contactElement;
-                for (contactElement = bodyToVisit.getContactManifoldsLists(); contactElement != null;
-                     contactElement = contactElement.getNext()) {
+                for (contactElement = bodyToVisit.getContactManifoldsLists(); contactElement != null; contactElement = contactElement.getNext()) {
                     final ContactManifold contactManifold = contactElement.getContactManifold();
                     if (contactManifold.isAlreadyInIsland()) {
                         continue;
@@ -712,7 +795,7 @@ public class DynamicsWorld extends CollisionWorld {
                     contactManifold.setIsAlreadyInIsland(true);
                     final RigidBody body1 = (RigidBody) contactManifold.getFirstBody();
                     final RigidBody body2 = (RigidBody) contactManifold.getSecondBody();
-                    final RigidBody otherBody = (body1.getID() == bodyToVisit.getID()) ? body2 : body1;
+                    final RigidBody otherBody = body1.getID() == bodyToVisit.getID() ? body2 : body1;
                     if (otherBody.isAlreadyInIsland()) {
                         continue;
                     }
@@ -721,8 +804,7 @@ public class DynamicsWorld extends CollisionWorld {
                     otherBody.setIsAlreadyInIsland(true);
                 }
                 JointListElement jointElement;
-                for (jointElement = bodyToVisit.getJointsList(); jointElement != null;
-                     jointElement = jointElement.getNext()) {
+                for (jointElement = bodyToVisit.getJointsList(); jointElement != null; jointElement = jointElement.getNext()) {
                     final Constraint joint = jointElement.getJoint();
                     if (joint.isAlreadyInIsland()) {
                         continue;
@@ -731,7 +813,7 @@ public class DynamicsWorld extends CollisionWorld {
                     joint.setIsAlreadyInIsland(true);
                     final RigidBody body1 = joint.getFirstBody();
                     final RigidBody body2 = joint.getSecondBody();
-                    final RigidBody otherBody = (body1.getID() == bodyToVisit.getID()) ? body2 : body1;
+                    final RigidBody otherBody = body1.getID() == bodyToVisit.getID() ? body2 : body1;
                     if (otherBody.isAlreadyInIsland()) {
                         continue;
                     }
@@ -746,6 +828,39 @@ public class DynamicsWorld extends CollisionWorld {
                 }
             }
             mNbIslands++;
+        }
+    }
+
+    // Puts bodies to sleep if needed.
+    // For each island, if all the bodies have been almost still for a long enough period of
+    // time, we put all the bodies of the island to sleep.
+    private void updateSleepingBodies() {
+        final float dt = (float) mTimer.getTimeStep();
+        final float sleepLinearVelocitySquare = mSleepLinearVelocity * mSleepLinearVelocity;
+        final float sleepAngularVelocitySquare = mSleepAngularVelocity * mSleepAngularVelocity;
+        for (int i = 0; i < mNbIslands; i++) {
+            float minSleepTime = Float.MAX_VALUE;
+            final RigidBody[] bodies = mIslands[i].getBodies();
+            for (int b = 0; b < mIslands[i].getNbBodies(); b++) {
+                if (!bodies[b].getIsMotionEnabled()) {
+                    continue;
+                }
+                if (bodies[b].getLinearVelocity().lengthSquare() > sleepLinearVelocitySquare || bodies[b].getAngularVelocity().lengthSquare() > sleepAngularVelocitySquare
+                        || !bodies[b].isAllowedToSleep()) {
+                    bodies[b].setSleepTime(0);
+                    minSleepTime = 0;
+                } else {
+                    bodies[b].setSleepTime(bodies[b].getSleepTime() + dt);
+                    if (bodies[b].getSleepTime() < minSleepTime) {
+                        minSleepTime = bodies[b].getSleepTime();
+                    }
+                }
+            }
+            if (minSleepTime >= mTimeBeforeSleep) {
+                for (int b = 0; b < mIslands[i].getNbBodies(); b++) {
+                    bodies[b].setIsSleeping(true);
+                }
+            }
         }
     }
 
@@ -783,6 +898,20 @@ public class DynamicsWorld extends CollisionWorld {
         overlappingPair.addContact(contact);
         mContactManifolds.add(overlappingPair.getContactManifold());
         addContactManifoldToBody(overlappingPair.getContactManifold(), overlappingPair.getFirstBody(), overlappingPair.getSecondBody());
+    }
+
+    /**
+     * Enables or disables the sleeping technique.
+     *
+     * @param isSleepingEnabled The state of the sleeping
+     */
+    public void enableSleeping(boolean isSleepingEnabled) {
+        mIsSleepingEnabled = isSleepingEnabled;
+        if (!mIsSleepingEnabled) {
+            for (RigidBody rigidBody : mRigidBodies) {
+                rigidBody.setIsSleeping(false);
+            }
+        }
     }
 
     /**

@@ -55,7 +55,7 @@ public class ReactDefaults {
      */
     public static final float DEFAULT_BOUNCINESS = 0.5f;
     /**
-     * True if the deactivation (sleeping) of inactive bodies is enabled. Default: true
+     * True if the sleeping technique is enabled. Default: true
      */
     public static final boolean SLEEPING_ENABLED = true;
     /**
@@ -78,6 +78,18 @@ public class ReactDefaults {
      * Number of iterations when solving the position constraints of the Sequential Impulse technique. Default: 5
      */
     public static final int DEFAULT_POSITION_SOLVER_NB_ITERATIONS = 5;
+    /**
+     * Time (in seconds) that a body must stay still to be considered sleeping. Default: 1
+     */
+    public static final float DEFAULT_TIME_BEFORE_SLEEP = 1.0f;
+    /**
+     * A body with a linear velocity smaller than the sleep linear velocity (in m/s) might enter sleeping mode. Default: 0.02
+     */
+    public static final float DEFAULT_SLEEP_LINEAR_VELOCITY = 0.02f;
+    /**
+     * A body with angular velocity smaller than the sleep angular velocity (in rad/s) might enter sleeping mode. Default: 3pi/180
+     */
+    public static final float DEFAULT_SLEEP_ANGULAR_VELOCITY = (float) (3 * (Math.PI / 180));
     /**
      * The linked phase AABB scaling factor. Default: 2
      */
