@@ -35,7 +35,7 @@ import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
 
 /**
- * This class represents a ball-and-socket joint that allows arbitrary rotation between two bodies.
+ * This class represents a ball-and-socket joint that allows arbitrary rotation between two bodies. This joint has three degrees of freedom. It can be used to create a chain of bodies for instance.
  */
 public class BallAndSocketJoint extends Joint {
     private static final float BETA = 0.2f;
@@ -76,24 +76,24 @@ public class BallAndSocketJoint extends Joint {
         final Matrix3x3 skewSymmetricMatrixU1 = Matrix3x3.computeSkewSymmetricMatrixForCrossProduct(mR1World);
         final Matrix3x3 skewSymmetricMatrixU2 = Matrix3x3.computeSkewSymmetricMatrixForCrossProduct(mR2World);
         float inverseMassBodies = 0;
-        if (mBody1.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled()) {
             inverseMassBodies += mBody1.getMassInverse();
         }
-        if (mBody2.getIsMotionEnabled()) {
+        if (mBody2.isMotionEnabled()) {
             inverseMassBodies += mBody2.getMassInverse();
         }
         final Matrix3x3 massMatrix = new Matrix3x3(
                 inverseMassBodies, 0, 0,
                 0, inverseMassBodies, 0,
                 0, 0, inverseMassBodies);
-        if (mBody1.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled()) {
             massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU1, Matrix3x3.multiply(mI1, skewSymmetricMatrixU1.getTranspose())));
         }
-        if (mBody2.getIsMotionEnabled()) {
+        if (mBody2.isMotionEnabled()) {
             massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU2, Matrix3x3.multiply(mI2, skewSymmetricMatrixU2.getTranspose())));
         }
         mInverseMassMatrix.setToZero();
-        if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled() || mBody2.isMotionEnabled()) {
             mInverseMassMatrix.set(massMatrix.getInverse());
         }
         mBiasVector.setToZero();
@@ -114,13 +114,13 @@ public class BallAndSocketJoint extends Joint {
         final Vector3 w2 = constraintSolverData.getAngularVelocities()[mIndexBody2];
         final float inverseMassBody1 = mBody1.getMassInverse();
         final float inverseMassBody2 = mBody2.getMassInverse();
-        if (mBody1.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled()) {
             final Vector3 linearImpulseBody1 = Vector3.negate(mImpulse);
             final Vector3 angularImpulseBody1 = mImpulse.cross(mR1World);
             v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
             w1.add(Matrix3x3.multiply(mI1, angularImpulseBody1));
         }
-        if (mBody2.getIsMotionEnabled()) {
+        if (mBody2.isMotionEnabled()) {
             final Vector3 linearImpulseBody2 = mImpulse;
             final Vector3 angularImpulseBody2 = Vector3.negate(mImpulse.cross(mR2World));
             v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
@@ -139,13 +139,13 @@ public class BallAndSocketJoint extends Joint {
         final Vector3 Jv = Vector3.subtract(Vector3.subtract(Vector3.add(v2, w2.cross(mR2World)), v1), w1.cross(mR1World));
         final Vector3 deltaLambda = Matrix3x3.multiply(mInverseMassMatrix, Vector3.subtract(Vector3.negate(Jv), mBiasVector));
         mImpulse.add(deltaLambda);
-        if (mBody1.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled()) {
             final Vector3 linearImpulseBody1 = Vector3.negate(deltaLambda);
             final Vector3 angularImpulseBody1 = deltaLambda.cross(mR1World);
             v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
             w1.add(Matrix3x3.multiply(mI1, angularImpulseBody1));
         }
-        if (mBody2.getIsMotionEnabled()) {
+        if (mBody2.isMotionEnabled()) {
             final Vector3 linearImpulseBody2 = deltaLambda;
             final Vector3 angularImpulseBody2 = Vector3.negate(deltaLambda.cross(mR2World));
             v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
@@ -171,29 +171,29 @@ public class BallAndSocketJoint extends Joint {
         final Matrix3x3 skewSymmetricMatrixU1 = Matrix3x3.computeSkewSymmetricMatrixForCrossProduct(mR1World);
         final Matrix3x3 skewSymmetricMatrixU2 = Matrix3x3.computeSkewSymmetricMatrixForCrossProduct(mR2World);
         float inverseMassBodies = 0;
-        if (mBody1.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled()) {
             inverseMassBodies += inverseMassBody1;
         }
-        if (mBody2.getIsMotionEnabled()) {
+        if (mBody2.isMotionEnabled()) {
             inverseMassBodies += inverseMassBody2;
         }
         final Matrix3x3 massMatrix = new Matrix3x3(
                 inverseMassBodies, 0, 0,
                 0, inverseMassBodies, 0,
                 0, 0, inverseMassBodies);
-        if (mBody1.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled()) {
             massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU1, Matrix3x3.multiply(mI1, skewSymmetricMatrixU1.getTranspose())));
         }
-        if (mBody2.getIsMotionEnabled()) {
+        if (mBody2.isMotionEnabled()) {
             massMatrix.add(Matrix3x3.multiply(skewSymmetricMatrixU2, Matrix3x3.multiply(mI2, skewSymmetricMatrixU2.getTranspose())));
         }
         mInverseMassMatrix.setToZero();
-        if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled() || mBody2.isMotionEnabled()) {
             mInverseMassMatrix.set(massMatrix.getInverse());
         }
         final Vector3 constraintError = Vector3.subtract(Vector3.subtract(Vector3.add(x2, mR2World), x1), mR1World);
         final Vector3 lambda = Matrix3x3.multiply(mInverseMassMatrix, Vector3.negate(constraintError));
-        if (mBody1.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled()) {
             final Vector3 linearImpulseBody1 = Vector3.negate(lambda);
             final Vector3 angularImpulseBody1 = lambda.cross(mR1World);
             final Vector3 v1 = Vector3.multiply(inverseMassBody1, linearImpulseBody1);
@@ -202,7 +202,7 @@ public class BallAndSocketJoint extends Joint {
             q1.add(Quaternion.multiply(Quaternion.multiply(new Quaternion(0, w1), q1), 0.5f));
             q1.normalize();
         }
-        if (mBody2.getIsMotionEnabled()) {
+        if (mBody2.isMotionEnabled()) {
             final Vector3 linearImpulseBody2 = lambda;
             final Vector3 angularImpulseBody2 = Vector3.negate(lambda.cross(mR2World));
             final Vector3 v2 = Vector3.multiply(inverseMassBody2, linearImpulseBody2);

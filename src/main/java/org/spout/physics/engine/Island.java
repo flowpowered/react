@@ -33,7 +33,6 @@ import org.spout.physics.constraint.Joint;
  * An island represent an isolated group of awake bodies that are connected with each other by some constraints (contacts or joints).
  */
 public class Island {
-    private int mID;
     private RigidBody[] mBodies;
     private ContactManifold[] mContactManifolds;
     private Joint[] mJoints;
@@ -42,15 +41,13 @@ public class Island {
     private int mNbJoints;
 
     /**
-     * Constructs a new island from it's ID, the maximum number of bodies, the maximum number of contact manifolds and the maximum number of joints.
+     * Constructs a new island from the maximum number of bodies, the maximum number of contact manifolds and the maximum number of joints.
      *
-     * @param id The ID
      * @param nbMaxBodies The maximum number of bodies
      * @param nbMaxContactManifolds The maximum number of contact manifolds
      * @param nbMaxJoints The maximum number of joints
      */
-    public Island(int id, int nbMaxBodies, int nbMaxContactManifolds, int nbMaxJoints) {
-        mID = id;
+    public Island(int nbMaxBodies, int nbMaxContactManifolds, int nbMaxJoints) {
         mNbBodies = 0;
         mNbContactManifolds = 0;
         mNbJoints = 0;
@@ -65,7 +62,9 @@ public class Island {
      * @param body The body
      */
     public void addBody(RigidBody body) {
-        assert (!body.isSleeping());
+        if (body.isSleeping()) {
+            throw new IllegalArgumentException("Body to add is sleeping");
+        }
         mBodies[mNbBodies] = body;
         mNbBodies++;
     }

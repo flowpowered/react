@@ -398,7 +398,7 @@ public class DynamicsWorld extends CollisionWorld {
         for (int i = 0; i < mNbIslands; i++) {
             final RigidBody[] bodies = mIslands[i].getBodies();
             for (int b = 0; b < mIslands[i].getNbBodies(); b++) {
-                if (bodies[b].getIsMotionEnabled()) {
+                if (bodies[b].isMotionEnabled()) {
                     final int indexArray = mMapBodyToConstrainedVelocityIndex.get(bodies[b]);
                     final Vector3 newLinVelocity = mConstrainedLinearVelocities[indexArray];
                     final Vector3 newAngVelocity = mConstrainedAngularVelocities[indexArray];
@@ -474,7 +474,7 @@ public class DynamicsWorld extends CollisionWorld {
             final RigidBody[] bodies = mIslands[i].getBodies();
             for (int b = 0; b < mIslands[i].getNbBodies(); b++) {
                 int indexBody = mMapBodyToConstrainedVelocityIndex.get(bodies[b]);
-                if (bodies[b].getIsMotionEnabled()) {
+                if (bodies[b].isMotionEnabled()) {
                     mConstrainedLinearVelocities[indexBody] = Vector3.add(bodies[b].getLinearVelocity(), Vector3.multiply(dt * bodies[b].getMassInverse(), bodies[b].getExternalForce()));
                     mConstrainedAngularVelocities[indexBody] = Vector3.add(bodies[b].getAngularVelocity(),
                             Matrix3x3.multiply(Matrix3x3.multiply(dt, bodies[b].getInertiaTensorInverseWorld()), bodies[b].getExternalTorque()));
@@ -632,11 +632,9 @@ public class DynamicsWorld extends CollisionWorld {
             mBodies.remove(rigidBody);
             mRigidBodies.remove(rigidBody);
             removeCollisionShape(rigidBody.getCollisionShape());
-            final int idToRemove = rigidBody.getID();
-            for (Joint joint : mJoints) {
-                if (joint.getFirstBody().getID() == idToRemove || joint.getSecondBody().getID() == idToRemove) {
-                    destroyJoint(joint);
-                }
+            JointListElement element;
+            for (element = rigidBody.getJointsList(); element != null; element = element.getNext()) {
+                destroyJoint(element.getJoint());
             }
             rigidBody.resetContactManifoldsList();
         } else {
@@ -771,12 +769,11 @@ public class DynamicsWorld extends CollisionWorld {
             joint.setIsAlreadyInIsland(false);
         }
         final RigidBody[] stackBodiesToVisit = new RigidBody[nbBodies];
-        int idIsland = 0;
         for (RigidBody body : mRigidBodies) {
             if (body.isAlreadyInIsland()) {
                 continue;
             }
-            if (!body.getIsMotionEnabled()) {
+            if (!body.isMotionEnabled()) {
                 continue;
             }
             if (body.isSleeping() || !body.isActive()) {
@@ -786,8 +783,7 @@ public class DynamicsWorld extends CollisionWorld {
             stackBodiesToVisit[stackIndex] = body;
             stackIndex++;
             body.setIsAlreadyInIsland(true);
-            mIslands[mNbIslands] = new Island(idIsland, nbBodies, mContactManifolds.size(), mJoints.size());
-            idIsland++;
+            mIslands[mNbIslands] = new Island(nbBodies, mContactManifolds.size(), mJoints.size());
             while (stackIndex > 0) {
                 stackIndex--;
                 final RigidBody bodyToVisit = stackBodiesToVisit[stackIndex];
@@ -796,7 +792,7 @@ public class DynamicsWorld extends CollisionWorld {
                 }
                 bodyToVisit.setIsSleeping(false);
                 mIslands[mNbIslands].addBody(bodyToVisit);
-                if (!bodyToVisit.getIsMotionEnabled()) {
+                if (!bodyToVisit.isMotionEnabled()) {
                     continue;
                 }
                 ContactManifoldListElement contactElement;
@@ -837,7 +833,7 @@ public class DynamicsWorld extends CollisionWorld {
                 }
             }
             for (int i = 0; i < mIslands[mNbIslands].getNbBodies(); i++) {
-                if (!mIslands[mNbIslands].getBodies()[i].getIsMotionEnabled()) {
+                if (!mIslands[mNbIslands].getBodies()[i].isMotionEnabled()) {
                     mIslands[mNbIslands].getBodies()[i].setIsAlreadyInIsland(false);
                 }
             }
@@ -856,7 +852,7 @@ public class DynamicsWorld extends CollisionWorld {
             float minSleepTime = Float.MAX_VALUE;
             final RigidBody[] bodies = mIslands[i].getBodies();
             for (int b = 0; b < mIslands[i].getNbBodies(); b++) {
-                if (!bodies[b].getIsMotionEnabled()) {
+                if (!bodies[b].isMotionEnabled()) {
                     continue;
                 }
                 if (bodies[b].getLinearVelocity().lengthSquare() > sleepLinearVelocitySquare || bodies[b].getAngularVelocity().lengthSquare() > sleepAngularVelocitySquare

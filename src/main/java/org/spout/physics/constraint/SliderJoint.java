@@ -38,7 +38,7 @@ import org.spout.physics.math.Vector2;
 import org.spout.physics.math.Vector3;
 
 /**
- * This class represents a slider joint.
+ * This class represents a slider joint. This joint has a one degree of freedom. It only allows relative translation of the bodies along a single direction and no rotation.
  */
 public class SliderJoint extends Joint {
     private static final float BETA = 0.2f;
@@ -163,12 +163,12 @@ public class SliderJoint extends Joint {
         final Vector3 I1R1PlusUCrossN2 = new Vector3(0, 0, 0);
         final Vector3 I2R2CrossN1 = new Vector3(0, 0, 0);
         final Vector3 I2R2CrossN2 = new Vector3(0, 0, 0);
-        if (mBody1.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled()) {
             sumInverseMass += mBody1.getMassInverse();
             I1R1PlusUCrossN1.set(Matrix3x3.multiply(mI1, mR1PlusUCrossN1));
             I1R1PlusUCrossN2.set(Matrix3x3.multiply(mI1, mR1PlusUCrossN2));
         }
-        if (mBody2.getIsMotionEnabled()) {
+        if (mBody2.isMotionEnabled()) {
             sumInverseMass += mBody2.getMassInverse();
             I2R2CrossN1.set(Matrix3x3.multiply(mI2, mR2CrossN1));
             I2R2CrossN2.set(Matrix3x3.multiply(mI2, mR2CrossN2));
@@ -179,7 +179,7 @@ public class SliderJoint extends Joint {
         final float el22 = sumInverseMass + mR1PlusUCrossN2.dot(I1R1PlusUCrossN2) + mR2CrossN2.dot(I2R2CrossN2);
         final Matrix2x2 matrixKTranslation = new Matrix2x2(el11, el12, el21, el22);
         mInverseMassMatrixTranslationConstraint.setToZero();
-        if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled() || mBody2.isMotionEnabled()) {
             mInverseMassMatrixTranslationConstraint.set(matrixKTranslation.getInverse());
         }
         mBTranslation.setToZero();
@@ -190,13 +190,13 @@ public class SliderJoint extends Joint {
             mBTranslation.multiply(biasFactor);
         }
         mInverseMassMatrixRotationConstraint.setToZero();
-        if (mBody1.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled()) {
             mInverseMassMatrixRotationConstraint.add(mI1);
         }
-        if (mBody2.getIsMotionEnabled()) {
+        if (mBody2.isMotionEnabled()) {
             mInverseMassMatrixRotationConstraint.add(mI2);
         }
-        if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled() || mBody2.isMotionEnabled()) {
             mInverseMassMatrixRotationConstraint.set(mInverseMassMatrixRotationConstraint.getInverse());
         }
         mBRotation.setToZero();
@@ -208,10 +208,10 @@ public class SliderJoint extends Joint {
         }
         if (mIsLimitEnabled && (mIsLowerLimitViolated || mIsUpperLimitViolated)) {
             mInverseMassMatrixLimit = 0;
-            if (mBody1.getIsMotionEnabled()) {
+            if (mBody1.isMotionEnabled()) {
                 mInverseMassMatrixLimit += mBody1.getMassInverse() + mR1PlusUCrossSliderAxis.dot(Matrix3x3.multiply(mI1, mR1PlusUCrossSliderAxis));
             }
-            if (mBody2.getIsMotionEnabled()) {
+            if (mBody2.isMotionEnabled()) {
                 mInverseMassMatrixLimit += mBody2.getMassInverse() + mR2CrossSliderAxis.dot(Matrix3x3.multiply(mI2, mR2CrossSliderAxis));
             }
             mInverseMassMatrixLimit = mInverseMassMatrixLimit > 0 ? 1 / mInverseMassMatrixLimit : 0;
@@ -225,10 +225,10 @@ public class SliderJoint extends Joint {
             }
         }
         mInverseMassMatrixMotor = 0;
-        if (mBody1.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled()) {
             mInverseMassMatrixMotor += mBody1.getMassInverse();
         }
-        if (mBody2.getIsMotionEnabled()) {
+        if (mBody2.isMotionEnabled()) {
             mInverseMassMatrixMotor += mBody2.getMassInverse();
         }
         mInverseMassMatrixMotor = mInverseMassMatrixMotor > 0 ? 1 / mInverseMassMatrixMotor : 0;
@@ -252,7 +252,7 @@ public class SliderJoint extends Joint {
         final float impulseLimits = mImpulseUpperLimit - mImpulseLowerLimit;
         final Vector3 linearImpulseLimits = Vector3.multiply(impulseLimits, mSliderAxisWorld);
         final Vector3 impulseMotor = Vector3.multiply(mImpulseMotor, mSliderAxisWorld);
-        if (mBody1.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled()) {
             final Vector3 linearImpulseBody1 = Vector3.subtract(Vector3.multiply(Vector3.negate(mN1), mImpulseTranslation.getX()), Vector3.multiply(mN2, mImpulseTranslation.getY()));
             final Vector3 angularImpulseBody1 = Vector3.subtract(Vector3.multiply(Vector3.negate(mR1PlusUCrossN1), mImpulseTranslation.getX()),
                     Vector3.multiply(mR1PlusUCrossN2, mImpulseTranslation.getY()));
@@ -263,7 +263,7 @@ public class SliderJoint extends Joint {
             v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
             w1.add(Matrix3x3.multiply(mI1, angularImpulseBody1));
         }
-        if (mBody2.getIsMotionEnabled()) {
+        if (mBody2.isMotionEnabled()) {
             final Vector3 linearImpulseBody2 = Vector3.add(Vector3.multiply(mN1, mImpulseTranslation.getX()), Vector3.multiply(mN2, mImpulseTranslation.getY()));
             final Vector3 angularImpulseBody2 = Vector3.add(Vector3.multiply(mR2CrossN1, mImpulseTranslation.getX()), Vector3.multiply(mR2CrossN2, mImpulseTranslation.getY()));
             angularImpulseBody2.add(mImpulseRotation);
@@ -288,13 +288,13 @@ public class SliderJoint extends Joint {
         final Vector2 JvTranslation = new Vector2(el1, el2);
         final Vector2 deltaLambda = Matrix2x2.multiply(mInverseMassMatrixTranslationConstraint, Vector2.subtract(Vector2.negate(JvTranslation), mBTranslation));
         mImpulseTranslation.add(deltaLambda);
-        if (mBody1.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled()) {
             final Vector3 linearImpulseBody1 = Vector3.subtract(Vector3.multiply(Vector3.negate(mN1), deltaLambda.getX()), Vector3.multiply(mN2, deltaLambda.getY()));
             final Vector3 angularImpulseBody1 = Vector3.subtract(Vector3.multiply(Vector3.negate(mR1PlusUCrossN1), deltaLambda.getX()), Vector3.multiply(mR1PlusUCrossN2, deltaLambda.getY()));
             v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
             w1.add(Matrix3x3.multiply(mI1, angularImpulseBody1));
         }
-        if (mBody2.getIsMotionEnabled()) {
+        if (mBody2.isMotionEnabled()) {
             final Vector3 linearImpulseBody2 = Vector3.add(Vector3.multiply(mN1, deltaLambda.getX()), Vector3.multiply(mN2, deltaLambda.getY()));
             final Vector3 angularImpulseBody2 = Vector3.add(Vector3.multiply(mR2CrossN1, deltaLambda.getX()), Vector3.multiply(mR2CrossN2, deltaLambda.getY()));
             v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
@@ -303,11 +303,11 @@ public class SliderJoint extends Joint {
         final Vector3 JvRotation = Vector3.subtract(w2, w1);
         final Vector3 deltaLambda2 = Matrix3x3.multiply(mInverseMassMatrixRotationConstraint, Vector3.subtract(Vector3.negate(JvRotation), mBRotation));
         mImpulseRotation.add(deltaLambda2);
-        if (mBody1.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled()) {
             final Vector3 angularImpulseBody1 = Vector3.negate(deltaLambda2);
             w1.add(Matrix3x3.multiply(mI1, angularImpulseBody1));
         }
-        if (mBody2.getIsMotionEnabled()) {
+        if (mBody2.isMotionEnabled()) {
             final Vector3 angularImpulseBody2 = deltaLambda2;
             w2.add(Matrix3x3.multiply(mI2, angularImpulseBody2));
         }
@@ -318,13 +318,13 @@ public class SliderJoint extends Joint {
                 final float lambdaTemp = mImpulseLowerLimit;
                 mImpulseLowerLimit = Math.max(mImpulseLowerLimit + deltaLambdaLower, 0);
                 deltaLambdaLower = mImpulseLowerLimit - lambdaTemp;
-                if (mBody1.getIsMotionEnabled()) {
+                if (mBody1.isMotionEnabled()) {
                     final Vector3 linearImpulseBody1 = Vector3.multiply(-deltaLambdaLower, mSliderAxisWorld);
                     final Vector3 angularImpulseBody1 = Vector3.multiply(-deltaLambdaLower, mR1PlusUCrossSliderAxis);
                     v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
                     w1.add(Matrix3x3.multiply(mI1, angularImpulseBody1));
                 }
-                if (mBody2.getIsMotionEnabled()) {
+                if (mBody2.isMotionEnabled()) {
                     final Vector3 linearImpulseBody2 = Vector3.multiply(deltaLambdaLower, mSliderAxisWorld);
                     final Vector3 angularImpulseBody2 = Vector3.multiply(deltaLambdaLower, mR2CrossSliderAxis);
                     v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
@@ -337,13 +337,13 @@ public class SliderJoint extends Joint {
                 final float lambdaTemp = mImpulseUpperLimit;
                 mImpulseUpperLimit = Math.max(mImpulseUpperLimit + deltaLambdaUpper, 0);
                 deltaLambdaUpper = mImpulseUpperLimit - lambdaTemp;
-                if (mBody1.getIsMotionEnabled()) {
+                if (mBody1.isMotionEnabled()) {
                     final Vector3 linearImpulseBody1 = Vector3.multiply(deltaLambdaUpper, mSliderAxisWorld);
                     final Vector3 angularImpulseBody1 = Vector3.multiply(deltaLambdaUpper, mR1PlusUCrossSliderAxis);
                     v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
                     w1.add(Matrix3x3.multiply(mI1, angularImpulseBody1));
                 }
-                if (mBody2.getIsMotionEnabled()) {
+                if (mBody2.isMotionEnabled()) {
                     final Vector3 linearImpulseBody2 = Vector3.multiply(-deltaLambdaUpper, mSliderAxisWorld);
                     final Vector3 angularImpulseBody2 = Vector3.multiply(-deltaLambdaUpper, mR2CrossSliderAxis);
                     v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
@@ -358,11 +358,11 @@ public class SliderJoint extends Joint {
             final float lambdaTemp = mImpulseMotor;
             mImpulseMotor = Mathematics.clamp(mImpulseMotor + deltaLambdaMotor, -maxMotorImpulse, maxMotorImpulse);
             deltaLambdaMotor = mImpulseMotor - lambdaTemp;
-            if (mBody1.getIsMotionEnabled()) {
+            if (mBody1.isMotionEnabled()) {
                 final Vector3 linearImpulseBody1 = Vector3.multiply(deltaLambdaMotor, mSliderAxisWorld);
                 v1.add(Vector3.multiply(inverseMassBody1, linearImpulseBody1));
             }
-            if (mBody2.getIsMotionEnabled()) {
+            if (mBody2.isMotionEnabled()) {
                 final Vector3 linearImpulseBody2 = Vector3.multiply(-deltaLambdaMotor, mSliderAxisWorld);
                 v2.add(Vector3.multiply(inverseMassBody2, linearImpulseBody2));
             }
@@ -406,12 +406,12 @@ public class SliderJoint extends Joint {
         final Vector3 I1R1PlusUCrossN2 = new Vector3(0, 0, 0);
         final Vector3 I2R2CrossN1 = new Vector3(0, 0, 0);
         final Vector3 I2R2CrossN2 = new Vector3(0, 0, 0);
-        if (mBody1.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled()) {
             sumInverseMass += mBody1.getMassInverse();
             I1R1PlusUCrossN1.set(Matrix3x3.multiply(mI1, mR1PlusUCrossN1));
             I1R1PlusUCrossN2.set(Matrix3x3.multiply(mI1, mR1PlusUCrossN2));
         }
-        if (mBody2.getIsMotionEnabled()) {
+        if (mBody2.isMotionEnabled()) {
             sumInverseMass += mBody2.getMassInverse();
             I2R2CrossN1.set(Matrix3x3.multiply(mI2, mR2CrossN1));
             I2R2CrossN2.set(Matrix3x3.multiply(mI2, mR2CrossN2));
@@ -422,12 +422,12 @@ public class SliderJoint extends Joint {
         final float el22 = sumInverseMass + mR1PlusUCrossN2.dot(I1R1PlusUCrossN2) + mR2CrossN2.dot(I2R2CrossN2);
         final Matrix2x2 matrixKTranslation = new Matrix2x2(el11, el12, el21, el22);
         mInverseMassMatrixTranslationConstraint.setToZero();
-        if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled() || mBody2.isMotionEnabled()) {
             mInverseMassMatrixTranslationConstraint.set(matrixKTranslation.getInverse());
         }
         final Vector2 translationError = new Vector2(u.dot(mN1), u.dot(mN2));
         final Vector2 lambdaTranslation = Matrix2x2.multiply(mInverseMassMatrixTranslationConstraint, Vector2.negate(translationError));
-        if (mBody1.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled()) {
             final Vector3 linearImpulseBody1 = Vector3.subtract(Vector3.multiply(Vector3.negate(mN1), lambdaTranslation.getX()), Vector3.multiply(mN2, lambdaTranslation.getY()));
             final Vector3 angularImpulseBody1 = Vector3.subtract(Vector3.multiply(Vector3.negate(mR1PlusUCrossN1), lambdaTranslation.getX()),
                     Vector3.multiply(mR1PlusUCrossN2, lambdaTranslation.getY()));
@@ -437,7 +437,7 @@ public class SliderJoint extends Joint {
             q1.add(Quaternion.multiply(Quaternion.multiply(new Quaternion(0, w1), q1), 0.5f));
             q1.normalize();
         }
-        if (mBody2.getIsMotionEnabled()) {
+        if (mBody2.isMotionEnabled()) {
             final Vector3 linearImpulseBody2 = Vector3.add(Vector3.multiply(mN1, lambdaTranslation.getX()), Vector3.multiply(mN2, lambdaTranslation.getY()));
             final Vector3 angularImpulseBody2 = Vector3.add(Vector3.multiply(mR2CrossN1, lambdaTranslation.getX()), Vector3.multiply(mR2CrossN2, lambdaTranslation.getY()));
             final Vector3 v2 = Vector3.multiply(inverseMassBody2, linearImpulseBody2);
@@ -447,13 +447,13 @@ public class SliderJoint extends Joint {
             q2.normalize();
         }
         mInverseMassMatrixRotationConstraint.setToZero();
-        if (mBody1.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled()) {
             mInverseMassMatrixRotationConstraint.add(mI1);
         }
-        if (mBody2.getIsMotionEnabled()) {
+        if (mBody2.isMotionEnabled()) {
             mInverseMassMatrixRotationConstraint.add(mI2);
         }
-        if (mBody1.getIsMotionEnabled() || mBody2.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled() || mBody2.isMotionEnabled()) {
             mInverseMassMatrixRotationConstraint.set(mInverseMassMatrixRotationConstraint.getInverse());
         }
         final Quaternion currentOrientationDifference = Quaternion.multiply(q2, q1.getInverse());
@@ -461,13 +461,13 @@ public class SliderJoint extends Joint {
         final Quaternion qError = Quaternion.multiply(currentOrientationDifference, mInitOrientationDifferenceInv);
         final Vector3 errorRotation = Vector3.multiply(2, qError.getVectorV());
         final Vector3 lambdaRotation = Matrix3x3.multiply(mInverseMassMatrixRotationConstraint, Vector3.negate(errorRotation));
-        if (mBody1.getIsMotionEnabled()) {
+        if (mBody1.isMotionEnabled()) {
             final Vector3 angularImpulseBody1 = Vector3.negate(lambdaRotation);
             final Vector3 w1 = Matrix3x3.multiply(mI1, angularImpulseBody1);
             q1.add(Quaternion.multiply(Quaternion.multiply(new Quaternion(0, w1), q1), 0.5f));
             q1.normalize();
         }
-        if (mBody2.getIsMotionEnabled()) {
+        if (mBody2.isMotionEnabled()) {
             final Vector3 angularImpulseBody2 = lambdaRotation;
             final Vector3 w2 = Matrix3x3.multiply(mI2, angularImpulseBody2);
             q2.add(Quaternion.multiply(Quaternion.multiply(new Quaternion(0, w2), q2), 0.5f));
@@ -476,17 +476,17 @@ public class SliderJoint extends Joint {
         if (mIsLimitEnabled) {
             if (mIsLowerLimitViolated || mIsUpperLimitViolated) {
                 mInverseMassMatrixLimit = 0;
-                if (mBody1.getIsMotionEnabled()) {
+                if (mBody1.isMotionEnabled()) {
                     mInverseMassMatrixLimit += mBody1.getMassInverse() + mR1PlusUCrossSliderAxis.dot(Matrix3x3.multiply(mI1, mR1PlusUCrossSliderAxis));
                 }
-                if (mBody2.getIsMotionEnabled()) {
+                if (mBody2.isMotionEnabled()) {
                     mInverseMassMatrixLimit += mBody2.getMassInverse() + mR2CrossSliderAxis.dot(Matrix3x3.multiply(mI2, mR2CrossSliderAxis));
                 }
                 mInverseMassMatrixLimit = mInverseMassMatrixLimit > 0 ? 1 / mInverseMassMatrixLimit : 0;
             }
             if (mIsLowerLimitViolated) {
                 final float lambdaLowerLimit = mInverseMassMatrixLimit * -lowerLimitError;
-                if (mBody1.getIsMotionEnabled()) {
+                if (mBody1.isMotionEnabled()) {
                     final Vector3 linearImpulseBody1 = Vector3.multiply(-lambdaLowerLimit, mSliderAxisWorld);
                     final Vector3 angularImpulseBody1 = Vector3.multiply(-lambdaLowerLimit, mR1PlusUCrossSliderAxis);
                     final Vector3 v1 = Vector3.multiply(inverseMassBody1, linearImpulseBody1);
@@ -495,7 +495,7 @@ public class SliderJoint extends Joint {
                     q1.add(Quaternion.multiply(Quaternion.multiply(new Quaternion(0, w1), q1), 0.5f));
                     q1.normalize();
                 }
-                if (mBody2.getIsMotionEnabled()) {
+                if (mBody2.isMotionEnabled()) {
                     final Vector3 linearImpulseBody2 = Vector3.multiply(lambdaLowerLimit, mSliderAxisWorld);
                     final Vector3 angularImpulseBody2 = Vector3.multiply(lambdaLowerLimit, mR2CrossSliderAxis);
                     final Vector3 v2 = Vector3.multiply(inverseMassBody2, linearImpulseBody2);
@@ -507,7 +507,7 @@ public class SliderJoint extends Joint {
             }
             if (mIsUpperLimitViolated) {
                 final float lambdaUpperLimit = mInverseMassMatrixLimit * (-upperLimitError);
-                if (mBody1.getIsMotionEnabled()) {
+                if (mBody1.isMotionEnabled()) {
                     final Vector3 linearImpulseBody1 = Vector3.multiply(lambdaUpperLimit, mSliderAxisWorld);
                     final Vector3 angularImpulseBody1 = Vector3.multiply(lambdaUpperLimit, mR1PlusUCrossSliderAxis);
                     final Vector3 v1 = Vector3.multiply(inverseMassBody1, linearImpulseBody1);
@@ -516,7 +516,7 @@ public class SliderJoint extends Joint {
                     q1.add(Quaternion.multiply(Quaternion.multiply(new Quaternion(0, w1), q1), 0.5f));
                     q1.normalize();
                 }
-                if (mBody2.getIsMotionEnabled()) {
+                if (mBody2.isMotionEnabled()) {
                     final Vector3 linearImpulseBody2 = Vector3.multiply(-lambdaUpperLimit, mSliderAxisWorld);
                     final Vector3 angularImpulseBody2 = Vector3.multiply(-lambdaUpperLimit, mR2CrossSliderAxis);
                     final Vector3 v2 = Vector3.multiply(inverseMassBody2, linearImpulseBody2);

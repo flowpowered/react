@@ -71,9 +71,9 @@ public class ReactDefaults {
      */
     public static final float RESTITUTION_VELOCITY_THRESHOLD = 1;
     /**
-     * Number of iterations when solving the velocity constraints of the Sequential Impulse technique. Default: 15
+     * Number of iterations when solving the velocity constraints of the Sequential Impulse technique. Default: 10
      */
-    public static final int DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS = 15;
+    public static final int DEFAULT_VELOCITY_SOLVER_NB_ITERATIONS = 10;
     /**
      * Number of iterations when solving the position constraints of the Sequential Impulse technique. Default: 5
      */

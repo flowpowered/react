@@ -54,7 +54,7 @@ public class DynamicsWorldTest {
         final float floorMass = 100;
         floorShape.computeLocalInertiaTensor(floorInertia, floorMass);
         final RigidBody floor = world.createRigidBody(floorTransform, floorMass, floorInertia, floorShape);
-        floor.setIsMotionEnabled(false);
+        floor.enableMotion(false);
         final BoxShape boxShape = new BoxShape(new Vector3(1, 1, 1));
         final Transform boxTransform = new Transform(new Vector3(0, 5, 0), Quaternion.identity());
         final Matrix3x3 boxInertia = new Matrix3x3();
