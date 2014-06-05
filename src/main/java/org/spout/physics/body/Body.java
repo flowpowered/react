@@ -33,6 +33,7 @@ public class Body {
     protected final int mID;
     protected boolean mIsAlreadyInIsland;
     protected boolean mIsAllowedToSleep;
+    protected boolean mIsActive;
     protected boolean mIsSleeping;
     protected float mSleepTime;
 
@@ -45,6 +46,7 @@ public class Body {
         mID = id;
         mIsAlreadyInIsland = false;
         mIsAllowedToSleep = true;
+        mIsActive = true;
         mIsSleeping = false;
         mSleepTime = 0;
     }
@@ -95,6 +97,24 @@ public class Body {
         if (!mIsAllowedToSleep) {
             setIsSleeping(false);
         }
+    }
+
+    /**
+     * Returns true if the body is active, false if not.
+     *
+     * @return Whether or not the body is active
+     */
+    public boolean isActive() {
+        return mIsActive;
+    }
+
+    /**
+     * Sets the activity for this body. True for active, false for inactive.
+     *
+     * @param mIsActive True if this body is active, false if not
+     */
+    public void setActive(boolean mIsActive) {
+        this.mIsActive = mIsActive;
     }
 
     /**

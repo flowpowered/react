@@ -37,7 +37,7 @@ import org.spout.physics.math.Vector3;
 /**
  * This class represents a fixed joint that is used to forbid any translation or rotation between two bodies.
  */
-public class FixedJoint extends Constraint {
+public class FixedJoint extends Joint {
     private static final float BETA = 0.2f;
     private final Vector3 mLocalAnchorPointBody1;
     private final Vector3 mLocalAnchorPointBody2;
@@ -284,7 +284,7 @@ public class FixedJoint extends Constraint {
     /**
      * This structure is used to gather the information needed to create a fixed joint. This structure will be used to create the actual fixed joint.
      */
-    public static class FixedJointInfo extends ConstraintInfo {
+    public static class FixedJointInfo extends JointInfo {
         private final Vector3 anchorPointWorldSpace = new Vector3();
 
         /**
@@ -295,7 +295,7 @@ public class FixedJoint extends Constraint {
          * @param initAnchorPointWorldSpace The anchor point in world space
          */
         public FixedJointInfo(RigidBody rigidBody1, RigidBody rigidBody2, Vector3 initAnchorPointWorldSpace) {
-            super(rigidBody1, rigidBody2, ConstraintType.FIXEDJOINT);
+            super(rigidBody1, rigidBody2, JointType.FIXEDJOINT);
             anchorPointWorldSpace.set(initAnchorPointWorldSpace);
         }
 

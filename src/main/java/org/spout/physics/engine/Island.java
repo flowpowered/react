@@ -27,7 +27,7 @@
 package org.spout.physics.engine;
 
 import org.spout.physics.body.RigidBody;
-import org.spout.physics.constraint.Constraint;
+import org.spout.physics.constraint.Joint;
 
 /**
  * An island represent an isolated group of awake bodies that are connected with each other by some constraints (contacts or joints).
@@ -36,7 +36,7 @@ public class Island {
     private int mID;
     private RigidBody[] mBodies;
     private ContactManifold[] mContactManifolds;
-    private Constraint[] mJoints;
+    private Joint[] mJoints;
     private int mNbBodies;
     private int mNbContactManifolds;
     private int mNbJoints;
@@ -56,7 +56,7 @@ public class Island {
         mNbJoints = 0;
         mBodies = new RigidBody[nbMaxBodies];
         mContactManifolds = new ContactManifold[nbMaxContactManifolds];
-        mJoints = new Constraint[nbMaxJoints];
+        mJoints = new Joint[nbMaxJoints];
     }
 
     /**
@@ -85,7 +85,7 @@ public class Island {
      *
      * @param joint The joint
      */
-    public void addJoint(Constraint joint) {
+    public void addJoint(Joint joint) {
         mJoints[mNbJoints] = joint;
         mNbJoints++;
     }
@@ -140,7 +140,7 @@ public class Island {
      *
      * @return The array of joints
      */
-    public Constraint[] getJoints() {
+    public Joint[] getJoints() {
         return mJoints;
     }
 }

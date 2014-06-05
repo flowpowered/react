@@ -41,7 +41,7 @@ import org.spout.physics.math.Vector3;
 /**
  *
  */
-public class HingeJoint extends Constraint {
+public class HingeJoint extends Joint {
     private static final float BETA = 0.2f;
     private final Vector3 mLocalAnchorPointBody1;
     private final Vector3 mLocalAnchorPointBody2;
@@ -696,7 +696,7 @@ public class HingeJoint extends Constraint {
     /**
      * This structure is used to gather the information needed to create a hinge joint. This structure will be used to create the actual hinge joint.
      */
-    public static class HingeJointInfo extends ConstraintInfo {
+    public static class HingeJointInfo extends JointInfo {
         private final Vector3 anchorPointWorldSpace;
         private final Vector3 rotationAxisWorld;
         private final boolean isLimitEnabled;
@@ -715,7 +715,7 @@ public class HingeJoint extends Constraint {
          * @param initRotationAxisWorld The initial axis in world space
          */
         public HingeJointInfo(RigidBody body1, RigidBody body2, Vector3 initAnchorPointWorldSpace, Vector3 initRotationAxisWorld) {
-            super(body1, body2, ConstraintType.HINGEJOINT);
+            super(body1, body2, JointType.HINGEJOINT);
             anchorPointWorldSpace = initAnchorPointWorldSpace;
             rotationAxisWorld = initRotationAxisWorld;
             isLimitEnabled = false;
@@ -738,7 +738,7 @@ public class HingeJoint extends Constraint {
          * @param initMaxAngleLimit The initial upper limit
          */
         public HingeJointInfo(RigidBody body1, RigidBody body2, Vector3 initAnchorPointWorldSpace, Vector3 initRotationAxisWorld, float initMinAngleLimit, float initMaxAngleLimit) {
-            super(body1, body2, ConstraintType.HINGEJOINT);
+            super(body1, body2, JointType.HINGEJOINT);
             anchorPointWorldSpace = initAnchorPointWorldSpace;
             rotationAxisWorld = initRotationAxisWorld;
             isLimitEnabled = true;
@@ -764,7 +764,7 @@ public class HingeJoint extends Constraint {
          */
         public HingeJointInfo(RigidBody body1, RigidBody body2, Vector3 initAnchorPointWorldSpace, Vector3 initRotationAxisWorld, float initMinAngleLimit, float initMaxAngleLimit,
                               float initMotorSpeed, float initMaxMotorTorque) {
-            super(body1, body2, ConstraintType.HINGEJOINT);
+            super(body1, body2, JointType.HINGEJOINT);
             anchorPointWorldSpace = initAnchorPointWorldSpace;
             rotationAxisWorld = initRotationAxisWorld;
             isLimitEnabled = true;

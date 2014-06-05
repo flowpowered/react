@@ -27,8 +27,8 @@
 package org.spout.physics.body;
 
 import org.spout.physics.collision.shape.CollisionShape;
-import org.spout.physics.constraint.Constraint;
-import org.spout.physics.constraint.Constraint.JointListElement;
+import org.spout.physics.constraint.Joint;
+import org.spout.physics.constraint.Joint.JointListElement;
 import org.spout.physics.engine.Material;
 import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Transform;
@@ -169,42 +169,6 @@ public class RigidBody extends CollisionBody {
     }
 
     /**
-     * Gets the current external force on the body.
-     *
-     * @return The current external force
-     */
-    public Vector3 getExternalForce() {
-        return mExternalForce;
-    }
-
-    /**
-     * Sets the current external force on the body.
-     *
-     * @param force The external force to set
-     */
-    public void setExternalForce(Vector3 force) {
-        mExternalForce.set(force);
-    }
-
-    /**
-     * Gets the current external torque on the body.
-     *
-     * @return The current external torque
-     */
-    public Vector3 getExternalTorque() {
-        return mExternalTorque;
-    }
-
-    /**
-     * Sets the current external torque on the body.
-     *
-     * @param torque The external torque to set
-     */
-    public void setExternalTorque(Vector3 torque) {
-        mExternalTorque.set(torque);
-    }
-
-    /**
      * Gets the local inertia tensor of the body (in body coordinates).
      *
      * @return The local inertia tensor
@@ -325,7 +289,7 @@ public class RigidBody extends CollisionBody {
      *
      * @param joint The joint to remove
      */
-    public void removeJointFromJointsList(Constraint joint) {
+    public void removeJointFromJointsList(Joint joint) {
         if (joint == null) {
             throw new IllegalArgumentException("Joint cannot be null");
         }
@@ -357,5 +321,80 @@ public class RigidBody extends CollisionBody {
             mExternalTorque.setToZero();
         }
         super.setIsSleeping(isSleeping);
+    }
+
+    /**
+     * Applies an external force to the body at its gravity center. If the body is sleeping, calling this method will wake it up. Note that the force will be added to the sum of the applied forces and
+     * that this sum will be reset to zero at the end of each call of the {@link org.spout.physics.engine.DynamicsWorld#update()} method.
+     *
+     * @param force The force to apply
+     */
+    public void applyForceToCenter(Vector3 force) {
+        if (!mIsMotionEnabled) {
+            return;
+        }
+        if (mIsSleeping) {
+            setIsSleeping(false);
+        }
+        mExternalForce.add(force);
+    }
+
+    /**
+     * Applies an external force to the body at a given point (in world-coordinates). If the point is not at the center of gravity of the body, it will also generate some torque and therefore, change
+     * the angular velocity of the body. If the body is sleeping, calling this method will wake it up. Note that the force will be added to the sum of the applied forces and that this sum will be
+     * reset to zero at the end of each call of the {@link org.spout.physics.engine.DynamicsWorld#update()} method.
+     *
+     * @param force The force to apply
+     * @param point The point to apply the force to
+     */
+    public void applyForce(Vector3 force, Vector3 point) {
+        if (!mIsMotionEnabled) {
+            return;
+        }
+        if (mIsSleeping) {
+            setIsSleeping(false);
+        }
+        mExternalForce.add(force);
+        mExternalTorque.add(Vector3.subtract(point, mTransform.getPosition()).cross(force));
+    }
+
+    /**
+     * Applies an external torque to the body. If the body is sleeping, calling this method will wake it up. Note that the force will be added to the sum of the applied torques and that this sum will
+     * be reset to zero at the end of each call of the {@link org.spout.physics.engine.DynamicsWorld#update()} method.
+     *
+     * @param torque The torque to apply
+     */
+    public void applyTorque(Vector3 torque) {
+
+        // If it is a static body, do not apply any force
+        if (!mIsMotionEnabled) {
+            return;
+        }
+
+        // Awake the body if it was sleeping
+        if (mIsSleeping) {
+            setIsSleeping(false);
+        }
+
+        // Add the torque
+        mExternalTorque.add(torque);
+    }
+
+    /**
+     * Returns the total external force.
+     *
+     * @return The external force
+     */
+    public Vector3 getExternalForce() {
+        return mExternalForce;
+    }
+
+    /**
+     * Returns the total external torque.
+     *
+     * @return The external torque
+     */
+    public Vector3 getExternalTorque() {
+        return mExternalTorque;
     }
 }

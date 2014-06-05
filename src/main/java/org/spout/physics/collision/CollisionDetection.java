@@ -184,6 +184,9 @@ public class CollisionDetection {
             if (mNoCollisionPairs.contains(pair.getBodiesIndexPair())) {
                 continue;
             }
+            if (body1.isSleeping() && body2.isSleeping()) {
+                continue;
+            }
             final NarrowPhaseAlgorithm narrowPhaseAlgorithm = selectNarrowPhaseAlgorithm(body1.getCollisionShape(), body2.getCollisionShape());
             narrowPhaseAlgorithm.setCurrentOverlappingPair(pair);
             if (narrowPhaseAlgorithm.testCollision(body1.getCollisionShape(), body1.getTransform(), body2.getCollisionShape(), body2.getTransform(), contactInfo)) {

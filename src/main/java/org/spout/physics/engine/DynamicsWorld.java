@@ -43,9 +43,6 @@ import org.spout.physics.collision.BroadPhasePair;
 import org.spout.physics.collision.shape.CollisionShape;
 import org.spout.physics.constraint.BallAndSocketJoint;
 import org.spout.physics.constraint.BallAndSocketJoint.BallAndSocketJointInfo;
-import org.spout.physics.constraint.Constraint;
-import org.spout.physics.constraint.Constraint.ConstraintInfo;
-import org.spout.physics.constraint.Constraint.JointListElement;
 import org.spout.physics.constraint.ConstraintSolver;
 import org.spout.physics.constraint.ContactPoint;
 import org.spout.physics.constraint.ContactPoint.ContactPointInfo;
@@ -53,6 +50,9 @@ import org.spout.physics.constraint.FixedJoint;
 import org.spout.physics.constraint.FixedJoint.FixedJointInfo;
 import org.spout.physics.constraint.HingeJoint;
 import org.spout.physics.constraint.HingeJoint.HingeJointInfo;
+import org.spout.physics.constraint.Joint;
+import org.spout.physics.constraint.Joint.JointInfo;
+import org.spout.physics.constraint.Joint.JointListElement;
 import org.spout.physics.constraint.SliderJoint;
 import org.spout.physics.constraint.SliderJoint.SliderJointInfo;
 import org.spout.physics.engine.ContactManifold.ContactManifoldListElement;
@@ -74,7 +74,7 @@ public class DynamicsWorld extends CollisionWorld {
     private boolean mIsSleepingEnabled;
     private final Set<RigidBody> mRigidBodies = new HashSet<>();
     private final List<ContactManifold> mContactManifolds = new ArrayList<>();
-    private final Set<Constraint> mJoints = new HashSet<>();
+    private final Set<Joint> mJoints = new HashSet<>();
     private final Vector3 mGravity;
     private boolean mIsGravityEnabled;
     private Vector3[] mConstrainedLinearVelocities;
@@ -367,6 +367,7 @@ public class DynamicsWorld extends CollisionWorld {
                 updateSleepingBodies();
             }
             updateRigidBodiesAABB();
+            resetBodiesForceAndTorque();
         }
         isTicking = false;
         setInterpolationFactorToAllBodies();
@@ -622,7 +623,7 @@ public class DynamicsWorld extends CollisionWorld {
             mRigidBodies.remove(rigidBody);
             removeCollisionShape(rigidBody.getCollisionShape());
             final int idToRemove = rigidBody.getID();
-            for (Constraint joint : mJoints) {
+            for (Joint joint : mJoints) {
                 if (joint.getFirstBody().getID() == idToRemove || joint.getSecondBody().getID() == idToRemove) {
                     destroyJoint(joint);
                 }
@@ -639,8 +640,8 @@ public class DynamicsWorld extends CollisionWorld {
      * @param jointInfo The information to use for creating the joint
      * @return The new joint
      */
-    public Constraint createJoint(ConstraintInfo jointInfo) {
-        final Constraint newJoint;
+    public Joint createJoint(JointInfo jointInfo) {
+        final Joint newJoint;
         switch (jointInfo.getType()) {
             case BALLSOCKETJOINT: {
                 final BallAndSocketJointInfo info = (BallAndSocketJointInfo) jointInfo;
@@ -678,7 +679,7 @@ public class DynamicsWorld extends CollisionWorld {
      *
      * @param joint The joint to destroy
      */
-    public void destroyJoint(Constraint joint) {
+    public void destroyJoint(Joint joint) {
         if (joint == null) {
             throw new IllegalArgumentException("Joint cannot be null");
         }
@@ -697,7 +698,7 @@ public class DynamicsWorld extends CollisionWorld {
      *
      * @param joint The joint to add
      */
-    public void addJointToBody(Constraint joint) {
+    public void addJointToBody(Joint joint) {
         if (joint == null) {
             throw new IllegalArgumentException("Joint cannot be null");
         }
@@ -756,7 +757,7 @@ public class DynamicsWorld extends CollisionWorld {
         for (ContactManifold contactManifold : mContactManifolds) {
             contactManifold.setIsAlreadyInIsland(false);
         }
-        for (Constraint joint : mJoints) {
+        for (Joint joint : mJoints) {
             joint.setIsAlreadyInIsland(false);
         }
         final RigidBody[] stackBodiesToVisit = new RigidBody[nbBodies];
@@ -768,7 +769,7 @@ public class DynamicsWorld extends CollisionWorld {
             if (!body.getIsMotionEnabled()) {
                 continue;
             }
-            if (body.isSleeping()) {
+            if (body.isSleeping() || !body.isActive()) {
                 continue;
             }
             int stackIndex = 0;
@@ -780,6 +781,9 @@ public class DynamicsWorld extends CollisionWorld {
             while (stackIndex > 0) {
                 stackIndex--;
                 final RigidBody bodyToVisit = stackBodiesToVisit[stackIndex];
+                if (!bodyToVisit.isActive()) {
+                    throw new IllegalStateException("Body to visit isn't active");
+                }
                 bodyToVisit.setIsSleeping(false);
                 mIslands[mNbIslands].addBody(bodyToVisit);
                 if (!bodyToVisit.getIsMotionEnabled()) {
@@ -805,7 +809,7 @@ public class DynamicsWorld extends CollisionWorld {
                 }
                 JointListElement jointElement;
                 for (jointElement = bodyToVisit.getJointsList(); jointElement != null; jointElement = jointElement.getNext()) {
-                    final Constraint joint = jointElement.getJoint();
+                    final Joint joint = jointElement.getJoint();
                     if (joint.isAlreadyInIsland()) {
                         continue;
                     }
@@ -861,6 +865,14 @@ public class DynamicsWorld extends CollisionWorld {
                     bodies[b].setIsSleeping(true);
                 }
             }
+        }
+    }
+
+    // Resets the external force and torque applied to the bodies
+    private void resetBodiesForceAndTorque() {
+        for (RigidBody rigidBody : mRigidBodies) {
+            rigidBody.getExternalForce().setToZero();
+            rigidBody.getExternalTorque().setToZero();
         }
     }
 

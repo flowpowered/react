@@ -37,7 +37,7 @@ import org.spout.physics.math.Vector3;
 /**
  * This class represents a ball-and-socket joint that allows arbitrary rotation between two bodies.
  */
-public class BallAndSocketJoint extends Constraint {
+public class BallAndSocketJoint extends Joint {
     private static final float BETA = 0.2f;
     private final Vector3 mLocalAnchorPointBody1;
     private final Vector3 mLocalAnchorPointBody2;
@@ -216,7 +216,7 @@ public class BallAndSocketJoint extends Constraint {
     /**
      * This structure is used to gather the information needed to create a ball-and-socket joint. This structure will be used to create the actual ball-and-socket joint.
      */
-    public static class BallAndSocketJointInfo extends ConstraintInfo {
+    public static class BallAndSocketJointInfo extends JointInfo {
         private final Vector3 anchorPointWorldSpace = new Vector3();
 
         /**
@@ -227,7 +227,7 @@ public class BallAndSocketJoint extends Constraint {
          * @param initAnchorPointWorldSpace The anchor point in world space
          */
         public BallAndSocketJointInfo(RigidBody rigidBody1, RigidBody rigidBody2, Vector3 initAnchorPointWorldSpace) {
-            super(rigidBody1, rigidBody2, ConstraintType.BALLSOCKETJOINT);
+            super(rigidBody1, rigidBody2, JointType.BALLSOCKETJOINT);
             anchorPointWorldSpace.set(initAnchorPointWorldSpace);
         }
 

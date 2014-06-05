@@ -31,13 +31,12 @@ import org.spout.physics.body.RigidBody;
 import org.spout.physics.constraint.ConstraintSolver.ConstraintSolverData;
 
 /**
- * This is the base class of a constraint in the physics engine. A constraint can be a collision contact or a joint for instance.
+ * This abstract class represents a joint between two bodies.
  */
-public abstract class Constraint {
+public abstract class Joint {
     protected final RigidBody mBody1;
     protected final RigidBody mBody2;
-    protected final boolean mActive;
-    protected final ConstraintType mType;
+    protected final JointType mType;
     protected int mIndexBody1;
     protected int mIndexBody2;
     protected final JointsPositionCorrectionTechnique mPositionCorrectionTechnique;
@@ -45,49 +44,48 @@ public abstract class Constraint {
     protected boolean mIsAlreadyInIsland;
 
     /**
-     * Constructs a new constraint from the provided constraint info.
+     * Constructs a new joint from the provided joint info.
      *
-     * @param constraintInfo The constraint info for this constraint
+     * @param jointInfo The joint info for this joint
      */
-    public Constraint(ConstraintInfo constraintInfo) {
-        mBody1 = constraintInfo.getFirstBody();
-        mBody2 = constraintInfo.getSecondBody();
+    public Joint(JointInfo jointInfo) {
+        mBody1 = jointInfo.getFirstBody();
+        mBody2 = jointInfo.getSecondBody();
         if (mBody1 == null) {
             throw new IllegalArgumentException("First body cannot be null");
         }
         if (mBody2 == null) {
             throw new IllegalArgumentException("Second body cannot be null");
         }
-        mActive = true;
-        mType = constraintInfo.getType();
-        mPositionCorrectionTechnique = constraintInfo.getPositionCorrectionTechnique();
-        mIsCollisionEnabled = constraintInfo.isCollisionEnabled();
+        mType = jointInfo.getType();
+        mPositionCorrectionTechnique = jointInfo.getPositionCorrectionTechnique();
+        mIsCollisionEnabled = jointInfo.isCollisionEnabled();
         mIsAlreadyInIsland = false;
     }
 
     /**
-     * Initializes before solving the constraint.
+     * Initializes before solving the joint.
      *
      * @param constraintSolverData The related data
      */
     public abstract void initBeforeSolve(ConstraintSolverData constraintSolverData);
 
     /**
-     * Warm-starts the constraint (apply the previous impulse at the beginning of the step).
+     * Warm-starts the joint (apply the previous impulse at the beginning of the step).
      *
      * @param constraintSolverData The related data
      */
     public abstract void warmstart(ConstraintSolverData constraintSolverData);
 
     /**
-     * Solves the velocity constraint.
+     * Solves the joint velocity.
      *
      * @param constraintSolverData The related data
      */
     public abstract void solveVelocityConstraint(ConstraintSolverData constraintSolverData);
 
     /**
-     * Solves the position constraint.
+     * Solves the joint position.
      *
      * @param constraintSolverData The related data
      */
@@ -112,25 +110,25 @@ public abstract class Constraint {
     }
 
     /**
-     * Returns true if the constraint is active, false if not.
+     * Returns true if the joint is active, false if not.
      *
-     * @return Whether or not the constraint is active
+     * @return Whether or not the joint is active
      */
     public boolean isActive() {
-        return mActive;
+        return mBody1.isActive() && mBody2.isActive();
     }
 
     /**
-     * Gets the type of constraint.
+     * Gets the type of joint.
      *
-     * @return The constraint type
+     * @return The joint type
      */
-    public ConstraintType getType() {
+    public JointType getType() {
         return mType;
     }
 
     /**
-     * Returns true if the collision between the two bodies of the constraint is enabled.
+     * Returns true if the collision between the two bodies of the joint is enabled.
      *
      * @return Whether or not the collision is enabled
      */
@@ -157,9 +155,9 @@ public abstract class Constraint {
     }
 
     /**
-     * An enumeration of the possible constraint types (contact).
+     * An enumeration of the possible joint types (contact).
      */
-    public static enum ConstraintType {
+    public static enum JointType {
         CONTACT,
         BALLSOCKETJOINT,
         SLIDERJOINT,
@@ -168,21 +166,21 @@ public abstract class Constraint {
     }
 
     /**
-     * This structure is used to gather the information needed to create a constraint.
+     * This structure is used to gather the information needed to create a joint.
      */
-    public static class ConstraintInfo {
+    public static class JointInfo {
         private RigidBody body1;
         private RigidBody body2;
-        private final ConstraintType type;
+        private final JointType type;
         private boolean isCollisionEnabled;
         private JointsPositionCorrectionTechnique positionCorrectionTechnique;
 
         /**
-         * Constructs a new constraint info from the constraint type.
+         * Constructs a new joint info from the joint type.
          *
-         * @param type The type of this constraint
+         * @param type The type of this joint
          */
-        public ConstraintInfo(ConstraintType type) {
+        public JointInfo(JointType type) {
             body1 = null;
             body2 = null;
             this.type = type;
@@ -191,13 +189,13 @@ public abstract class Constraint {
         }
 
         /**
-         * Constructs a new constraint info from the constraint type and the two bodies involved.
+         * Constructs a new joint info from the joint type and the two bodies involved.
          *
          * @param body1 The first involved body
          * @param body2 The second involved body
-         * @param type The type of this constraint
+         * @param type The type of this joint
          */
-        public ConstraintInfo(RigidBody body1, RigidBody body2, ConstraintType type) {
+        public JointInfo(RigidBody body1, RigidBody body2, JointType type) {
             this.body1 = body1;
             this.body2 = body2;
             this.type = type;
@@ -206,16 +204,16 @@ public abstract class Constraint {
         }
 
         /**
-         * Returns the constraint type.
+         * Returns the joint type.
          *
          * @return The type
          */
-        public ConstraintType getType() {
+        public JointType getType() {
             return type;
         }
 
         /**
-         * Returns the first body involved in the constraint.
+         * Returns the first body involved in the joint.
          *
          * @return The first body
          */
@@ -224,7 +222,7 @@ public abstract class Constraint {
         }
 
         /**
-         * Returns the second body involved in the constraint.
+         * Returns the second body involved in the joint.
          *
          * @return The second body
          */
@@ -233,7 +231,7 @@ public abstract class Constraint {
         }
 
         /**
-         * Sets the first body involved in the contact.
+         * Sets the first body involved in the joint.
          *
          * @param body1 The The first involved body
          */
@@ -242,7 +240,7 @@ public abstract class Constraint {
         }
 
         /**
-         * Sets the second body involved in the contact.
+         * Sets the second body involved in the joint.
          *
          * @param body2 The second involved body
          */
@@ -291,7 +289,7 @@ public abstract class Constraint {
      * This structure represents a single element of a linked list of joints.
      */
     public static class JointListElement {
-        private Constraint joint;
+        private Joint joint;
         private JointListElement next;
 
         /**
@@ -300,7 +298,7 @@ public abstract class Constraint {
          * @param initJoint The joint
          * @param initNext The next element
          */
-        public JointListElement(Constraint initJoint, JointListElement initNext) {
+        public JointListElement(Joint initJoint, JointListElement initNext) {
             joint = initJoint;
             next = initNext;
         }
@@ -310,7 +308,7 @@ public abstract class Constraint {
          *
          * @return The joint
          */
-        public Constraint getJoint() {
+        public Joint getJoint() {
             return joint;
         }
 
@@ -319,7 +317,7 @@ public abstract class Constraint {
          *
          * @param joint The joint
          */
-        public void setJoint(Constraint joint) {
+        public void setJoint(Joint joint) {
             this.joint = joint;
         }
 

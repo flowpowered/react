@@ -39,7 +39,6 @@ public class CollisionBody extends Body {
     protected final Transform mTransform;
     protected final Transform mOldTransform;
     protected float mInterpolationFactor;
-    protected boolean mIsActive;
     protected boolean mIsMotionEnabled;
     protected boolean mIsCollisionEnabled;
     protected final AABB mAabb = new AABB();
@@ -60,7 +59,6 @@ public class CollisionBody extends Body {
         }
         mCollisionShape = collisionShape;
         mTransform = transform;
-        mIsActive = true;
         mHasMoved = false;
         mIsMotionEnabled = true;
         mIsCollisionEnabled = true;
@@ -104,24 +102,6 @@ public class CollisionBody extends Body {
      */
     public void setCollisionShape(CollisionShape mCollisionShape) {
         this.mCollisionShape = mCollisionShape;
-    }
-
-    /**
-     * Returns true if the body is active, false if not.
-     *
-     * @return Whether or not the body is active
-     */
-    public boolean isActive() {
-        return mIsActive;
-    }
-
-    /**
-     * Sets the activity for this body. True for active, false for inactive.
-     *
-     * @param mIsActive True if this body is active, false if not
-     */
-    public void setActive(boolean mIsActive) {
-        this.mIsActive = mIsActive;
     }
 
     /**

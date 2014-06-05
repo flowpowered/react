@@ -132,7 +132,7 @@ public class ConstraintSolver {
         mTimeStep = dt;
         mConstraintSolverData.setTimeStep(mTimeStep);
         mConstraintSolverData.setWarmStartingActive(mIsWarmStartingActive);
-        final Constraint[] joints = island.getJoints();
+        final Joint[] joints = island.getJoints();
         for (int i = 0; i < island.getNbJoints(); i++) {
             joints[i].initBeforeSolve(mConstraintSolverData);
             if (mIsWarmStartingActive) {
@@ -153,7 +153,7 @@ public class ConstraintSolver {
         if (island.getNbJoints() <= 0) {
             throw new IllegalArgumentException("The number of joints in the island must be greater than zero");
         }
-        final Constraint[] joints = island.getJoints();
+        final Joint[] joints = island.getJoints();
         for (int i = 0; i < island.getNbJoints(); i++) {
             joints[i].solveVelocityConstraint(mConstraintSolverData);
         }
@@ -172,7 +172,7 @@ public class ConstraintSolver {
         //if (island.getNbJoints() <= 0) {
         //    throw new IllegalArgumentException("The number of joints in the island must be greater than zero");
         //}
-        final Constraint[] joints = island.getJoints();
+        final Joint[] joints = island.getJoints();
         for (int i = 0; i < island.getNbJoints(); i++) {
             joints[i].solvePositionConstraint(mConstraintSolverData);
         }

@@ -40,7 +40,7 @@ import org.spout.physics.math.Vector3;
 /**
  * This class represents a slider joint.
  */
-public class SliderJoint extends Constraint {
+public class SliderJoint extends Joint {
     private static final float BETA = 0.2f;
     private final Vector3 mLocalAnchorPointBody1;
     private final Vector3 mLocalAnchorPointBody2;
@@ -705,7 +705,7 @@ public class SliderJoint extends Constraint {
     /**
      * This structure is used to gather the information needed to create a slider joint. This structure will be used to create the actual slider joint.
      */
-    public static class SliderJointInfo extends ConstraintInfo {
+    public static class SliderJointInfo extends JointInfo {
         private final Vector3 anchorPointWorldSpace = new Vector3();
         private final Vector3 sliderAxisWorldSpace = new Vector3();
         private final boolean isLimitEnabled;
@@ -724,7 +724,7 @@ public class SliderJoint extends Constraint {
          * @param initSliderAxisWorldSpace The initial axis in world space
          */
         public SliderJointInfo(RigidBody body1, RigidBody body2, Vector3 initAnchorPointWorldSpace, Vector3 initSliderAxisWorldSpace) {
-            super(body1, body2, ConstraintType.SLIDERJOINT);
+            super(body1, body2, JointType.SLIDERJOINT);
             anchorPointWorldSpace.set(initAnchorPointWorldSpace);
             sliderAxisWorldSpace.set(initSliderAxisWorldSpace);
             isLimitEnabled = false;
@@ -747,7 +747,7 @@ public class SliderJoint extends Constraint {
          * @param initUpperLimit The initial upper limit
          */
         public SliderJointInfo(RigidBody body1, RigidBody body2, Vector3 initAnchorPointWorldSpace, Vector3 initSliderAxisWorldSpace, float initLowerLimit, float initUpperLimit) {
-            super(body1, body2, ConstraintType.SLIDERJOINT);
+            super(body1, body2, JointType.SLIDERJOINT);
             anchorPointWorldSpace.set(initAnchorPointWorldSpace);
             sliderAxisWorldSpace.set(initSliderAxisWorldSpace);
             isLimitEnabled = true;
@@ -773,7 +773,7 @@ public class SliderJoint extends Constraint {
          */
         public SliderJointInfo(RigidBody body1, RigidBody body2, Vector3 initAnchorPointWorldSpace, Vector3 initSliderAxisWorldSpace, float initLowerLimit, float initUpperLimit, float initMotorSpeed,
                                float initMaxMotorForce) {
-            super(body1, body2, ConstraintType.SLIDERJOINT);
+            super(body1, body2, JointType.SLIDERJOINT);
             anchorPointWorldSpace.set(initAnchorPointWorldSpace);
             sliderAxisWorldSpace.set(initSliderAxisWorldSpace);
             isLimitEnabled = true;

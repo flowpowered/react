@@ -26,14 +26,16 @@
  */
 package org.spout.physics.constraint;
 
-import org.spout.physics.constraint.ConstraintSolver.ConstraintSolverData;
+import org.spout.physics.body.RigidBody;
 import org.spout.physics.math.Transform;
 import org.spout.physics.math.Vector3;
 
 /**
- * Represents a collision contact point between two bodies in the physics engine. The ContactPoint class inherits from the Constraint class.
+ * Represents a collision contact point between two bodies in the physics engine.
  */
-public class ContactPoint extends Constraint {
+public class ContactPoint {
+    private final RigidBody mBody1;
+    private final RigidBody mBody2;
     private final Vector3 mNormal;
     private float mPenetrationDepth;
     private final Vector3 mLocalPointOnBody1;
@@ -53,10 +55,11 @@ public class ContactPoint extends Constraint {
      * @param contactInfo The contact info
      */
     public ContactPoint(ContactPointInfo contactInfo) {
-        super(contactInfo);
         if (contactInfo.getPenetrationDepth() <= 0) {
             throw new IllegalArgumentException("Penetration depth must be greater than zero");
         }
+        mBody1 = contactInfo.getFirstBody();
+        mBody2 = contactInfo.getSecondBody();
         mNormal = new Vector3(contactInfo.getNormal());
         mPenetrationDepth = contactInfo.getPenetrationDepth();
         mLocalPointOnBody1 = new Vector3(contactInfo.getFirstLocalPoint());
@@ -68,20 +71,22 @@ public class ContactPoint extends Constraint {
         mFrictionVector2 = new Vector3(0, 0, 0);
     }
 
-    @Override
-    public void initBeforeSolve(ConstraintSolverData constraintSolverData) {
+    /**
+     * Returns the first body in the contact.
+     *
+     * @return The first body
+     */
+    public RigidBody getFirstBody() {
+        return mBody1;
     }
 
-    @Override
-    public void warmstart(ConstraintSolverData constraintSolverData) {
-    }
-
-    @Override
-    public void solveVelocityConstraint(ConstraintSolverData constraintSolverData) {
-    }
-
-    @Override
-    public void solvePositionConstraint(ConstraintSolverData constraintSolverData) {
+    /**
+     * Returns the second body in the contact.
+     *
+     * @return The second body
+     */
+    public RigidBody getSecondBody() {
+        return mBody2;
     }
 
     /**
@@ -277,7 +282,9 @@ public class ContactPoint extends Constraint {
      * This structure contains information about a collision contact computed during the narrow-phase collision detection. This information is used to compute the contact set for a contact between two
      * bodies.
      */
-    public static class ContactPointInfo extends ConstraintInfo {
+    public static class ContactPointInfo {
+        private RigidBody body1;
+        private RigidBody body2;
         private final Vector3 normal = new Vector3();
         private float penetrationDepth;
         private final Vector3 localPoint1 = new Vector3();
@@ -287,7 +294,6 @@ public class ContactPoint extends Constraint {
          * Constructs a new empty contact point info.
          */
         public ContactPointInfo() {
-            super(ConstraintType.CONTACT);
         }
 
         /**
@@ -299,11 +305,46 @@ public class ContactPoint extends Constraint {
          * @param localPoint2 The contact point on the second body
          */
         public ContactPointInfo(Vector3 normal, float penetrationDepth, Vector3 localPoint1, Vector3 localPoint2) {
-            super(ConstraintType.CONTACT);
             this.normal.set(normal);
             this.penetrationDepth = penetrationDepth;
             this.localPoint1.set(localPoint1);
             this.localPoint2.set(localPoint2);
+        }
+
+        /**
+         * Returns the first body involved in the contact.
+         *
+         * @return The first body
+         */
+        public RigidBody getFirstBody() {
+            return body1;
+        }
+
+        /**
+         * Returns the second body involved in the contact.
+         *
+         * @return The second body
+         */
+        public RigidBody getSecondBody() {
+            return body2;
+        }
+
+        /**
+         * Sets the first body involved in the contact.
+         *
+         * @param body1 The The first involved body
+         */
+        public void setFirstBody(RigidBody body1) {
+            this.body1 = body1;
+        }
+
+        /**
+         * Sets the second body involved in the contact.
+         *
+         * @param body2 The second involved body
+         */
+        public void setSecondBody(RigidBody body2) {
+            this.body2 = body2;
         }
 
         /**
