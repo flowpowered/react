@@ -40,7 +40,6 @@ import org.spout.physics.Utilities.IntPair;
 import org.spout.physics.body.CollisionBody;
 import org.spout.physics.collision.BroadPhasePair;
 import org.spout.physics.collision.CollisionDetection;
-import org.spout.physics.collision.CollisionListener;
 import org.spout.physics.collision.RayCaster;
 import org.spout.physics.collision.RayCaster.IntersectedBody;
 import org.spout.physics.collision.shape.CollisionShape;
@@ -93,15 +92,6 @@ public abstract class CollisionWorld {
      * @param pair The pair to update
      */
     public abstract void updateOverlappingPair(BroadPhasePair pair);
-
-    /**
-     * Adds a collision listener for the collision detection.
-     *
-     * @param listener The listener to use
-     */
-    public void addListener(CollisionListener listener) {
-        mCollisionDetection.addListener(listener);
-    }
 
     /**
      * Gets the set of the bodies of the physics world.

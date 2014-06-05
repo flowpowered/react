@@ -42,38 +42,33 @@ public class SweepAndPruneAlgorithmTest {
 
     @Test
     public void test() {
-        try {
-            final SweepAndPruneAlgorithm sweepAndPrune = new SweepAndPruneAlgorithm(Dummies.newCollisionDetection());
-            final Set<CollisionBody> bodies = new HashSet<>();
-            for (int repeat = 0; repeat < 2; repeat++) {
-                for (int i = 0; i < BODY_COUNT / 10; i++) {
-                    final CollisionBody body = Dummies.newCollisionBody(ID++);
-                    bodies.add(body);
-                    sweepAndPrune.addObject(body, Dummies.newAABB());
-                }
-                Assert.assertEquals(BODY_COUNT / 10, sweepAndPrune.getNbObjects());
-                Assert.assertTrue(countNotNull(sweepAndPrune.getOverlappingPairs()) >= 0);
-                for (int i = 0; i < BODY_COUNT / 2; i++) {
-                    final AABB aabb = Dummies.newAABB();
-                    final CollisionBody body0 = Dummies.newCollisionBody(ID++);
-                    bodies.add(body0);
-                    sweepAndPrune.addObject(body0, aabb);
-                    final CollisionBody body1 = Dummies.newCollisionBody(ID++);
-                    bodies.add(body1);
-                    sweepAndPrune.addObject(body1, Dummies.newIntersectingAABB(aabb));
-                }
-                Assert.assertEquals(BODY_COUNT + BODY_COUNT / 10, sweepAndPrune.getNbObjects());
-                Assert.assertTrue(countNotNull(sweepAndPrune.getOverlappingPairs()) >= BODY_COUNT / 2);
-                for (CollisionBody body : bodies) {
-                    sweepAndPrune.removeObject(body);
-                }
-                Assert.assertEquals(0, sweepAndPrune.getNbObjects());
-                bodies.clear();
-                ID = 0;
+        final SweepAndPruneAlgorithm sweepAndPrune = new SweepAndPruneAlgorithm(Dummies.newCollisionDetection());
+        final Set<CollisionBody> bodies = new HashSet<>();
+        for (int repeat = 0; repeat < 2; repeat++) {
+            for (int i = 0; i < BODY_COUNT / 10; i++) {
+                final CollisionBody body = Dummies.newCollisionBody(ID++);
+                bodies.add(body);
+                sweepAndPrune.addObject(body, Dummies.newAABB());
             }
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            throw new RuntimeException(ex);
+            Assert.assertEquals(BODY_COUNT / 10, sweepAndPrune.getNbObjects());
+            Assert.assertTrue(countNotNull(sweepAndPrune.getOverlappingPairs()) >= 0);
+            for (int i = 0; i < BODY_COUNT / 2; i++) {
+                final AABB aabb = Dummies.newAABB();
+                final CollisionBody body0 = Dummies.newCollisionBody(ID++);
+                bodies.add(body0);
+                sweepAndPrune.addObject(body0, aabb);
+                final CollisionBody body1 = Dummies.newCollisionBody(ID++);
+                bodies.add(body1);
+                sweepAndPrune.addObject(body1, Dummies.newIntersectingAABB(aabb));
+            }
+            Assert.assertEquals(BODY_COUNT + BODY_COUNT / 10, sweepAndPrune.getNbObjects());
+            Assert.assertTrue(countNotNull(sweepAndPrune.getOverlappingPairs()) >= BODY_COUNT / 2);
+            for (CollisionBody body : bodies) {
+                sweepAndPrune.removeObject(body);
+            }
+            Assert.assertEquals(0, sweepAndPrune.getNbObjects());
+            bodies.clear();
+            ID = 0;
         }
     }
 

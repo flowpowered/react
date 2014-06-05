@@ -91,6 +91,7 @@ public class DynamicsWorld extends CollisionWorld {
     private float mSleepLinearVelocity;
     private float mSleepAngularVelocity;
     private float mTimeBeforeSleep;
+    private EventListener mEventListener;
     private boolean isTicking = false;
     // Tick cache
     private final Set<RigidBody> mRigidBodiesToAddCache = new HashSet<>();
@@ -289,6 +290,15 @@ public class DynamicsWorld extends CollisionWorld {
     }
 
     /**
+     * Sets an event listener object to receive events callbacks. If you use <code>null</code> as an argument, the events callbacks will be disabled.
+     *
+     * @param eventListener The event listener, or null for none
+     */
+    public void setEventListener(EventListener eventListener) {
+        mEventListener = eventListener;
+    }
+
+    /**
      * Gets the number of rigid bodies in the world.
      *
      * @return The number of rigid bodies in the world
@@ -367,9 +377,9 @@ public class DynamicsWorld extends CollisionWorld {
                 updateSleepingBodies();
             }
             updateRigidBodiesAABB();
-            resetBodiesForceAndTorque();
         }
         isTicking = false;
+        resetBodiesForceAndTorque();
         setInterpolationFactorToAllBodies();
         disperseCache();
     }
@@ -907,9 +917,17 @@ public class DynamicsWorld extends CollisionWorld {
         if (overlappingPair == null) {
             throw new IllegalArgumentException("broad phase pair is not in the overlapping pairs");
         }
+        if (overlappingPair.getNbContactPoints() == 0) {
+            if (mEventListener != null) {
+                mEventListener.beginContact(contactInfo);
+            }
+        }
         overlappingPair.addContact(contact);
         mContactManifolds.add(overlappingPair.getContactManifold());
         addContactManifoldToBody(overlappingPair.getContactManifold(), overlappingPair.getFirstBody(), overlappingPair.getSecondBody());
+        if (mEventListener != null) {
+            mEventListener.newContact(contactInfo);
+        }
     }
 
     /**

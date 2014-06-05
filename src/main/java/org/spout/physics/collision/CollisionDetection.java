@@ -61,7 +61,6 @@ public class CollisionDetection {
     private final GJKAlgorithm mNarrowPhaseGJKAlgorithm = new GJKAlgorithm();
     private final SphereVsSphereAlgorithm mNarrowPhaseSphereVsSphereAlgorithm = new SphereVsSphereAlgorithm();
     private final Set<IntPair> mNoCollisionPairs = new HashSet<>();
-    private final List<CollisionListener> mCallBacks = new ArrayList<>();
     private final LinkedPhase mLinkedPhase;
 
     /**
@@ -77,24 +76,6 @@ public class CollisionDetection {
         } else {
             mLinkedPhase = null;
         }
-    }
-
-    /**
-     * Gets the collision listeners for collision detection.
-     *
-     * @return The collision listeners
-     */
-    public List<CollisionListener> getListeners() {
-        return mCallBacks;
-    }
-
-    /**
-     * Adds a collision listener for the collision detection.
-     *
-     * @param listener The listener to add
-     */
-    public void addListener(CollisionListener listener) {
-        mCallBacks.add(listener);
     }
 
     /**
@@ -192,20 +173,7 @@ public class CollisionDetection {
             if (narrowPhaseAlgorithm.testCollision(body1.getCollisionShape(), body1.getTransform(), body2.getCollisionShape(), body2.getTransform(), contactInfo)) {
                 contactInfo.setFirstBody((RigidBody) body1);
                 contactInfo.setSecondBody((RigidBody) body2);
-                if (mCallBacks.isEmpty()) {
-                    mWorld.notifyNewContact(pair, contactInfo);
-                } else {
-                    boolean cancel = false;
-                    for (CollisionListener listener : mCallBacks) {
-                        if (listener.onCollide(body1, body2, contactInfo)) {
-                            cancel = true;
-                            break;
-                        }
-                    }
-                    if (!cancel) {
-                        mWorld.notifyNewContact(pair, contactInfo);
-                    }
-                }
+                mWorld.notifyNewContact(pair, contactInfo);
             }
         }
     }

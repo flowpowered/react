@@ -24,25 +24,26 @@
  * License and see <http://spout.in/licensev1> for the full license, including
  * the MIT license.
  */
-package org.spout.physics.collision;
+package org.spout.physics.engine;
 
-import org.spout.physics.body.CollisionBody;
 import org.spout.physics.constraint.ContactPoint.ContactPointInfo;
 
 /**
- * Reports the collisions between two bodies as they are occurring during the narrow-phase and allows for cancellation of the collision. Each collision will result in a call of {@link
- * #onCollide(org.spout.physics.body.CollisionBody, org.spout.physics.body.CollisionBody, ContactPointInfo)}. Implement this interface to listen to them. Use {@link
- * org.spout.physics.engine.CollisionWorld#addListener(CollisionListener)} to add a listener.
+ * This class can be used to receive event callbacks from the physics engine. In order to receive callbacks, you need to create a new class that inherits from this one and you must override the
+ * methods you need. Then, you need to register your new event listener class to the physics world using the {@link DynamicsWorld#setEventListener(EventListener)} method.
  */
-public interface CollisionListener {
+public interface EventListener {
     /**
-     * This method is called when two bodies are about to collide in a collision detection. Both bodies are provided, including the contact information, which includes the contact points on each body,
-     * the penetration depth, and the normal. The method returns a boolean. If it is true, the collision will be canceled.
+     * Called when a new contact point is found between two bodies that were separated before.
      *
-     * @param body1 The first body
-     * @param body2 The second body
-     * @param contactInfo The contact information
-     * @return Whether or not the collision should be canceled
+     * @param contactInfo The info for the contact
      */
-    public boolean onCollide(CollisionBody body1, CollisionBody body2, ContactPointInfo contactInfo);
+    void beginContact(ContactPointInfo contactInfo);
+
+    /**
+     * Called when a new contact point is found between two bodies.
+     *
+     * @param contactInfo The info for the contact
+     */
+    void newContact(ContactPointInfo contactInfo);
 }
