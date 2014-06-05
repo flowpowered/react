@@ -36,8 +36,8 @@ public class Material {
     private float mBounciness;
 
     /**
-     * Constructs a new rigid body material using {@link ReactDefaults#DEFAULT_BOUNCINESS} as the default bounciness and {@link ReactDefaults#DEFAULT_FRICTION_COEFFICIENT} as the default
-     * friction coefficient.
+     * Constructs a new rigid body material using {@link ReactDefaults#DEFAULT_BOUNCINESS} as the default bounciness and {@link ReactDefaults#DEFAULT_FRICTION_COEFFICIENT} as the default friction
+     * coefficient.
      */
     public Material() {
         mBounciness = ReactDefaults.DEFAULT_BOUNCINESS;
@@ -75,7 +75,7 @@ public class Material {
     }
 
     /**
-     * Sets the bounciness.
+     * Sets the bounciness. The bounciness should be a value between 0 and 1. The value 1 is used for a very bouncy body and zero is used for a body that is not bouncy at all.
      *
      * @param bounciness The bounciness
      */
@@ -96,7 +96,7 @@ public class Material {
     }
 
     /**
-     * Sets the friction coefficient.
+     * Sets the friction coefficient. The friction coefficient has to be a positive value. The value zero is used for no friction at all.
      *
      * @param frictionCoefficient The coefficient to set
      */

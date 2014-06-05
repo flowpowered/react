@@ -340,7 +340,7 @@ public class RigidBody extends CollisionBody {
     }
 
     /**
-     * Applies an external force to the body at a given point (in world-coordinates). If the point is not at the center of gravity of the body, it will also generate some torque and therefore, change
+     * Applies an external force to the body at a given point (in world-space coordinates). If the point is not at the center of gravity of the body, it will also generate some torque and therefore, change
      * the angular velocity of the body. If the body is sleeping, calling this method will wake it up. Note that the force will be added to the sum of the applied forces and that this sum will be
      * reset to zero at the end of each call of the {@link org.spout.physics.engine.DynamicsWorld#update()} method.
      *
