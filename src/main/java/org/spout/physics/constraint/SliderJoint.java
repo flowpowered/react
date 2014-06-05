@@ -224,14 +224,16 @@ public class SliderJoint extends Joint {
                 mBUpperLimit = biasFactor * upperLimitError;
             }
         }
-        mInverseMassMatrixMotor = 0;
-        if (mBody1.isMotionEnabled()) {
-            mInverseMassMatrixMotor += mBody1.getMassInverse();
+        if (mIsMotorEnabled) {
+            mInverseMassMatrixMotor = 0;
+            if (mBody1.isMotionEnabled()) {
+                mInverseMassMatrixMotor += mBody1.getMassInverse();
+            }
+            if (mBody2.isMotionEnabled()) {
+                mInverseMassMatrixMotor += mBody2.getMassInverse();
+            }
+            mInverseMassMatrixMotor = mInverseMassMatrixMotor > 0 ? 1 / mInverseMassMatrixMotor : 0;
         }
-        if (mBody2.isMotionEnabled()) {
-            mInverseMassMatrixMotor += mBody2.getMassInverse();
-        }
-        mInverseMassMatrixMotor = mInverseMassMatrixMotor > 0 ? 1 / mInverseMassMatrixMotor : 0;
         if (!constraintSolverData.isWarmStartingActive()) {
             mImpulseTranslation.setToZero();
             mImpulseRotation.setToZero();

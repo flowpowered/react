@@ -204,7 +204,7 @@ public class HingeJoint extends Joint {
             mImpulseUpperLimit = 0;
             mImpulseMotor = 0;
         }
-        if (mIsLimitEnabled && (mIsLowerLimitViolated || mIsUpperLimitViolated)) {
+        if (mIsMotorEnabled || (mIsLimitEnabled && (mIsLowerLimitViolated || mIsUpperLimitViolated))) {
             mInverseMassMatrixLimitMotor = 0;
             if (mBody1.isMotionEnabled()) {
                 mInverseMassMatrixLimitMotor += mA1.dot(Matrix3x3.multiply(mI1, mA1));
@@ -213,13 +213,15 @@ public class HingeJoint extends Joint {
                 mInverseMassMatrixLimitMotor += mA1.dot(Matrix3x3.multiply(mI2, mA1));
             }
             mInverseMassMatrixLimitMotor = mInverseMassMatrixLimitMotor > 0 ? 1 / mInverseMassMatrixLimitMotor : 0;
-            mBLowerLimit = 0;
-            if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
-                mBLowerLimit = biasFactor * lowerLimitError;
-            }
-            mBUpperLimit = 0;
-            if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
-                mBUpperLimit = biasFactor * upperLimitError;
+            if (mIsLimitEnabled) {
+                mBLowerLimit = 0;
+                if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
+                    mBLowerLimit = biasFactor * lowerLimitError;
+                }
+                mBUpperLimit = 0;
+                if (mPositionCorrectionTechnique == JointsPositionCorrectionTechnique.BAUMGARTE_JOINTS) {
+                    mBUpperLimit = biasFactor * upperLimitError;
+                }
             }
         }
     }
