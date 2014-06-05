@@ -24,23 +24,26 @@
  * License and see <http://spout.in/licensev1> for the full license, including
  * the MIT license.
  */
-package org.spout.physics.collision;
+package org.spout.physics.engine;
 
-import org.spout.physics.body.CollisionBody;
-import org.spout.physics.body.GhostImmobileRigidBody;
-import org.spout.physics.body.GhostMobileRigidBody;
+import org.spout.physics.constraint.ContactPoint.ContactPointInfo;
 
 /**
- * Simple {@link CollisionListener} where bodies which are instances of either {@link GhostImmobileRigidBody} or {@link GhostMobileRigidBody} automatically cease collision adjustments. <p> While
- * completely possible to implement CollisionListener directly, implementations are encouraged to use this class to honor ghost objects as well as extend it to inform their callbacks that a collision
- * occurred (and call this method in the superclass while doing so).
+ * This class can be used to receive event callbacks from the physics engine. In order to receive callbacks, you need to create a new class that inherits from this one and you must override the
+ * methods you need. Then, you need to register your new event listener class to the physics world using the {@link DynamicsWorld#setEventListener(EventListener)} method.
  */
-public class GhostCollisionListener implements CollisionListener {
-	@Override
-	public boolean onCollide(CollisionBody body1, CollisionBody body2, ContactInfo contactInfo) {
-		if (body1 instanceof GhostMobileRigidBody || body1 instanceof GhostImmobileRigidBody || body2 instanceof GhostImmobileRigidBody || body2 instanceof GhostMobileRigidBody) {
-			return true;
-		}
-		return false;
-	}
+public interface EventListener {
+    /**
+     * Called when a new contact point is found between two bodies that were separated before.
+     *
+     * @param contactInfo The info for the contact
+     */
+    void beginContact(ContactPointInfo contactInfo);
+
+    /**
+     * Called when a new contact point is found between two bodies.
+     *
+     * @param contactInfo The info for the contact
+     */
+    void newContact(ContactPointInfo contactInfo);
 }

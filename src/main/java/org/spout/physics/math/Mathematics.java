@@ -32,27 +32,42 @@ import org.spout.physics.ReactDefaults;
  * Various mathematical functions.
  */
 public class Mathematics {
-	/**
-	 * Returns true if the values a and b are approximately equal, using {@link ReactDefaults#MACHINE_EPSILON} as the acceptable error. Returns false if the values are not approximately equal.
-	 *
-	 * @param a The first value
-	 * @param b The second value
-	 * @return Whether or not the values are approximately equal
-	 */
-	public static boolean approxEquals(float a, float b) {
-		return approxEquals(a, b, ReactDefaults.MACHINE_EPSILON);
-	}
+    /**
+     * Returns true if the values a and b are approximately equal, using {@link ReactDefaults#MACHINE_EPSILON} as the acceptable error. Returns false if the values are not approximately equal.
+     *
+     * @param a The first value
+     * @param b The second value
+     * @return Whether or not the values are approximately equal
+     */
+    public static boolean approxEquals(float a, float b) {
+        return approxEquals(a, b, ReactDefaults.MACHINE_EPSILON);
+    }
 
-	/**
-	 * Returns true if the values a and b are approximately equal, using the provided acceptable error. Returns false if the values are not approximately equal.
-	 *
-	 * @param a The first value
-	 * @param b The second value
-	 * @param epsilon The acceptable error
-	 * @return Whether or not the values are approximately equal
-	 */
-	public static boolean approxEquals(float a, float b, float epsilon) {
-		float difference = a - b;
-		return difference < epsilon && difference > -epsilon;
-	}
+    /**
+     * Returns true if the values a and b are approximately equal, using the provided acceptable error. Returns false if the values are not approximately equal.
+     *
+     * @param a The first value
+     * @param b The second value
+     * @param epsilon The acceptable error
+     * @return Whether or not the values are approximately equal
+     */
+    public static boolean approxEquals(float a, float b, float epsilon) {
+        float difference = a - b;
+        return difference < epsilon && difference > -epsilon;
+    }
+
+    /**
+     * Returns the result of the "value" clamped by two others values "lowerLimit" and "upperLimit".
+     *
+     * @param value The value to clamp
+     * @param lowerLimit The lower limit
+     * @param upperLimit The upper limit
+     * @return The clamped value
+     */
+    public static float clamp(float value, float lowerLimit, float upperLimit) {
+        if (lowerLimit > upperLimit) {
+            throw new IllegalArgumentException("Lower limit must be smaller or equal to the upper limit");
+        }
+        return Math.min(Math.max(value, lowerLimit), upperLimit);
+    }
 }

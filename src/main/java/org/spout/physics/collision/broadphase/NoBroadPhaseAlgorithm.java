@@ -37,38 +37,38 @@ import org.spout.physics.collision.shape.AABB;
  * This class implements a broad-phase algorithm that does nothing. It should be use if we don't want to perform a broad-phase for the collision detection.
  */
 public class NoBroadPhaseAlgorithm extends BroadPhaseAlgorithm {
-	private final Set<CollisionBody> mBodies = new HashSet<CollisionBody>();
+    private final Set<CollisionBody> mBodies = new HashSet<>();
 
-	/**
-	 * Constructs a new no broad-phase algorithm from the collision detection it's associated to.
-	 *
-	 * @param collisionDetection The collision detection
-	 */
-	public NoBroadPhaseAlgorithm(CollisionDetection collisionDetection) {
-		super(collisionDetection);
-	}
+    /**
+     * Constructs a new no broad-phase algorithm from the collision detection it's associated to.
+     *
+     * @param collisionDetection The collision detection
+     */
+    public NoBroadPhaseAlgorithm(CollisionDetection collisionDetection) {
+        super(collisionDetection);
+    }
 
-	@Override
-	public void addObject(CollisionBody body, AABB aabb) {
-		for (CollisionBody collisionBody : mBodies) {
-			if (body.isMotionEnabled() || collisionBody.isMotionEnabled()) {
-				mPairManager.addPair(collisionBody, body);
-			}
-		}
-		mBodies.add(body);
-	}
+    @Override
+    public void addObject(CollisionBody body, AABB aabb) {
+        for (CollisionBody collisionBody : mBodies) {
+            if (body.isMotionEnabled() || collisionBody.isMotionEnabled()) {
+                mPairManager.addPair(collisionBody, body);
+            }
+        }
+        mBodies.add(body);
+    }
 
-	@Override
-	public void removeObject(CollisionBody body) {
-		for (CollisionBody collisionBody : mBodies) {
-			if (collisionBody.getID() != body.getID()) {
-				mPairManager.removePair(collisionBody.getID(), body.getID());
-			}
-		}
-		mBodies.remove(body);
-	}
+    @Override
+    public void removeObject(CollisionBody body) {
+        for (CollisionBody collisionBody : mBodies) {
+            if (collisionBody.getID() != body.getID()) {
+                mPairManager.removePair(collisionBody.getID(), body.getID());
+            }
+        }
+        mBodies.remove(body);
+    }
 
-	@Override
-	public void updateObject(CollisionBody body, AABB aabb) {
-	}
+    @Override
+    public void updateObject(CollisionBody body, AABB aabb) {
+    }
 }

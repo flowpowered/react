@@ -31,91 +31,122 @@ import org.spout.physics.math.Matrix3x3;
 import org.spout.physics.math.Vector3;
 
 /**
- * Represents a 3D box shape. Those axis are unit length. The three extents are half-lengths of the box along the three x, y, z local axes. The "transform" of the corresponding rigid body gives an
- * orientation and a position to the box.
+ * Represents a 3D box shape. Those axis are unit length. The three extents are half-lengths of the box along the three x, y, z local axes. The "transform" of the corresponding rigid body will give an
+ * orientation and a position to the box. This collision shape uses an extra margin distance around it for collision detection purpose. The default margin is 4cm (if your units are meters, which is
+ * recommended). In case, you want to simulate small objects (smaller than the margin distance), you might want to reduce the margin by specifying your own margin distance using the "margin" parameter
+ * in the constructor of the box shape. Otherwise, it is recommended to use the default margin distance by not using the "margin" parameter in the constructor.
  */
 public class BoxShape extends CollisionShape {
-	private final Vector3 mExtent = new Vector3();
+    private final Vector3 mExtent = new Vector3();
 
-	/**
-	 * Constructs a box shape from its extents which is half the vector between the two opposing corners that are the furthest away.
-	 *
-	 * @param x x extent
-	 * @param y y extent
-	 * @param z z extent
-	 */
-	public BoxShape(float x, float y, float z) {
-		super(CollisionShapeType.BOX);
-		mExtent.setAllValues(x, y, z);
-	}
+    /**
+     * Constructs a box shape from the components of its extents which is half the vector between the two opposing corners that are the furthest away.
+     *
+     * @param x The x extent
+     * @param y The y extent
+     * @param z The z extent
+     */
+    public BoxShape(float x, float y, float z) {
+        this(new Vector3(x, y, z), ReactDefaults.OBJECT_MARGIN);
+    }
 
-	/**
-	 * Constructs a box shape from its extents which is half the vector between the two opposing corners that are the furthest away.
-	 *
-	 * @param extent The extent vector
-	 */
-	public BoxShape(Vector3 extent) {
-		super(CollisionShapeType.BOX);
-		mExtent.set(extent);
-	}
+    /**
+     * Constructs a box shape from its extents which is half the vector between the two opposing corners that are the furthest away.
+     *
+     * @param extent The extent vector
+     */
+    public BoxShape(Vector3 extent) {
+        this(extent, ReactDefaults.OBJECT_MARGIN);
+    }
 
-	/**
-	 * Gets the extent vector, which is half the vector between the two opposing corners that are the furthest away.
-	 *
-	 * @return The extents vector
-	 */
-	public Vector3 getExtent() {
-		return mExtent;
-	}
+    /**
+     * Constructs a box shape from its extents which is half the vector between the two opposing corners that are the furthest away and the AABB margin.
+     *
+     * @param extent The extent vector
+     * @param margin The margin
+     */
+    public BoxShape(Vector3 extent, float margin) {
+        super(CollisionShapeType.BOX, margin);
+        mExtent.set(Vector3.subtract(extent, new Vector3(margin, margin, margin)));
+        if (extent.getX() <= 0 || extent.getX() <= margin) {
+            throw new IllegalArgumentException("Extent x coordinate must be greater than 0 and the margin");
+        }
+        if (extent.getY() <= 0 || extent.getY() <= margin) {
+            throw new IllegalArgumentException("Extent y coordinate must be greater than 0 and the margin");
+        }
+        if (extent.getZ() <= 0 || extent.getZ() <= margin) {
+            throw new IllegalArgumentException("Extent z coordinate must be greater than 0 and the margin");
+        }
+        if (margin <= 0) {
+            throw new IllegalArgumentException("Margin must be greater than 0");
+        }
+    }
 
-	/**
-	 * Sets the extent vector, which is half the vector between the two opposing corners that are the furthest away.
-	 *
-	 * @param extent The extents vector
-	 */
-	public void setExtent(Vector3 extent) {
-		mExtent.set(extent);
-	}
+    /**
+     * Copy constructor.
+     *
+     * @param shape The shape to copy
+     */
+    public BoxShape(BoxShape shape) {
+        super(shape);
+        mExtent.set(shape.mExtent);
+    }
 
-	@Override
-	public Vector3 getLocalSupportPointWithMargin(Vector3 direction) {
-		final float margin = getMargin();
-		if (margin < 0) {
-			throw new IllegalStateException("margin must be greater than zero");
-		}
-		return new Vector3(
-				direction.getX() < 0 ? -mExtent.getX() - margin : mExtent.getX() + margin,
-				direction.getY() < 0 ? -mExtent.getY() - margin : mExtent.getY() + margin,
-				direction.getZ() < 0 ? -mExtent.getZ() - margin : mExtent.getZ() + margin);
-	}
+    /**
+     * Gets the extent vector, which is half the vector between the two opposing corners that are the furthest away.
+     *
+     * @return The extents vector
+     */
+    public Vector3 getExtent() {
+        return Vector3.add(mExtent, new Vector3(mMargin, mMargin, mMargin));
+    }
 
-	@Override
-	public Vector3 getLocalSupportPointWithoutMargin(Vector3 direction) {
-		return new Vector3(
-				direction.getX() < 0 ? -mExtent.getX() : mExtent.getX(),
-				direction.getY() < 0 ? -mExtent.getY() : mExtent.getY(),
-				direction.getZ() < 0 ? -mExtent.getZ() : mExtent.getZ());
-	}
+    @Override
+    public Vector3 getLocalSupportPointWithMargin(Vector3 direction) {
+        if (mMargin < 0) {
+            throw new IllegalStateException("margin must be greater than zero");
+        }
+        return new Vector3(
+                direction.getX() < 0 ? -mExtent.getX() - mMargin : mExtent.getX() + mMargin,
+                direction.getY() < 0 ? -mExtent.getY() - mMargin : mExtent.getY() + mMargin,
+                direction.getZ() < 0 ? -mExtent.getZ() - mMargin : mExtent.getZ() + mMargin);
+    }
 
-	@Override
-	public Vector3 getLocalExtents(float margin) {
-		return Vector3.add(mExtent, new Vector3(margin, margin, margin));
-	}
+    @Override
+    public Vector3 getLocalSupportPointWithoutMargin(Vector3 direction) {
+        return new Vector3(
+                direction.getX() < 0 ? -mExtent.getX() : mExtent.getX(),
+                direction.getY() < 0 ? -mExtent.getY() : mExtent.getY(),
+                direction.getZ() < 0 ? -mExtent.getZ() : mExtent.getZ());
+    }
 
-	@Override
-	public float getMargin() {
-		return ReactDefaults.OBJECT_MARGIN;
-	}
+    @Override
+    public void getLocalBounds(Vector3 min, Vector3 max) {
+        max.set(Vector3.add(mExtent, new Vector3(mMargin, mMargin, mMargin)));
+        min.set(Vector3.negate(max));
+    }
 
-	@Override
-	public void computeLocalInertiaTensor(Matrix3x3 tensor, float mass) {
-		final float factor = (1f / 3) * mass;
-		final float xSquare = mExtent.getX() * mExtent.getX();
-		final float ySquare = mExtent.getY() * mExtent.getY();
-		final float zSquare = mExtent.getZ() * mExtent.getZ();
-		tensor.setAllValues(
-				factor * (ySquare + zSquare), 0, 0,
-				0, factor * (xSquare + zSquare), 0,
-				0, 0, factor * (xSquare + ySquare));
-	}
+    @Override
+    public void computeLocalInertiaTensor(Matrix3x3 tensor, float mass) {
+        final float factor = (1f / 3) * mass;
+        Vector3 realExtent = Vector3.add(mExtent, new Vector3(mMargin, mMargin, mMargin));
+        final float xSquare = realExtent.getX() * realExtent.getX();
+        final float ySquare = realExtent.getY() * realExtent.getY();
+        final float zSquare = realExtent.getZ() * realExtent.getZ();
+        tensor.setAllValues(
+                factor * (ySquare + zSquare), 0, 0,
+                0, factor * (xSquare + zSquare), 0,
+                0, 0, factor * (xSquare + ySquare));
+    }
+
+    @Override
+    public BoxShape clone() {
+        return new BoxShape(this);
+    }
+
+    @Override
+    public boolean isEqualTo(CollisionShape otherCollisionShape) {
+        final BoxShape otherShape = (BoxShape) otherCollisionShape;
+        return mExtent.equals(otherShape.mExtent);
+    }
 }

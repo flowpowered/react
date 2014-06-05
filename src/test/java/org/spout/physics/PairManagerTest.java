@@ -33,27 +33,27 @@ import org.spout.physics.collision.broadphase.PairManager;
 import org.spout.physics.collision.broadphase.PairManager.BodyPair;
 
 public class PairManagerTest {
-	@Test
-	public void test() {
-		final PairManager manager = new PairManager(Dummies.newCollisionDetection());
-		Assert.assertEquals(manager.getNbOverlappingPairs(), 0);
-		for (int i = 0; i < 20; i += 2) {
-			final BodyPair pair = manager.addPair(Dummies.newCollisionBody(i), Dummies.newCollisionBody(i + 1));
-			Assert.assertNotNull(pair);
-			Assert.assertEquals(pair.getFirstBody().getID(), i);
-			Assert.assertEquals(pair.getSecondBody().getID(), i + 1);
-		}
-		Assert.assertEquals(manager.getNbOverlappingPairs(), 10);
-		for (int i = 0; i < 20; i += 2) {
-			final BodyPair pair = manager.findPair(i, i + 1);
-			Assert.assertNotNull(pair);
-			Assert.assertEquals(pair.getFirstBody().getID(), i);
-			Assert.assertEquals(pair.getSecondBody().getID(), i + 1);
-		}
-		Assert.assertEquals(manager.getNbOverlappingPairs(), 10);
-		for (int i = 0; i < 20; i += 2) {
-			Assert.assertTrue(manager.removePair(i, i + 1));
-		}
-		Assert.assertEquals(manager.getNbOverlappingPairs(), 0);
-	}
+    @Test
+    public void test() {
+        final PairManager manager = new PairManager(Dummies.newCollisionDetection());
+        Assert.assertEquals(manager.getNbOverlappingPairs(), 0);
+        for (int i = 0; i < 20; i += 2) {
+            final BodyPair pair = manager.addPair(Dummies.newCollisionBody(i), Dummies.newCollisionBody(i + 1));
+            Assert.assertNotNull(pair);
+            Assert.assertEquals(pair.getFirstBody().getID(), i);
+            Assert.assertEquals(pair.getSecondBody().getID(), i + 1);
+        }
+        Assert.assertEquals(manager.getNbOverlappingPairs(), 10);
+        for (int i = 0; i < 20; i += 2) {
+            final BodyPair pair = manager.findPair(i, i + 1);
+            Assert.assertNotNull(pair);
+            Assert.assertEquals(pair.getFirstBody().getID(), i);
+            Assert.assertEquals(pair.getSecondBody().getID(), i + 1);
+        }
+        Assert.assertEquals(manager.getNbOverlappingPairs(), 10);
+        for (int i = 0; i < 20; i += 2) {
+            Assert.assertTrue(manager.removePair(i, i + 1));
+        }
+        Assert.assertEquals(manager.getNbOverlappingPairs(), 0);
+    }
 }

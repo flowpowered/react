@@ -30,8 +30,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.spout.physics.ReactDefaults;
-import org.spout.physics.body.ImmobileRigidBody;
-import org.spout.physics.body.MobileRigidBody;
+import org.spout.physics.body.RigidBody;
 import org.spout.physics.collision.shape.AABB;
 import org.spout.physics.engine.linked.LinkedDynamicsWorld;
 import org.spout.physics.math.Vector3;
@@ -40,53 +39,53 @@ import org.spout.physics.math.Vector3;
  * A phase of the physics tick where bodies are added via the {@link org.spout.physics.engine.linked.LinkedDynamicsWorld}'s {@link org.spout.physics.engine.linked.LinkedWorldInfo}.
  */
 public class LinkedPhase {
-	private final LinkedDynamicsWorld linkedWorld;
+    private final LinkedDynamicsWorld linkedWorld;
 
-	/**
-	 * Constructs a new linked phase from the linked dynamics world.
-	 *
-	 * @param linkedWorld The linked dynamics world this phase is associate to
-	 */
-	public LinkedPhase(final LinkedDynamicsWorld linkedWorld) {
-		this.linkedWorld = linkedWorld;
-	}
+    /**
+     * Constructs a new linked phase from the linked dynamics world.
+     *
+     * @param linkedWorld The linked dynamics world this phase is associate to
+     */
+    public LinkedPhase(LinkedDynamicsWorld linkedWorld) {
+        this.linkedWorld = linkedWorld;
+    }
 
-	/**
-	 * Sweeps for {@link ImmobileRigidBody}s around the body provided. <p> The algorithm will ask for all bodies within the bounds of the bodies' AABB scaled by a {@link
-	 * ReactDefaults#LINKED_PHASE_AABB_SCALING}. </p>
-	 *
-	 * @param body The mobile body to scan around
-	 * @return A set of all bodies in range
-	 */
-	public Set<ImmobileRigidBody> getBodiesInRange(final MobileRigidBody body) {
-		final AABB aabb = body.getAABB();
-		// To object coords
-		final Vector3 max = Vector3.subtract(aabb.getMax(), aabb.getCenter());
-		final Vector3 min = Vector3.subtract(aabb.getMin(), aabb.getCenter());
-		// Scale the coords
-		max.multiply(ReactDefaults.LINKED_PHASE_AABB_SCALING);
-		min.multiply(ReactDefaults.LINKED_PHASE_AABB_SCALING);
-		// Back to world coords
-		max.add(aabb.getCenter());
-		min.add(aabb.getCenter());
-		final int startX = (int) Math.floor(min.getX());
-		final int startY = (int) Math.floor(min.getY());
-		final int startZ = (int) Math.floor(min.getZ());
-		final int endX = (int) Math.ceil(max.getX());
-		final int endY = (int) Math.ceil(max.getY());
-		final int endZ = (int) Math.ceil(max.getZ());
-		final Set<ImmobileRigidBody> foundBodies = new HashSet<ImmobileRigidBody>();
-		for (int xx = startX; xx <= endX; xx++) {
-			for (int yy = startY; yy <= endY; yy++) {
-				for (int zz = startZ; zz <= endZ; zz++) {
-					final ImmobileRigidBody immobile = linkedWorld.getLinkedInfo().getBody(xx, yy, zz);
-					if (immobile == null) {
-						continue;
-					}
-					foundBodies.add(immobile);
-				}
-			}
-		}
-		return foundBodies;
-	}
+    /**
+     * Sweeps for {@link RigidBody}s around the body provided. <p> The algorithm will ask for all bodies within the bounds of the bodies' AABB scaled by a {@link
+     * ReactDefaults#LINKED_PHASE_AABB_SCALING}. </p>
+     *
+     * @param body The mobile body to scan around
+     * @return A set of all bodies in range
+     */
+    public Set<RigidBody> getBodiesInRange(RigidBody body) {
+        final AABB aabb = body.getAABB();
+        // To object coords
+        final Vector3 max = Vector3.subtract(aabb.getMax(), aabb.getCenter());
+        final Vector3 min = Vector3.subtract(aabb.getMin(), aabb.getCenter());
+        // Scale the coords
+        max.multiply(ReactDefaults.LINKED_PHASE_AABB_SCALING);
+        min.multiply(ReactDefaults.LINKED_PHASE_AABB_SCALING);
+        // Back to world coords
+        max.add(aabb.getCenter());
+        min.add(aabb.getCenter());
+        final int startX = (int) Math.floor(min.getX());
+        final int startY = (int) Math.floor(min.getY());
+        final int startZ = (int) Math.floor(min.getZ());
+        final int endX = (int) Math.ceil(max.getX());
+        final int endY = (int) Math.ceil(max.getY());
+        final int endZ = (int) Math.ceil(max.getZ());
+        final Set<RigidBody> foundBodies = new HashSet<>();
+        for (int xx = startX; xx <= endX; xx++) {
+            for (int yy = startY; yy <= endY; yy++) {
+                for (int zz = startZ; zz <= endZ; zz++) {
+                    final RigidBody immobile = linkedWorld.getLinkedInfo().getBody(xx, yy, zz);
+                    if (immobile == null) {
+                        continue;
+                    }
+                    foundBodies.add(immobile);
+                }
+            }
+        }
+        return foundBodies;
+    }
 }

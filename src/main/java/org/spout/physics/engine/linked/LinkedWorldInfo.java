@@ -26,21 +26,21 @@
  */
 package org.spout.physics.engine.linked;
 
-import org.spout.physics.body.ImmobileRigidBody;
+import org.spout.physics.body.RigidBody;
 
 /**
  * A simple class made for implementations with dynamic world planes (ex. Voxel generation) where no assumptions can be made about the world. <p> It is left up to the implementation of this class to
  * provide the body to be used at the x, y, z provided.
  */
 public interface LinkedWorldInfo {
-	/**
-	 * Fetches the {@link ImmobileRigidBody} at the x, y, z in world space. <p> Implementations of this method are expected to generate a body based on data stored for the 3D coordinate in world space.
-	 * </p>
-	 *
-	 * @param x The x coordinate in world space
-	 * @param y The y coordinate in world space
-	 * @param z The z coordinate in world space
-	 * @return The constructed body
-	 */
-	public ImmobileRigidBody getBody(int x, int y, int z);
+    /**
+     * Fetches the {@link RigidBody} at the x, y, z in world space. <p> Implementations of this method are expected to generate a body based on data stored for the 3D coordinate in world
+     * space. </p>
+     *
+     * @param x The x coordinate in world space
+     * @param y The y coordinate in world space
+     * @param z The z coordinate in world space
+     * @return The constructed body
+     */
+    public RigidBody getBody(int x, int y, int z);
 }

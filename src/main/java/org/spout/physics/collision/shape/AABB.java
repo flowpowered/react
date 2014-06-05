@@ -33,95 +33,95 @@ import org.spout.physics.math.Vector3;
  * world coordinates of the three axis.
  */
 public class AABB {
-	private final Vector3 mMinCoordinates = new Vector3();
-	private final Vector3 mMaxCoordinates = new Vector3();
+    private final Vector3 mMinCoordinates = new Vector3();
+    private final Vector3 mMaxCoordinates = new Vector3();
 
-	/**
-	 * Default constructor. Min and max are the both zero vector3s.
-	 */
-	public AABB() {
-	}
+    /**
+     * Default constructor. Min and max are the both zero vector3s.
+     */
+    public AABB() {
+    }
 
-	/**
-	 * Constructs a new AABB with the specified min and max vector3s.
-	 *
-	 * @param minCoordinates The minimum vector3
-	 * @param maxCoordinates The maximum vector3
-	 */
-	public AABB(Vector3 minCoordinates, Vector3 maxCoordinates) {
-		mMinCoordinates.set(minCoordinates);
-		mMaxCoordinates.set(maxCoordinates);
-	}
+    /**
+     * Constructs a new AABB with the specified min and max vector3s.
+     *
+     * @param minCoordinates The minimum vector3
+     * @param maxCoordinates The maximum vector3
+     */
+    public AABB(Vector3 minCoordinates, Vector3 maxCoordinates) {
+        mMinCoordinates.set(minCoordinates);
+        mMaxCoordinates.set(maxCoordinates);
+    }
 
-	/**
-	 * Gets the center of this AABB as a new vector3.
-	 *
-	 * @return The center vector3
-	 */
-	public Vector3 getCenter() {
-		return Vector3.multiply(Vector3.add(mMinCoordinates, mMaxCoordinates), 0.5f);
-	}
+    /**
+     * Gets the center of this AABB as a new vector3.
+     *
+     * @return The center vector3
+     */
+    public Vector3 getCenter() {
+        return Vector3.multiply(Vector3.add(mMinCoordinates, mMaxCoordinates), 0.5f);
+    }
 
-	/**
-	 * Gets the minimum vector3 of this AABB.
-	 *
-	 * @return The minimum vector3
-	 */
-	public Vector3 getMin() {
-		return mMinCoordinates;
-	}
+    /**
+     * Gets the minimum vector3 of this AABB.
+     *
+     * @return The minimum vector3
+     */
+    public Vector3 getMin() {
+        return mMinCoordinates;
+    }
 
-	/**
-	 * Gets the maximum vector3 of this AABB.
-	 *
-	 * @return The maximum vector3
-	 */
-	public Vector3 getMax() {
-		return mMaxCoordinates;
-	}
+    /**
+     * Gets the maximum vector3 of this AABB.
+     *
+     * @return The maximum vector3
+     */
+    public Vector3 getMax() {
+        return mMaxCoordinates;
+    }
 
-	/**
-	 * Sets the minimum vector3 of this AABB to the desired minimum.
-	 *
-	 * @param min the minimum vector3 to set
-	 */
-	public void setMin(Vector3 min) {
-		mMinCoordinates.set(min);
-	}
+    /**
+     * Sets the minimum vector3 of this AABB to the desired minimum.
+     *
+     * @param min the minimum vector3 to set
+     */
+    public void setMin(Vector3 min) {
+        mMinCoordinates.set(min);
+    }
 
-	/**
-	 * Sets the maximum vector3 of this AABB to the desired maximum.
-	 *
-	 * @param max the maximum vector3 to set
-	 */
-	public void setMax(Vector3 max) {
-		mMaxCoordinates.set(max);
-	}
+    /**
+     * Sets the maximum vector3 of this AABB to the desired maximum.
+     *
+     * @param max the maximum vector3 to set
+     */
+    public void setMax(Vector3 max) {
+        mMaxCoordinates.set(max);
+    }
 
-	/**
-	 * Test whether or not two AABBs are colliding. Returns true if they are colliding, false if not.
-	 *
-	 * @param aabb The AABB to test for collision
-	 * @return True if the AABBs are colliding, false if not
-	 */
-	public boolean testCollision(AABB aabb) {
-		if (mMaxCoordinates.getX() < aabb.getMin().getX()
-				|| aabb.getMax().getX() < mMinCoordinates.getX()) {
-			return false;
-		}
-		if (mMaxCoordinates.getY() < aabb.getMin().getY()
-				|| aabb.getMax().getY() < mMinCoordinates.getY()) {
-			return false;
-		}
-		if (mMaxCoordinates.getZ() < aabb.getMin().getZ()
-				|| aabb.getMax().getZ() < mMinCoordinates.getZ()) {
-			return false;
-		}
-		return true;
-	}
+    /**
+     * Test whether or not two AABBs are colliding. Returns true if they are colliding, false if not.
+     *
+     * @param aabb The AABB to test for collision
+     * @return True if the AABBs are colliding, false if not
+     */
+    public boolean testCollision(AABB aabb) {
+        if (mMaxCoordinates.getX() < aabb.getMin().getX()
+                || aabb.getMax().getX() < mMinCoordinates.getX()) {
+            return false;
+        }
+        if (mMaxCoordinates.getY() < aabb.getMin().getY()
+                || aabb.getMax().getY() < mMinCoordinates.getY()) {
+            return false;
+        }
+        if (mMaxCoordinates.getZ() < aabb.getMin().getZ()
+                || aabb.getMax().getZ() < mMinCoordinates.getZ()) {
+            return false;
+        }
+        return true;
+    }
 
-	@Override
-	public String toString() {
-		return "AABB{min= " + mMinCoordinates + ", max= " + mMaxCoordinates + "}";
-	}
+    @Override
+    public String toString() {
+        return "AABB{min= " + mMinCoordinates + ", max= " + mMaxCoordinates + "}";
+    }
 }
