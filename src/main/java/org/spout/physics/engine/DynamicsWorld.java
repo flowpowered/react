@@ -364,25 +364,30 @@ public class DynamicsWorld extends CollisionWorld {
         mTimer.update();
         isTicking = true;
         while (mTimer.isPossibleToTakeStep()) {
-            mContactManifolds.clear();
-            resetContactManifoldListsOfBodies();
-            mCollisionDetection.computeCollisionDetection();
-            computeIslands();
-            integrateRigidBodiesVelocities();
-            resetBodiesMovementVariable();
-            mTimer.nextStep();
-            solveContactsAndConstraints();
-            integrateRigidBodiesPositions();
-            solvePositionCorrection();
-            if (mIsSleepingEnabled) {
-                updateSleepingBodies();
-            }
-            updateRigidBodiesAABB();
+            tick();
         }
         isTicking = false;
         resetBodiesForceAndTorque();
         setInterpolationFactorToAllBodies();
         disperseCache();
+    }
+
+    // LinkedDynamicsWorld needs to clearLinkedBodies at the end of a tick, not update
+    protected void tick() {
+        mContactManifolds.clear();
+        resetContactManifoldListsOfBodies();
+        mCollisionDetection.computeCollisionDetection();
+        computeIslands();
+        integrateRigidBodiesVelocities();
+        resetBodiesMovementVariable();
+        mTimer.nextStep();
+        solveContactsAndConstraints();
+        integrateRigidBodiesPositions();
+        solvePositionCorrection();
+        if (mIsSleepingEnabled) {
+            updateSleepingBodies();
+        }
+        updateRigidBodiesAABB();
     }
 
     // Resets the boolean movement variable for each body.
@@ -628,19 +633,23 @@ public class DynamicsWorld extends CollisionWorld {
      */
     public void destroyRigidBody(RigidBody rigidBody) {
         if (!isTicking) {
-            mCollisionDetection.removeBody(rigidBody);
-            mFreeBodiesIDs.push(rigidBody.getID());
-            mBodies.remove(rigidBody);
-            mRigidBodies.remove(rigidBody);
-            removeCollisionShape(rigidBody.getCollisionShape());
-            JointListElement element;
-            for (element = rigidBody.getJointsList(); element != null; element = element.getNext()) {
-                destroyJoint(element.getJoint());
-            }
-            rigidBody.resetContactManifoldsList();
+            destroyRigidBodyImmediately(rigidBody);
         } else {
             mRigidBodiesToDeleteCache.add(rigidBody);
         }
+    }
+
+    protected void destroyRigidBodyImmediately(RigidBody rigidBody) {
+        mCollisionDetection.removeBody(rigidBody);
+        mFreeBodiesIDs.push(rigidBody.getID());
+        mBodies.remove(rigidBody);
+        mRigidBodies.remove(rigidBody);
+        removeCollisionShape(rigidBody.getCollisionShape());
+        JointListElement element;
+        for (element = rigidBody.getJointsList(); element != null; element = element.getNext()) {
+            destroyJoint(element.getJoint());
+        }
+        rigidBody.resetContactManifoldsList();
     }
 
     /**
