@@ -48,6 +48,12 @@ public class DynamicsWorldTest {
     public void test() throws InterruptedException {
         final float timeStep = ReactDefaults.DEFAULT_TIMESTEP;
         final DynamicsWorld world = new DynamicsWorld(new Vector3(0, -9.81f, 0), timeStep);
+        world.setEventListener(new TestListener());
+        world.start();
+        Thread.sleep(200);
+        // We want to do one update with no bodies
+        world.update();
+        world.stop();
         final BoxShape floorShape = new BoxShape(new Vector3(10, 0.5f, 10));
         final Transform floorTransform = new Transform(new Vector3(0, 0, 0), Quaternion.identity());
         final Matrix3x3 floorInertia = new Matrix3x3();
@@ -63,7 +69,6 @@ public class DynamicsWorldTest {
         final RigidBody box = world.createRigidBody(boxTransform, boxMass, boxInertia, boxShape);
         final int stepCount = Math.round((1 / timeStep) * RUN_TIME);
         final int sleepTime = Math.round(timeStep * 1000);
-        world.setEventListener(new TestListener());
         world.start();
         for (int i = 0; i < stepCount; i++) {
             final long start = System.nanoTime();
