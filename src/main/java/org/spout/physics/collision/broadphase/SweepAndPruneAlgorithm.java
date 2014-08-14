@@ -393,6 +393,7 @@ public class SweepAndPruneAlgorithm extends BroadPhaseAlgorithm {
                 newMapBodyToBoxIndex.put(body, boxIndex);
             }
         }
+        mFreeBoxIndices.clear();
         if (newMapBodyToBoxIndex.size() != mMapBodyToBoxIndex.size()) {
             throw new IllegalStateException("The size of the new map from body to box index must be the same as the old one");
         }
