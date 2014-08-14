@@ -65,8 +65,8 @@ public class LinkedDynamicsWorld extends DynamicsWorld {
     }
 
     @Override
-    public void update() {
-        super.update();
+    public void tick() {
+        super.tick();
         clearLinkedBodies();
     }
 
@@ -94,7 +94,8 @@ public class LinkedDynamicsWorld extends DynamicsWorld {
     // Clears all bodies tracked in the world.
     private void clearLinkedBodies() {
         for (RigidBody linkedBody : linkedBodies) {
-            destroyRigidBody(linkedBody);
+            // We're in a safe part of the tick so we can clear them immediately
+            destroyRigidBodyImmediately(linkedBody);
         }
         linkedBodies.clear();
     }
