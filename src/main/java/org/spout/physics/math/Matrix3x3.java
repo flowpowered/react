@@ -236,7 +236,7 @@ public class Matrix3x3 {
     public float getDeterminant() {
         return mRows[0].get(0) * (mRows[1].get(1) * mRows[2].get(2) - mRows[2].get(1) * mRows[1].get(2))
                 - mRows[0].get(1) * (mRows[1].get(0) * mRows[2].get(2) - mRows[2].get(0) * mRows[1].get(2))
-                + mRows[0].get(2) * (mRows[1].get(0) * mRows[2].get(1) - mRows[2].get(0) * mRows[1].get(0));
+                + mRows[0].get(2) * (mRows[1].get(0) * mRows[2].get(1) - mRows[2].get(0) * mRows[1].get(1));
     }
 
     /**
