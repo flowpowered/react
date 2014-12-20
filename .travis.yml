@@ -1,18 +1,32 @@
 # Source language and JDK version to use
 language: java
-jdk: oraclejdk7
+jdk: oraclejdk8
 
-# Compile and package JAR and set build properties
-install: mvn package -DbuildNumber=$TRAVIS_BUILD_NUMBER -DciSystem=travis -Dcommit=${TRAVIS_COMMIT:0:7}
+# Pre-install Maven dependencies
+install: mvn dependency:go-offline
 
-# Perform steps after compilation/test success
+# Compile and test source
+script: mvn clean -DbuildNumber=$TRAVIS_BUILD_NUMBER -DciSystem=travis -Dcommit=${TRAVIS_COMMIT:0:7}
+
+# Fetch resources, run deployment goal/task, and generate Javadocs and reports
 after_success:
-  # Get files for use with build, namely the custom Maven settings.xml
-  - "git clone https://github.com/flow/travis-ci-resources.git target/travis"
-  # Check if commit s not a pull request, if git repo is official, and if branch is master. If checks pass, deploy artifacts to Maven repository
-  - "[[ $TRAVIS_PULL_REQUEST == false ]] && [[ $TRAVIS_REPO_SLUG == flow/React ]] && [[ $TRAVIS_BRANCH == master ]] && mvn deploy --settings target/travis/settings.xml"
-  # Check if commit s not a pull request, if git repo is official, and if branch is master. If checks pass, update gh-pages branch with generated site/docs
-  - "[[ $TRAVIS_PULL_REQUEST == false ]] && [[ $TRAVIS_REPO_SLUG == flow/React ]] && [[ $TRAVIS_BRANCH == master ]] && chmod +x target/travis/update-gh-pages.sh && ./target/travis/update-gh-pages.sh"
+  # Get files for use with build, namely the custom Maven settings.xml and scripts
+  - "git clone https://github.com/flow/travis-ci-resources.git $HOME/build/flow/travis"
+  # DEVELOP: Check if commit is not a pull request, if repo is official, if branch is not master; then deploy artifacts
+  - "[[ $TRAVIS_PULL_REQUEST == false ]] && [[ $TRAVIS_REPO_SLUG == flow/react ]] && [[ $TRAVIS_BRANCH == develop ]] && mvn deploy --settings $HOME/build/flow/travis/settings.xml"
+  # RELEASE: Check if commit is not a pull request, if repo is official, if branch is master; then run deployment script
+  - "[[ $TRAVIS_PULL_REQUEST == false ]] && [[ $TRAVIS_REPO_SLUG == flow/react ]] && [[ $TRAVIS_BRANCH == master ]] && $HOME/build/flow/travis/deploy.sh && $HOME/build/flow/travis/gh-pages.sh"
+  # Generate Javadocs and report for Coveralls.io
+  - "mvn javadoc:javadoc cobertura:cobertura coveralls:report -DserviceJobId=$TRAVIS_JOB_ID"
+
+# RELEASE: Deploy main JAR to GitHub Releases
+deploy:
+  provider: releases
+  api-key: $GITHUB_TOKEN
+  file: "target/flow-react-`cat version.txt`.jar"
+  skip_cleanup: true
+  on:
+    branch: master
 
 # Notification services
 notifications:
@@ -28,6 +42,7 @@ env:
     # Make the log output cleaner
     - TERM=dumb
     # Super secure, encrypted variables! Ssssh!
-    - secure: "bZNAAo5zzbW7QdDENi3SC1iZM4aoa8ppke/A0BE4IAlug/G+0bu3YEYrWFgHM6fm6FyOslxc+XEMej4hfHd+Lmj4wXiFCKUfJlqE6AQV6yyHljQrjdkBnQeWiLdWX1oz9UjxdJpEFuGrSFZ9xW3fKnWfDgDT47rTAGK3VbDrkz8="
-    - secure: "DfECXrCJyKdNVzsO2LMMMyHA3F9vFwn0g00kxM1zCllpULmSQgH5GzxqJOAqfWdx8F9kQOrRcxsBz5AqIxZ+rBrYaDJTM20ogMbiy1zcAVt+2qUfl1H5hKSQRCYp+wwRzMUpet0/t7ANUAQVfbZx51oocPGAJZQ1XpWGZfpAQ5A="
-    - secure: "KLGHvbSzebvL6CVFMexEXsLCKhkEM4RexL/e9WgGtnvtsXQ/Dtz/VVMAJd9YCS/sHIgBYW+HRGO7NOA1b2Loc7qDGjO21oOuljswCKiwZ/lytpaJ0s8Ygp8SGHMdoHJg/lvNBoI3u9kMYNtzZeFRJMTdfMgjwz3np6YIJ7V2anw="
+    - secure: "aHwjS2dHdaS6m+UpbYju7NF+CFnO9PfHKKwMgWL+2FeuiPl71mysnYI+HII2kYa4LH/AntX96Z+FRbtiGtoUP+L7FI+fe1E5sC1Skntomcj0FluIHvJ5idQJoU1cwl4tBQLxBx65t6wI/CxjUKEjbhlVWLSBa9JhouWUv5fvZm0="
+    - secure: "XYsnR9LDZo9Tyy5D+ACRm475rxh9MjsHeS07vP9laLD2m8pndeEFZ7/rtmFKEZnOuk+r/XylUQkm8rCH6iKe3JVSNwQoYbLs8fzP3PCq2baLWL9tYtX6Lr76y5LTPVpRgvF0ytb3dxEfU4gZWw40s16LxCbSv5Kb8Az+Q5l/AtQ="
+    - secure: "WeKgn2PIute9NZPoWBLfgRCY0SC05bZCJz/hSaNsrJpadvQt1c1vQumuWY2sVqlYUGJdaBxNroNxyIhG+4+kyPDlbUwdV8h7PPWP7otBf5uvgaWGtdN9ljBQ9iv+6ys0xCC8yeA3baZPHxUIUQaa3gS+oUH+A9Ywvhs5X/dTwfA="
+    - secure: "IWtxho0CNOufLJKSoCxdG7b+Tz0YYa6O35S95uaMHjZOuA4IQ5uPAKw7s6pbjBihSVacdz8sYGVDaDpJxBx5mPWpJr7kualwn88GNbEHwZ1e3HyDoxAQPbwVwW3NABw9Lbx5nMJXFRG1CjXMZxIvGozw+AVdhO4QvBSYAk2djGc="
