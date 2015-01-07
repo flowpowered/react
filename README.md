@@ -1,6 +1,6 @@
 # Flow React [![License](http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat)][License] [![Flattr this](http://img.shields.io/badge/flattr-donate-lightgrey.svg?style=flat)][Donate] [![Build Status](http://img.shields.io/travis/flow/react/develop.svg?style=flat)](https://travis-ci.org/flow/react) [![Coverage Status](http://img.shields.io/coveralls/flow/react/develop.svg?style=flat)](https://coveralls.io/r/flow/react)
 
-Real-time 3D physics library for Java, based on the [ReactPhysics3D](https://code.google.com/p/reactphysics3d/) library by [Daniel Chappuis](http://www.danielchappuis.ch/). 
+Real-time 3D physics library for Java, based on the [ReactPhysics3D](https://code.google.com/p/reactphysics3d/) C++ library by [Daniel Chappuis](http://www.danielchappuis.ch/). 
 
 ## Features
 * Rigid body dynamics
@@ -89,6 +89,7 @@ The `master` branch is production-ready and contains the latest tagged releases.
 Flow React is licensed under the [MIT License][License]. Basically, you can do whatever you want as long as you include the original copyright. Please see the `LICENSE.txt` file for details.
 
 ## Credits
+* Daniel Chappuis and contributors of the original [ReactPhysics3d](https://code.google.com/p/reactphysics3d/) C++ library.
 * [Spout](https://spout.org/) and contributors - *where we all began, and for much of the re-licensed code.*
 * All the people behind [Java](http://www.oracle.com/technetwork/java/index.html), [Maven](https://maven.apache.org/), and [Gradle](https://www.gradle.org/).
 
