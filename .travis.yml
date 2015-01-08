@@ -23,7 +23,7 @@ after_success:
 deploy:
   provider: releases
   api-key: $GITHUB_TOKEN
-  file: "target/flow-react-`cat version.txt`.jar"
+  file: "target/react-`cat version.txt`.jar"
   skip_cleanup: true
   on:
     branch: master

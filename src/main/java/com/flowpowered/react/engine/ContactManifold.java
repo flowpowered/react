@@ -1,9 +1,9 @@
 /*
- * This file is part of Flow React, licensed under the MIT License (MIT).
+ * This file is part of React, licensed under the MIT License (MIT).
  *
  * Copyright (c) 2013 Flow Powered <https://flowpowered.com/>
  * Original ReactPhysics3D C++ library by Daniel Chappuis <http://danielchappuis.ch>
- * Flow React is re-licensed with permission from ReactPhysics3D author.
+ * React is re-licensed with permission from ReactPhysics3D author.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
