@@ -3,7 +3,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <!-- Project information -->
-    <name>Flow React</name>
+    <name>React</name>
     <groupId>com.flowpowered</groupId>
     <artifactId>react</artifactId>
     <version>1.0.0-SNAPSHOT</version>

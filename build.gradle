@@ -10,9 +10,9 @@ apply plugin: 'maven'
 apply plugin: 'signing'
 
 // Project information
-ext.projectName = 'Flow React'
+ext.projectName = 'React'
 group = 'com.flowpowered'
-archivesBaseName = 'flow-react'
+archivesBaseName = 'react'
 version = '1.0.0-SNAPSHOT'
 ext.packaging = 'jar'
 ext.inceptionYear = '2013'

@@ -1,4 +1,4 @@
-# Flow React [![License](http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat)][License] [![Flattr this](http://img.shields.io/badge/flattr-donate-lightgrey.svg?style=flat)][Donate] [![Build Status](http://img.shields.io/travis/flow/react/develop.svg?style=flat)](https://travis-ci.org/flow/react) [![Coverage Status](http://img.shields.io/coveralls/flow/react/develop.svg?style=flat)](https://coveralls.io/r/flow/react)
+# React [![License](http://img.shields.io/badge/license-MIT-lightgrey.svg?style=flat)][License] [![Flattr this](http://img.shields.io/badge/flattr-donate-lightgrey.svg?style=flat)][Donate] [![Build Status](http://img.shields.io/travis/flow/react/develop.svg?style=flat)](https://travis-ci.org/flow/react) [![Coverage Status](http://img.shields.io/coveralls/flow/react/develop.svg?style=flat)](https://coveralls.io/r/flow/react)
 
 Real-time 3D physics library for Java, based on the [ReactPhysics3D](https://code.google.com/p/reactphysics3d/) C++ library by [Daniel Chappuis](http://www.danielchappuis.ch/). 
 
@@ -54,7 +54,7 @@ If you're using [Maven](https://maven.apache.org/download.html) to manage projec
 
     <dependency>
         <groupId>com.flowpowered</groupId>
-        <artifactId>flow-react</artifactId>
+        <artifactId>react</artifactId>
         <version>1.0.0-SNAPSHOT</version>
     </dependency>
 
@@ -64,7 +64,7 @@ If you're using [Gradle](https://www.gradle.org/) to manage project dependencies
         mavenCentral()
     }
     dependencies {
-        compile 'com.flowpowered:flow-react:1.0.0-SNAPSHOT'
+        compile 'com.flowpowered:react:1.0.0-SNAPSHOT'
     }
 
 If you plan on using snapshots and do not already have the snapshot repo in your repository list, you will need to add this as well:
@@ -86,12 +86,12 @@ We've adopted the [git flow branching model](http://nvie.com/posts/a-successful-
 The `master` branch is production-ready and contains the latest tagged releases. Before a release is made, it is stagged in `release/x` branches before being pushed and tagged in the `master` branch. Small patches from `hotfix/x` branches are also pushed to `master`, and will always have a release version. The `develop` branch is pre-production, and is where we push `feature/x` branches for testing.
 
 ## Legal Stuff
-Flow React is licensed under the [MIT License][License]. Basically, you can do whatever you want as long as you include the original copyright. Please see the `LICENSE.txt` file for details.
+React is licensed under the [MIT License][License]. Basically, you can do whatever you want as long as you include the original copyright. Please see the `LICENSE.txt` file for details.
 
 ## Credits
 * Daniel Chappuis and contributors of the original [ReactPhysics3d](https://code.google.com/p/reactphysics3d/) C++ library.
 * [Spout](https://spout.org/) and contributors - *where we all began, and for much of the re-licensed code.*
 * All the people behind [Java](http://www.oracle.com/technetwork/java/index.html), [Maven](https://maven.apache.org/), and [Gradle](https://www.gradle.org/).
 
-[Donate]: https://flattr.com/submit/auto?user_id=spout&url=https://github.com/flow/react&title=Flow+React&language=Java&tags=github&category=software
+[Donate]: https://flattr.com/submit/auto?user_id=spout&url=https://github.com/flow/react&title=React&language=Java&tags=github&category=software
 [License]: https://tldrlegal.com/l/mit
