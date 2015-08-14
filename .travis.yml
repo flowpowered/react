@@ -1,6 +1,14 @@
+# Use new Travis-CI infrastructure
+sudo: false
+
 # Source language and JDK version to use
 language: java
 jdk: oraclejdk8
+
+# Use cached Maven dependencies
+cache:
+  directories:
+    - $HOME/.m2
 
 # Pre-install Maven dependencies
 install: mvn dependency:go-offline
@@ -13,7 +21,7 @@ after_success:
   # Get files for use with build, namely the custom Maven settings.xml and scripts
   - "git clone https://github.com/flow/travis-ci-resources.git $HOME/build/flow/travis"
   # DEVELOP: Check if commit is not a pull request, if repo is official, if branch is not master; then deploy artifacts
-  - "[[ $TRAVIS_PULL_REQUEST == false ]] && [[ $TRAVIS_REPO_SLUG == flow/react ]] && [[ $TRAVIS_BRANCH == develop ]] && mvn deploy --settings $HOME/build/flow/travis/settings.xml"
+  - "[[ $TRAVIS_PULL_REQUEST == false ]] && [[ $TRAVIS_REPO_SLUG == flow/react ]] && [[ $TRAVIS_BRANCH == develop ]] && mvn javadoc:jar source:jar deploy --settings $HOME/build/flow/travis/settings.xml"
   # RELEASE: Check if commit is not a pull request, if repo is official, if branch is master; then run deployment script
   - "[[ $TRAVIS_PULL_REQUEST == false ]] && [[ $TRAVIS_REPO_SLUG == flow/react ]] && [[ $TRAVIS_BRANCH == master ]] && $HOME/build/flow/travis/deploy.sh && $HOME/build/flow/travis/gh-pages.sh"
   # Generate Javadocs and report for Coveralls.io
@@ -42,7 +50,7 @@ env:
     # Make the log output cleaner
     - TERM=dumb
     # Super secure, encrypted variables! Ssssh!
-    - secure: "aHwjS2dHdaS6m+UpbYju7NF+CFnO9PfHKKwMgWL+2FeuiPl71mysnYI+HII2kYa4LH/AntX96Z+FRbtiGtoUP+L7FI+fe1E5sC1Skntomcj0FluIHvJ5idQJoU1cwl4tBQLxBx65t6wI/CxjUKEjbhlVWLSBa9JhouWUv5fvZm0="
-    - secure: "XYsnR9LDZo9Tyy5D+ACRm475rxh9MjsHeS07vP9laLD2m8pndeEFZ7/rtmFKEZnOuk+r/XylUQkm8rCH6iKe3JVSNwQoYbLs8fzP3PCq2baLWL9tYtX6Lr76y5LTPVpRgvF0ytb3dxEfU4gZWw40s16LxCbSv5Kb8Az+Q5l/AtQ="
-    - secure: "WeKgn2PIute9NZPoWBLfgRCY0SC05bZCJz/hSaNsrJpadvQt1c1vQumuWY2sVqlYUGJdaBxNroNxyIhG+4+kyPDlbUwdV8h7PPWP7otBf5uvgaWGtdN9ljBQ9iv+6ys0xCC8yeA3baZPHxUIUQaa3gS+oUH+A9Ywvhs5X/dTwfA="
-    - secure: "IWtxho0CNOufLJKSoCxdG7b+Tz0YYa6O35S95uaMHjZOuA4IQ5uPAKw7s6pbjBihSVacdz8sYGVDaDpJxBx5mPWpJr7kualwn88GNbEHwZ1e3HyDoxAQPbwVwW3NABw9Lbx5nMJXFRG1CjXMZxIvGozw+AVdhO4QvBSYAk2djGc="
+    - secure: "f9ktzIdIVbDJ6Ufp994qV3S05p/0o8MWu0VXFjy+zZDeAXJ8kpKspyDCRZc3rEXNknt4JZjbe/0azv0u/lzkc5Vkvj57ShaWrihh0owMAaU7kg+ot4hFrhPXXBIosOhU/2vx253WqMoFO8mPtQ/zet/DnY7IyCEp3ZnAF4Emc44="
+    - secure: "FUdwmQB3Xammty3HuixmHU6CeCrmkapcfSOAT4nI4ASmAyRnhmSgxYnQjM/5lCkltqQWOEnrDQezaPBWTq/y69vMOu6Wjp7kANV/GXFItRTHvTn53ty0lAf+tpaLAgaqY7h1qHb++RuTJ8TFbgab+4YFIfonO823bCYx1+AIKiA="
+    - secure: "R+cvcpDT+zRcevpz1hKW3vZVLCFzDgJyy6HzyzN7a0TdgxQeWZFnBil9okak6HqVOraUQ4ct4tO7Qd9WWzq0kz5zQNttcuez6e69HApjquEvhnnfVa8QcIMrKDQ6mE3UztuIfQ95ytmvoNPbGsFyw9fpVNrLGcn8k09DtBlQPw0="
+    - secure: "VN8Ou5EZjUz6RF2Ac/CEYH/hR3P4xbOSNgnAGL++Zb8CHUAY7CMuhd3rAqC1F1SETvw/r2oJRc7eSDUzAlnvZKRgCUHoHDtkPCJazM5VxmNylBPMAMHD13zSKnRbIgRTJI4cpfzYYw1bznBYkbIEIfihTTfijEOoHWrxZncirEg="
